@@ -199,7 +199,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   return (
     <group 
       ref={groupRef} 
-      position={[0, -1.5, -3]} 
+      position={[0, -0.8, -2]} 
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
@@ -266,7 +266,7 @@ function CameraController() {
   useFrame(() => {
     camera.position.x += (targetPosition.current.x - camera.position.x) * 0.05;
     camera.position.y += (-targetPosition.current.y + 1 - camera.position.y) * 0.05;
-    camera.lookAt(0, 0, -3);
+    camera.lookAt(0, -0.5, -2);
   });
 
   return null;
@@ -297,19 +297,20 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying }: Scene3DProps
         dpr={[1, 2]}
       >
         <color attach="background" args={["#050505"]} />
-        <fog attach="fog" args={["#050505", 5, 30]} />
+        <fog attach="fog" args={["#050505", 8, 40]} />
         
-        <ambientLight intensity={0.15} />
-        <pointLight position={[0, 5, 5]} intensity={0.6} color="#ffffff" />
-        <pointLight position={[-5, 3, 0]} intensity={0.3} color="#4a90d9" />
-        <pointLight position={[5, 3, 0]} intensity={0.3} color="#d94a4a" />
+        <ambientLight intensity={0.5} />
+        <pointLight position={[0, 5, 5]} intensity={1.2} color="#ffffff" />
+        <pointLight position={[-5, 3, 0]} intensity={0.5} color="#4a90d9" />
+        <pointLight position={[5, 3, 0]} intensity={0.5} color="#d94a4a" />
         <spotLight
-          position={[0, 8, 2]}
-          angle={0.4}
+          position={[0, 4, 4]}
+          angle={0.6}
           penumbra={0.5}
-          intensity={1}
+          intensity={2}
           color="#ffffff"
           castShadow
+          target-position={[0, -1, -3]}
         />
 
         <Suspense fallback={null}>

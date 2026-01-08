@@ -54,9 +54,11 @@ export default function Home() {
             isVideoPlaying={isVideoPlaying}
           />
 
-          <div className="relative z-10 min-h-screen pointer-events-none">
+          <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
-            <HeroText onTextHover={handleTextHover} />
+            <div className="flex-1 flex items-center justify-center">
+              <HeroText onTextHover={handleTextHover} />
+            </div>
           </div>
 
           <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
