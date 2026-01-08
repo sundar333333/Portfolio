@@ -53,7 +53,7 @@ export function HeroText({ onTextHover }: HeroTextProps) {
       data-testid="hero-text-container"
     >
       <motion.h1
-        className="font-anton text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-white mb-4 md:mb-6 cursor-pointer leading-tight"
+        className="font-anton text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white mb-2 md:mb-4 cursor-pointer leading-tight"
         style={{
           textShadow: "0 0 40px rgba(255,255,255,0.2), 0 0 80px rgba(255,255,255,0.1)",
         }}
@@ -66,13 +66,13 @@ export function HeroText({ onTextHover }: HeroTextProps) {
       </motion.h1>
 
       <div
-        className="h-10 md:h-16 flex items-center justify-center cursor-pointer"
+        className="h-8 md:h-10 flex items-center justify-center cursor-pointer"
         onMouseEnter={() => onTextHover(displayedText || roles[currentRoleIndex])}
         onMouseLeave={() => onTextHover(null)}
         data-testid="text-hero-role"
       >
         <motion.p
-          className="font-mono text-base sm:text-xl md:text-2xl lg:text-3xl text-white/80"
+          className="font-mono text-sm sm:text-base md:text-lg lg:text-xl text-white/80"
           style={{
             textShadow: "0 0 20px rgba(255,255,255,0.1)",
           }}
