@@ -86,6 +86,8 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        anton: ["Anton", "sans-serif"],
+        archivo: ["Archivo Black", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
