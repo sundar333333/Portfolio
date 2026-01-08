@@ -46,7 +46,7 @@ export function HeroText({ onTextHover }: HeroTextProps) {
 
   return (
     <motion.div
-      className="absolute top-1/3 md:top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center pointer-events-auto px-4 w-full"
+      className="text-center pointer-events-auto px-4 w-full max-w-4xl"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 1 }}
