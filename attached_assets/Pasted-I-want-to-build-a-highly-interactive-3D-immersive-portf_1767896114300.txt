@@ -1,0 +1,49 @@
+I want to build a highly interactive, 3D immersive portfolio website. This project requires a robust stack: React, Tailwind CSS for styling, Framer Motion for complex 2D animations, and specifically React Three Fiber (R3F) for the 3D environment.
+
+Here is the detailed step-by-step vision for the landing page experience:
+
+### Phase 1: The Loading Screen (Vintage Glitch)
+Before the main site loads, display a full-screen loading experience.
+1.  **Background:** Fill the screen with animated vintage TV "no signal" static noise (black and white grain).
+2.  **Central Text:** In the dead center, display the text "SEARCHING SIGNAL".
+3.  **Countdown:** Below the text, show a counter that counts up from 1 to 100 linearly.
+4.  **Transition:** Once the counter hits 100, the static and text should glitch out and fade smoothly, revealing the main landing page.
+
+### Phase 2: The Landing Page Environment (The 3D Room)
+The main page is a 3D scene constructed with React Three Fiber.
+1.  **Setting:** A dark, atmospheric "space room." It should feel vast.
+2.  **Gyro Effect:** Implement a subtle gyroscope/parallax effect. As the user moves their mouse (or tilts their device on mobile), the camera perspective of the room should shift slightly to create depth and a 3D feeling.
+3.  **The Centerpiece:** Placed on the floor in the bottom center of the 3D room is a model of a vintage television set with rabbit-ear antennas.
+
+### Phase 3: Header & Typography (Branding)
+Create a fixed, sticky header at the top of the screen.
+1.  **Font Requirement (CRITICAL):** For my name in the top left, use an extremely heavy, bold, white sans-serif font to match the "BUILDING/CAPPEN" style from my reference images (Import Google Font 'Anton' or 'Archivo Black' weight 900 for this).
+2.  **Top Left:** Display my name: "SUNDAR RAM" using that specific bold font.
+3.  **Top Center Menu:** Simple text links: "Works", "About Me", and "3D Room".
+4.  **Top Right:** A button/link that says "Contact / Recruit Me".
+
+### Phase 4: Hero Text & Looping Animation
+Positioned in 3D space, floating above the vintage TV:
+1.  **Greeting:** Large, centered white text: "Hello!! I am Sundar Ram".
+2.  **Looping Role:** Below that, a line of text with a typewriter or cycling animation that continuously loops between these three roles:
+    * "I'm a UI UX designer"
+    * (changes to) "I'm a Product designer"
+    * (changes to) "I'm a Website designer"
+
+### Phase 5: The Custom Cursor (Liquid & Light)
+Completely replace the default browser cursor.
+1.  **The Cursor:** A glassy, liquid-like transparent circle. It should have a slight refractive distortion effect, making words underneath it look warped or magnified.
+2.  **The Trail:** As the mouse moves, it should leave behind a "speed of light" trail composed of multiple colors.
+
+### Phase 6: The Core Interactions (TV & Audio)
+This is the most complex part involving state management between the DOM and the 3D canvas.
+
+1.  **TV Default State:** By default, the screen of the 3D vintage TV shows animated static noise.
+2.  **Hover-to-TV Interaction:** If the user hovers their glassy cursor over *any* text on the webpage (the header links, the hero name, the looping roles), that specific text must dynamically appear displayed on the screen of the vintage TV in the 3D world.
+3.  **TV Click Interaction (The Tribute):** If the user clicks directly on the 3D vintage TV object:
+    * The static/text on the TV screen stops.
+    * It begins playing a video tribute of "Messi best moments".
+4.  **Audio Control:** In the bottom right corner of the screen, place a UI toggle switch for audio.
+    * This switch controls the master sound. It should mute/unmute the static noise and the audio from the Messi video if it is playing.
+
+**Start by setting up the React project with necessary dependencies (Three.js, R3F, Framer Motion) and building the basic 3D dark room environment with the vintage TV model.**
