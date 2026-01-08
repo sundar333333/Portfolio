@@ -92,7 +92,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.03;
     }
 
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current) {
@@ -188,7 +188,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
     if (staticTexture) {
       return new THREE.MeshBasicMaterial({ map: staticTexture });
     }
-    return new THREE.MeshBasicMaterial({ color: 0x222222 });
+    return new THREE.MeshBasicMaterial({ color: 0x333333 });
   }, [staticTexture, hoveredText, isVideoPlaying]);
 
   const handleClick = useCallback((e: any) => {
@@ -196,54 +196,102 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
     onClick();
   }, [onClick]);
 
+  const woodColor = isHovered ? "#a86b32" : "#8B5A2B";
+  const chromeColor = "#d8d1c5";
+
   return (
     <group 
       ref={groupRef} 
-      position={[0, -0.8, -2]} 
+      position={[0, 0.5, 0]} 
+      scale={1.2}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
       <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[2.4, 2, 1.8]} />
-        <meshStandardMaterial color={isHovered ? "#4a3220" : "#3d2817"} roughness={0.8} />
+        <boxGeometry args={[2.8, 2.2, 1.4]} />
+        <meshStandardMaterial color={woodColor} roughness={0.6} metalness={0.1} />
       </mesh>
 
-      <mesh position={[0, 0.1, 0.91]}>
-        <planeGeometry args={[1.6, 1.2]} />
+      <mesh position={[0, 0, 0.71]}>
+        <boxGeometry args={[2.6, 2.0, 0.05]} />
+        <meshStandardMaterial color="#6b4423" roughness={0.5} />
+      </mesh>
+
+      <mesh position={[-0.3, 0.05, 0.74]}>
+        <boxGeometry args={[1.7, 1.4, 0.02]} />
+        <meshStandardMaterial color={chromeColor} metalness={0.8} roughness={0.25} />
+      </mesh>
+
+      <mesh position={[-0.3, 0.05, 0.76]}>
+        <planeGeometry args={[1.5, 1.2]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
-      <mesh position={[0, 0.1, 0.9]}>
-        <boxGeometry args={[1.8, 1.4, 0.1]} />
+      <mesh position={[-0.3, 0.05, 0.73]}>
+        <boxGeometry args={[1.6, 1.3, 0.08]} />
         <meshStandardMaterial color="#1a1a1a" />
       </mesh>
 
-      <mesh position={[0, -1.1, 0]} rotation={[0, 0, 0]}>
-        <boxGeometry args={[0.6, 0.2, 0.6]} />
-        <meshStandardMaterial color="#2a1f13" roughness={0.7} />
+      <group position={[1.0, 0, 0.72]}>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.5, 1.8, 0.04]} />
+          <meshStandardMaterial color="#9a7b5a" roughness={0.5} />
+        </mesh>
+
+        {[0.5, 0.35, 0.2, 0.05, -0.1, -0.25, -0.4, -0.55].map((y, i) => (
+          <mesh key={i} position={[0, y, 0.03]}>
+            <boxGeometry args={[0.4, 0.03, 0.02]} />
+            <meshStandardMaterial color="#5a4a3a" roughness={0.7} />
+          </mesh>
+        ))}
+
+        <mesh position={[0, -0.75, 0.04]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.08, 32]} />
+          <meshStandardMaterial color={chromeColor} metalness={0.9} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, -0.75, 0.08]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.08, 0.02, 8, 32]} />
+          <meshStandardMaterial color="#4a4a4a" metalness={0.7} roughness={0.3} />
+        </mesh>
+      </group>
+
+      <mesh position={[-0.5, 1.3, 0]} rotation={[0, 0, -0.5]}>
+        <cylinderGeometry args={[0.015, 0.025, 1.4, 8]} />
+        <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.15} />
+      </mesh>
+      <mesh position={[0.5, 1.3, 0]} rotation={[0, 0, 0.5]}>
+        <cylinderGeometry args={[0.015, 0.025, 1.4, 8]} />
+        <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.15} />
       </mesh>
 
-      <mesh position={[-0.4, 1.8, 0]} rotation={[0, 0, -0.3]}>
-        <cylinderGeometry args={[0.02, 0.02, 1.5, 8]} />
-        <meshStandardMaterial color="#666666" metalness={0.8} roughness={0.2} />
+      <mesh position={[-0.82, 1.75, 0]}>
+        <sphereGeometry args={[0.04, 16, 16]} />
+        <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
       </mesh>
-      <mesh position={[0.4, 1.8, 0]} rotation={[0, 0, 0.3]}>
-        <cylinderGeometry args={[0.02, 0.02, 1.5, 8]} />
-        <meshStandardMaterial color="#666666" metalness={0.8} roughness={0.2} />
-      </mesh>
-
-      <mesh position={[0.9, -0.3, 0.85]} rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.12, 0.12, 0.15, 16]} />
-        <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.5} />
-      </mesh>
-      <mesh position={[0.9, -0.6, 0.85]} rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.1, 0.1, 0.12, 16]} />
-        <meshStandardMaterial color="#3a3a3a" metalness={0.5} roughness={0.5} />
+      <mesh position={[0.82, 1.75, 0]}>
+        <sphereGeometry args={[0.04, 16, 16]} />
+        <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.2} />
       </mesh>
 
+      <mesh position={[0, 0.95, 0]}>
+        <boxGeometry args={[0.3, 0.15, 0.3]} />
+        <meshStandardMaterial color="#5a4a3a" roughness={0.6} />
+      </mesh>
+
+      <mesh position={[-0.7, -1.3, 0.3]} rotation={[0.15, 0, 0.1]}>
+        <cylinderGeometry args={[0.06, 0.1, 0.4, 8]} />
+        <meshStandardMaterial color={woodColor} roughness={0.6} />
+      </mesh>
+      <mesh position={[0.7, -1.3, 0.3]} rotation={[0.15, 0, -0.1]}>
+        <cylinderGeometry args={[0.06, 0.1, 0.4, 8]} />
+        <meshStandardMaterial color={woodColor} roughness={0.6} />
+      </mesh>
+
+      <pointLight position={[0, 0, 1.5]} intensity={0.8} color="#ffffff" distance={4} />
+      
       {isHovered && (
-        <pointLight position={[0, 0, 2]} intensity={0.3} color="#ffffff" />
+        <pointLight position={[0, 0, 2]} intensity={0.5} color="#ffcc88" />
       )}
     </group>
   );
@@ -255,8 +303,8 @@ function CameraController() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.5;
-      targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.3;
+      targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.3;
+      targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.2;
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -265,8 +313,8 @@ function CameraController() {
 
   useFrame(() => {
     camera.position.x += (targetPosition.current.x - camera.position.x) * 0.05;
-    camera.position.y += (-targetPosition.current.y + 1 - camera.position.y) * 0.05;
-    camera.lookAt(0, -0.5, -2);
+    camera.position.y += (-targetPosition.current.y + 1.2 - camera.position.y) * 0.05;
+    camera.lookAt(0, 0.5, 0);
   });
 
   return null;
@@ -275,14 +323,14 @@ function CameraController() {
 function Room() {
   return (
     <group>
-      <mesh position={[0, -2.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, -1.6, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[50, 50]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+        <meshStandardMaterial color="#120d08" roughness={0.9} />
       </mesh>
 
-      <mesh position={[0, 0, -10]}>
+      <mesh position={[0, 0, -6]}>
         <planeGeometry args={[50, 20]} />
-        <meshStandardMaterial color="#050505" roughness={1} />
+        <meshStandardMaterial color="#0a0805" roughness={1} />
       </mesh>
     </group>
   );
@@ -292,36 +340,42 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying }: Scene3DProps
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
-        camera={{ position: [0, 1, 5], fov: 60 }}
+        camera={{ position: [0, 1.2, 4.5], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 2]}
       >
-        <color attach="background" args={["#050505"]} />
-        <fog attach="fog" args={["#050505", 8, 40]} />
+        <color attach="background" args={["#0a0806"]} />
+        <fog attach="fog" args={["#0a0806", 10, 50]} />
         
-        <ambientLight intensity={0.5} />
-        <pointLight position={[0, 5, 5]} intensity={1.2} color="#ffffff" />
-        <pointLight position={[-5, 3, 0]} intensity={0.5} color="#4a90d9" />
-        <pointLight position={[5, 3, 0]} intensity={0.5} color="#d94a4a" />
+        <ambientLight intensity={0.8} />
+        <pointLight position={[0, 4, 4]} intensity={2} color="#ffffff" />
+        <pointLight position={[-3, 2, 2]} intensity={1} color="#ffd7a1" />
+        <pointLight position={[3, 2, 2]} intensity={1} color="#a1c4ff" />
         <spotLight
-          position={[0, 4, 4]}
-          angle={0.6}
+          position={[0, 5, 3]}
+          angle={0.5}
           penumbra={0.5}
-          intensity={2}
+          intensity={3}
           color="#ffffff"
           castShadow
-          target-position={[0, -1, -3]}
+        />
+        <spotLight
+          position={[2, 3, 4]}
+          angle={0.4}
+          penumbra={0.8}
+          intensity={1.5}
+          color="#ffeedd"
         />
 
         <Suspense fallback={null}>
           <Stars
             radius={100}
             depth={50}
-            count={5000}
+            count={3000}
             factor={4}
             saturation={0}
             fade
-            speed={1}
+            speed={0.5}
           />
           <Room />
           <VintageTV
