@@ -54,9 +54,9 @@ export default function Home() {
             isVideoPlaying={isVideoPlaying}
           />
 
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-start pointer-events-none">
+          <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
-            <div className="mt-8 md:mt-12">
+            <div className="flex items-start justify-center pt-16 md:pt-24">
               <HeroText onTextHover={handleTextHover} />
             </div>
           </div>
