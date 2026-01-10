@@ -347,8 +347,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   return (
     <group 
       ref={groupRef} 
-      position={[0, -0.15, 0.3]}
-      scale={0.55}
+      position={[0, -0.5, 0.2]}
+      scale={0.5}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
@@ -487,8 +487,8 @@ function CameraController() {
 
   useFrame(() => {
     camera.position.x += (targetPosition.current.x - camera.position.x) * 0.02;
-    camera.position.y += (-targetPosition.current.y + 0.3 - camera.position.y) * 0.02;
-    camera.lookAt(0, -0.1, 0.3);
+    camera.position.y += (-targetPosition.current.y + 0.15 - camera.position.y) * 0.02;
+    camera.lookAt(0, -0.35, 0.2);
   });
 
   return null;
