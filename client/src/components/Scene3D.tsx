@@ -347,7 +347,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   return (
     <group 
       ref={groupRef} 
-      position={[0, 0.12, 0.5]}
+      position={[0, 0.2, 0.1]}
       scale={0.6}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
@@ -487,8 +487,8 @@ function CameraController() {
 
   useFrame(() => {
     camera.position.x += (targetPosition.current.x - camera.position.x) * 0.02;
-    camera.position.y += (-targetPosition.current.y + 0.4 - camera.position.y) * 0.02;
-    camera.lookAt(0, 0.05, 0.5);
+    camera.position.y += (-targetPosition.current.y + 0.75 - camera.position.y) * 0.02;
+    camera.lookAt(0, 0.1, 0.1);
   });
 
   return null;
@@ -513,7 +513,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying }: Scene3DProps
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
-        camera={{ position: [0, 0.6, 1.8], fov: 50 }}
+        camera={{ position: [0, 0.75, 1.8], fov: 50 }}
         shadows
         gl={{ 
           antialias: true, 
