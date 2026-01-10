@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
-import { HeroText } from "@/components/HeroText";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AudioToggle } from "@/components/AudioToggle";
 import { Scene3D } from "@/components/Scene3D";
@@ -56,9 +55,6 @@ export default function Home() {
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
-            <div className="flex items-start justify-center pt-16 md:pt-24">
-              <HeroText onTextHover={handleTextHover} />
-            </div>
           </div>
 
           <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
