@@ -56,7 +56,7 @@ export default function Home() {
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
-            <div className="flex items-start justify-center pt-16 md:pt-24">
+            <div className="absolute top-[18%] md:top-[20%] left-0 right-0 flex justify-center">
               <HeroText onTextHover={handleTextHover} />
             </div>
           </div>
