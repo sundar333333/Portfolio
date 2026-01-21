@@ -567,24 +567,30 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSc
     const screenZ = 0.3;
     const endZ = -15;
     
+    const tvScreenY = 0.22;
+    
     let targetZ: number;
     let targetY: number;
     
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
-      targetY = 0.55 - progress * 0.33;
-      camera.lookAt(0, 0.22, 0.3);
+      targetY = tvScreenY;
     } else {
       const postProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       targetZ = screenZ - (screenZ - endZ) * postProgress;
-      targetY = 0.22 + postProgress * 1.5;
-      camera.lookAt(0, 2, targetZ - 10);
+      targetY = tvScreenY + postProgress * 1.5;
     }
     
-    camera.position.z += (targetZ - camera.position.z) * 0.08;
-    camera.position.x += (targetPosition.current.x * (1 - offset) - camera.position.x) * 0.02;
-    camera.position.y += (-targetPosition.current.y + targetY - camera.position.y) * 0.05;
+    camera.position.x = 0;
+    camera.position.y += (targetY - camera.position.y) * 0.1;
+    camera.position.z += (targetZ - camera.position.z) * 0.1;
+    
+    if (offset < transitionThreshold) {
+      camera.lookAt(0, tvScreenY, 0);
+    } else {
+      camera.lookAt(0, camera.position.y, camera.position.z - 10);
+    }
     
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
