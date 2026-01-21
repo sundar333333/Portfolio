@@ -1,7 +1,8 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, RoundedBox, ContactShadows } from "@react-three/drei";
+import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
 import * as THREE from "three";
+import { WorkSection } from "./WorkSection";
 
 interface Scene3DProps {
   hoveredText: string | null;
@@ -155,9 +156,11 @@ interface VintageTVProps {
   hoveredText: string | null;
   onClick: () => void;
   isVideoPlaying: boolean;
+  visible: boolean;
+  glitchIntensity: number;
 }
 
-function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
+function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntensity }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { texture: staticTexture, updateTexture } = useStaticTexture();
   const woodTexture = useWoodTexture();
@@ -191,12 +194,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   }, []);
 
   useFrame((state) => {
+    if (!visible) return;
+    
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
+      
+      if (glitchIntensity > 0.1) {
+        groupRef.current.position.x = (Math.random() - 0.5) * glitchIntensity * 0.05;
+        groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
+      } else {
+        groupRef.current.position.x = 0;
+        groupRef.current.position.y = 0.22;
+      }
     }
 
     if (screenGlowRef.current) {
-      screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05;
+      screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
 
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current) {
@@ -344,6 +357,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   const screenWidth = 0.52;
   const screenHeight = 0.39;
 
+  if (!visible) return null;
+
   return (
     <group 
       ref={groupRef} 
@@ -471,9 +486,69 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying }: VintageTVProps) {
   );
 }
 
-function CameraController() {
+function TiledFloor({ visible }: { visible: boolean }) {
+  const tileTexture = useTileTexture();
+
+  if (!visible) return null;
+
+  return (
+    <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[30, 30]} />
+      <meshStandardMaterial 
+        map={tileTexture}
+        roughness={0.85}
+        metalness={0.05}
+      />
+    </mesh>
+  );
+}
+
+function GlitchOverlay({ intensity }: { intensity: number }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current && intensity > 0.1) {
+      const material = meshRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = intensity * 0.3 * (0.5 + Math.random() * 0.5);
+      
+      if (Math.random() < intensity * 0.3) {
+        meshRef.current.position.x = (Math.random() - 0.5) * 0.1;
+        meshRef.current.position.y = (Math.random() - 0.5) * 0.1;
+      } else {
+        meshRef.current.position.x = 0;
+        meshRef.current.position.y = 0;
+      }
+    }
+  });
+
+  if (intensity < 0.1) return null;
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0.3]}>
+      <planeGeometry args={[3, 3]} />
+      <meshBasicMaterial 
+        color={Math.random() > 0.5 ? "#ff00ff" : "#00ffff"}
+        transparent
+        opacity={0}
+        blending={THREE.AdditiveBlending}
+      />
+    </mesh>
+  );
+}
+
+interface ScrollSceneProps {
+  hoveredText: string | null;
+  onTVClick: () => void;
+  isVideoPlaying: boolean;
+}
+
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSceneProps) {
+  const scroll = useScroll();
   const { camera } = useThree();
+  const [showWorkSection, setShowWorkSection] = useState(false);
+  const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
+  const transitionThreshold = 0.45;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -486,26 +561,83 @@ function CameraController() {
   }, []);
 
   useFrame(() => {
+    const offset = scroll.offset;
+    
+    const startZ = 1.8;
+    const endZ = -0.5;
+    const targetZ = startZ + (endZ - startZ) * Math.min(offset * 2, 1);
+    
+    camera.position.z += (targetZ - camera.position.z) * 0.05;
     camera.position.x += (targetPosition.current.x - camera.position.x) * 0.02;
     camera.position.y += (-targetPosition.current.y + 0.55 - camera.position.y) * 0.02;
-    camera.lookAt(0, 0.2, 0);
+    
+    if (offset < transitionThreshold) {
+      camera.lookAt(0, 0.2, 0);
+    } else {
+      const lookZ = (offset - transitionThreshold) * -30;
+      camera.lookAt(0, 1, lookZ);
+    }
+    
+    const glitchProgress = Math.max(0, Math.min(1, (offset - 0.2) / 0.3));
+    setGlitchIntensity(glitchProgress);
+    
+    setShowWorkSection(offset > transitionThreshold);
   });
 
-  return null;
-}
-
-function TiledFloor() {
-  const tileTexture = useTileTexture();
-
   return (
-    <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[30, 30]} />
-      <meshStandardMaterial 
-        map={tileTexture}
-        roughness={0.85}
-        metalness={0.05}
+    <>
+      <color attach="background" args={[showWorkSection ? "#030308" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection ? "#030308" : "#050403", 3, showWorkSection ? 50 : 12]} />
+      
+      <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
+
+      <spotLight
+        position={[0, 3.5, 1.5]}
+        angle={0.35}
+        penumbra={0.7}
+        intensity={showWorkSection ? 5 : 15}
+        color="#fff8f0"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-bias={-0.0001}
       />
-    </mesh>
+
+      <spotLight
+        position={[-1.5, 2, 2]}
+        angle={0.5}
+        penumbra={0.9}
+        intensity={showWorkSection ? 1 : 3}
+        color="#aab8cc"
+      />
+
+      <Environment preset="night" background={false} />
+      
+      <TiledFloor visible={!showWorkSection} />
+
+      {!showWorkSection && (
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.6}
+          scale={10}
+          blur={2}
+          far={4}
+          color="#000000"
+        />
+      )}
+      
+      <VintageTV
+        hoveredText={hoveredText}
+        onClick={onTVClick}
+        isVideoPlaying={isVideoPlaying}
+        visible={!showWorkSection}
+        glitchIntensity={glitchIntensity}
+      />
+
+      <GlitchOverlay intensity={glitchIntensity} />
+
+      <WorkSection visible={showWorkSection} />
+    </>
   );
 }
 
@@ -523,53 +655,14 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying }: Scene3DProps
         }}
         dpr={[1, 2]}
       >
-        <color attach="background" args={["#050403"]} />
-        <fog attach="fog" args={["#050403", 3, 12]} />
-        
-        <ambientLight intensity={0.08} color="#1a1820" />
-
-        <spotLight
-          position={[0, 3.5, 1.5]}
-          angle={0.35}
-          penumbra={0.7}
-          intensity={15}
-          color="#fff8f0"
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-bias={-0.0001}
-          target-position={[0, 0, 0]}
-        />
-
-        <spotLight
-          position={[-1.5, 2, 2]}
-          angle={0.5}
-          penumbra={0.9}
-          intensity={3}
-          color="#aab8cc"
-        />
-
         <Suspense fallback={null}>
-          <Environment preset="night" background={false} />
-          
-          <TiledFloor />
-
-          <ContactShadows
-            position={[0, 0, 0]}
-            opacity={0.6}
-            scale={10}
-            blur={2}
-            far={4}
-            color="#000000"
-          />
-          
-          <VintageTV
-            hoveredText={hoveredText}
-            onClick={onTVClick}
-            isVideoPlaying={isVideoPlaying}
-          />
-          
-          <CameraController />
+          <ScrollControls pages={2} damping={0.2}>
+            <ScrollSceneContent
+              hoveredText={hoveredText}
+              onTVClick={onTVClick}
+              isVideoPlaying={isVideoPlaying}
+            />
+          </ScrollControls>
         </Suspense>
       </Canvas>
     </div>
