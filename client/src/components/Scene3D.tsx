@@ -582,14 +582,15 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSc
       targetY = tvScreenY + postProgress * 1.5;
     }
     
-    camera.position.x = 0;
+    const targetX = -0.05;
+    camera.position.x += (targetX - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
     
     if (offset < transitionThreshold) {
-      camera.lookAt(0, tvScreenY, 0);
+      camera.lookAt(targetX, tvScreenY, 0);
     } else {
-      camera.lookAt(0, camera.position.y, camera.position.z - 10);
+      camera.lookAt(targetX, camera.position.y, camera.position.z - 10);
     }
     
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
