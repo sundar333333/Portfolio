@@ -505,53 +505,32 @@ function TiledFloor({ visible }: { visible: boolean }) {
 
 function GlitchOverlay({ intensity }: { intensity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const colorRef = useRef(new THREE.Color("#00ffff"));
-  const targetOpacity = useRef(0);
   
   useFrame((state) => {
-    if (meshRef.current && intensity > 0.05) {
+    if (meshRef.current && intensity > 0.1) {
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = intensity * 0.3 * (0.5 + Math.random() * 0.5);
       
-      const flickerSpeed = intensity * 0.4;
-      const flicker = Math.sin(state.clock.elapsedTime * 20) * 0.5 + 0.5;
-      const baseOpacity = intensity * 0.25 * flicker;
-      
-      targetOpacity.current += (baseOpacity - targetOpacity.current) * 0.15;
-      material.opacity = targetOpacity.current;
-      
-      if (Math.random() < flickerSpeed * 0.5) {
-        const hue = Math.random() > 0.5 ? 0.85 : 0.5;
-        colorRef.current.setHSL(hue, 1, 0.5);
-        material.color.copy(colorRef.current);
-      }
-      
-      const jitterAmount = intensity * intensity * 0.08;
-      if (Math.random() < intensity * 0.4) {
-        meshRef.current.position.x = (Math.random() - 0.5) * jitterAmount;
-        meshRef.current.position.y = (Math.random() - 0.5) * jitterAmount;
+      if (Math.random() < intensity * 0.3) {
+        meshRef.current.position.x = (Math.random() - 0.5) * 0.1;
+        meshRef.current.position.y = (Math.random() - 0.5) * 0.1;
       } else {
-        meshRef.current.position.x *= 0.8;
-        meshRef.current.position.y *= 0.8;
+        meshRef.current.position.x = 0;
+        meshRef.current.position.y = 0;
       }
-    } else if (meshRef.current) {
-      const material = meshRef.current.material as THREE.MeshBasicMaterial;
-      material.opacity *= 0.9;
-      meshRef.current.position.x *= 0.9;
-      meshRef.current.position.y *= 0.9;
     }
   });
 
-  if (intensity < 0.02) return null;
+  if (intensity < 0.1) return null;
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0.3]}>
-      <planeGeometry args={[4, 4]} />
+      <planeGeometry args={[3, 3]} />
       <meshBasicMaterial 
-        color="#00ffff"
+        color={Math.random() > 0.5 ? "#ff00ff" : "#00ffff"}
         transparent
         opacity={0}
         blending={THREE.AdditiveBlending}
-        depthWrite={false}
       />
     </mesh>
   );
@@ -563,24 +542,13 @@ interface ScrollSceneProps {
   isVideoPlaying: boolean;
 }
 
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
-function easeOutQuart(t: number): number {
-  return 1 - Math.pow(1 - t, 4);
-}
-
 function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
-  const [transitionProgress, setTransitionProgress] = useState(0);
+  const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
-  const smoothedProgress = useRef(0);
-  const lookAtY = useRef(0.22);
-  const lookAtZ = useRef(0.3);
-  const transitionThreshold = 0.4;
+  const transitionThreshold = 0.45;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -595,79 +563,47 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSc
   useFrame(() => {
     const offset = scroll.offset;
     
-    smoothedProgress.current += (offset - smoothedProgress.current) * 0.04;
-    const smoothOffset = smoothedProgress.current;
-    
     const startZ = 1.8;
-    const screenZ = 0.15;
-    const endZ = -20;
+    const screenZ = 0.3;
+    const endZ = -15;
     
     let targetZ: number;
     let targetY: number;
-    let targetLookY: number;
-    let targetLookZ: number;
     
-    if (smoothOffset < transitionThreshold) {
-      const progress = easeOutQuart(smoothOffset / transitionThreshold);
+    if (offset < transitionThreshold) {
+      const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = 0.55 - progress * 0.33;
-      targetLookY = 0.22;
-      targetLookZ = 0.3;
+      camera.lookAt(0, 0.22, 0.3);
     } else {
-      const rawProgress = (smoothOffset - transitionThreshold) / (1 - transitionThreshold);
-      const postProgress = easeInOutCubic(rawProgress);
+      const postProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       targetZ = screenZ - (screenZ - endZ) * postProgress;
-      targetY = 0.22 + postProgress * 2;
-      targetLookY = 0.22 + postProgress * 3;
-      targetLookZ = 0.3 - postProgress * 25;
+      targetY = 0.22 + postProgress * 1.5;
+      camera.lookAt(0, 2, targetZ - 10);
     }
     
-    camera.position.z += (targetZ - camera.position.z) * 0.06;
-    camera.position.x += (targetPosition.current.x * (1 - smoothOffset) - camera.position.x) * 0.02;
-    camera.position.y += (-targetPosition.current.y + targetY - camera.position.y) * 0.04;
+    camera.position.z += (targetZ - camera.position.z) * 0.08;
+    camera.position.x += (targetPosition.current.x * (1 - offset) - camera.position.x) * 0.02;
+    camera.position.y += (-targetPosition.current.y + targetY - camera.position.y) * 0.05;
     
-    lookAtY.current += (targetLookY - lookAtY.current) * 0.03;
-    lookAtZ.current += (targetLookZ - lookAtZ.current) * 0.03;
-    camera.lookAt(0, lookAtY.current, lookAtZ.current);
+    const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
+    setGlitchIntensity(glitchProgress);
     
-    const fadeStart = transitionThreshold - 0.08;
-    const fadeEnd = transitionThreshold + 0.08;
-    const fadeProgress = Math.max(0, Math.min(1, (smoothOffset - fadeStart) / (fadeEnd - fadeStart)));
-    const easedFade = easeInOutCubic(fadeProgress);
-    setTransitionProgress(easedFade);
-    
-    const glitchStart = transitionThreshold - 0.15;
-    const glitchEnd = transitionThreshold + 0.1;
-    const glitchRaw = Math.max(0, Math.min(1, (smoothOffset - glitchStart) / (glitchEnd - glitchStart)));
-    const glitchEased = Math.sin(glitchRaw * Math.PI);
-    setGlitchIntensity(glitchEased);
+    setShowWorkSection(offset > transitionThreshold);
   });
-  
-  const showWorkSection = transitionProgress > 0.5;
-  const tvOpacity = 1 - transitionProgress;
-  const workOpacity = transitionProgress;
-
-  const bgR = 0.02 + transitionProgress * 0.005;
-  const bgG = 0.016 + transitionProgress * 0.005;
-  const bgB = 0.012 + transitionProgress * 0.02;
-  
-  const ambientIntensity = 0.08 - transitionProgress * 0.03;
-  const spotIntensity1 = 15 - transitionProgress * 10;
-  const spotIntensity2 = 3 - transitionProgress * 2;
-  const fogFar = 12 + transitionProgress * 38;
 
   return (
     <>
-      <color attach="background" args={[bgR, bgG, bgB]} />
-      <fog attach="fog" args={[new THREE.Color(bgR, bgG, bgB), 3, fogFar]} />
+      <color attach="background" args={[showWorkSection ? "#030308" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection ? "#030308" : "#050403", 3, showWorkSection ? 50 : 12]} />
       
-      <ambientLight intensity={ambientIntensity} color={transitionProgress > 0.5 ? "#1a1a40" : "#1a1820"} />
+      <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
 
       <spotLight
         position={[0, 3.5, 1.5]}
         angle={0.35}
         penumbra={0.7}
-        intensity={spotIntensity1}
+        intensity={showWorkSection ? 5 : 15}
         color="#fff8f0"
         castShadow
         shadow-mapSize-width={2048}
@@ -679,18 +615,18 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSc
         position={[-1.5, 2, 2]}
         angle={0.5}
         penumbra={0.9}
-        intensity={spotIntensity2}
+        intensity={showWorkSection ? 1 : 3}
         color="#aab8cc"
       />
 
       <Environment preset="night" background={false} />
       
-      <TiledFloor visible={tvOpacity > 0.1} />
+      <TiledFloor visible={!showWorkSection} />
 
-      {tvOpacity > 0.1 && (
+      {!showWorkSection && (
         <ContactShadows
           position={[0, 0, 0]}
-          opacity={0.6 * tvOpacity}
+          opacity={0.6}
           scale={10}
           blur={2}
           far={4}
@@ -702,13 +638,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying }: ScrollSc
         hoveredText={hoveredText}
         onClick={onTVClick}
         isVideoPlaying={isVideoPlaying}
-        visible={tvOpacity > 0.05}
+        visible={!showWorkSection}
         glitchIntensity={glitchIntensity}
       />
 
       <GlitchOverlay intensity={glitchIntensity} />
 
-      <WorkSection visible={workOpacity > 0.05} />
+      <WorkSection visible={showWorkSection} />
     </>
   );
 }
@@ -728,7 +664,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying }: Scene3DProps
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={2} damping={0.12}>
+          <ScrollControls pages={2} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}
