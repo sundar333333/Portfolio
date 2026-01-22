@@ -52,20 +52,15 @@ function NoiseDisplay({ position, rotation, size = 1 }: { position: [number, num
 
   return (
     <group position={position} rotation={rotation}>
-      <mesh>
-        <boxGeometry args={[size * 1.02, size * 1.02, 0.05]} />
-        <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.2} />
-      </mesh>
-      
-      <mesh ref={meshRef} position={[0, 0, 0.03]}>
-        <planeGeometry args={[size * 0.95, size * 0.95]} />
+      <mesh ref={meshRef}>
+        <planeGeometry args={[size, size]} />
         <meshBasicMaterial map={noiseTexture} />
       </mesh>
       
-      <mesh position={[0, 0, -0.03]}>
-        <planeGeometry args={[size * 0.95, size * 0.95]} />
-        <meshBasicMaterial color="#0a0a0a" />
-      </mesh>
+      <lineSegments position={[0, 0, 0.01]}>
+        <edgesGeometry args={[new THREE.PlaneGeometry(size, size)]} />
+        <lineBasicMaterial color="#111111" linewidth={1} />
+      </lineSegments>
     </group>
   );
 }
@@ -74,22 +69,20 @@ function CurvedDisplayWall() {
   const displays = useMemo(() => {
     const items: { position: [number, number, number]; rotation: [number, number, number]; size: number }[] = [];
     
-    const curveRadius = 15;
-    const displaySize = 1.8;
-    const gap = 0.1;
-    const totalSize = displaySize + gap;
+    const curveRadius = 8;
+    const displaySize = 1.5;
     
-    const rows = 6;
-    const cols = 12;
-    const angleSpan = Math.PI * 0.8;
+    const rows = 8;
+    const cols = 20;
+    const angleSpan = Math.PI * 1.2;
     const startAngle = -angleSpan / 2;
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         const angle = startAngle + (col / (cols - 1)) * angleSpan;
         const x = Math.sin(angle) * curveRadius;
-        const z = -20 - Math.cos(angle) * curveRadius;
-        const y = row * totalSize - (rows * totalSize) / 2 + totalSize / 2 + 2;
+        const z = -12 - Math.cos(angle) * curveRadius;
+        const y = row * displaySize - (rows * displaySize) / 2 + displaySize / 2 + 1;
         const rotY = -angle;
         
         items.push({
