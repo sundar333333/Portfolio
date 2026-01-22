@@ -72,9 +72,9 @@ function CurvedDisplayWall() {
     const curveRadius = 8;
     const displaySize = 1.5;
     
-    const rows = 8;
-    const cols = 28;
-    const angleSpan = Math.PI * 1.8;
+    const rows = 12;
+    const cols = 20;
+    const angleSpan = Math.PI * 1.2;
     const startAngle = -angleSpan / 2;
     
     for (let row = 0; row < rows; row++) {
@@ -91,6 +91,44 @@ function CurvedDisplayWall() {
           size: displaySize,
         });
       }
+    }
+    
+    const sideRows = 12;
+    const sideDisplaySize = 1.5;
+    for (let row = 0; row < sideRows; row++) {
+      const y = row * sideDisplaySize - (sideRows * sideDisplaySize) / 2 + sideDisplaySize / 2 + 1;
+      
+      items.push({
+        position: [-8, y, -6],
+        rotation: [0, Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
+      items.push({
+        position: [-8, y, -7.5],
+        rotation: [0, Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
+      items.push({
+        position: [-8, y, -9],
+        rotation: [0, Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
+      
+      items.push({
+        position: [8, y, -6],
+        rotation: [0, -Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
+      items.push({
+        position: [8, y, -7.5],
+        rotation: [0, -Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
+      items.push({
+        position: [8, y, -9],
+        rotation: [0, -Math.PI / 2, 0],
+        size: sideDisplaySize,
+      });
     }
     
     return items;
