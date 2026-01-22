@@ -65,70 +65,29 @@ function NoiseDisplay({ position, rotation, size = 1 }: { position: [number, num
   );
 }
 
-function CurvedDisplayWall() {
+function FlatDisplayWall() {
   const displays = useMemo(() => {
     const items: { position: [number, number, number]; rotation: [number, number, number]; size: number }[] = [];
     
-    const curveRadius = 8;
-    const displaySize = 1.5;
+    const displaySize = 1.2;
+    const rows = 10;
+    const cols = 16;
     
-    const rows = 12;
-    const cols = 20;
-    const angleSpan = Math.PI * 1.2;
-    const startAngle = -angleSpan / 2;
+    const totalWidth = cols * displaySize;
+    const totalHeight = rows * displaySize;
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        const angle = startAngle + (col / (cols - 1)) * angleSpan;
-        const x = Math.sin(angle) * curveRadius;
-        const z = -12 - Math.cos(angle) * curveRadius;
-        const y = row * displaySize - (rows * displaySize) / 2 + displaySize / 2 + 1;
-        const rotY = -angle;
+        const x = col * displaySize - totalWidth / 2 + displaySize / 2;
+        const y = row * displaySize - totalHeight / 2 + displaySize / 2 + 1;
+        const z = -10;
         
         items.push({
           position: [x, y, z],
-          rotation: [0, rotY, 0],
+          rotation: [0, 0, 0],
           size: displaySize,
         });
       }
-    }
-    
-    const sideRows = 12;
-    const sideDisplaySize = 1.5;
-    for (let row = 0; row < sideRows; row++) {
-      const y = row * sideDisplaySize - (sideRows * sideDisplaySize) / 2 + sideDisplaySize / 2 + 1;
-      
-      items.push({
-        position: [-8, y, -6],
-        rotation: [0, Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
-      items.push({
-        position: [-8, y, -7.5],
-        rotation: [0, Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
-      items.push({
-        position: [-8, y, -9],
-        rotation: [0, Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
-      
-      items.push({
-        position: [8, y, -6],
-        rotation: [0, -Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
-      items.push({
-        position: [8, y, -7.5],
-        rotation: [0, -Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
-      items.push({
-        position: [8, y, -9],
-        rotation: [0, -Math.PI / 2, 0],
-        size: sideDisplaySize,
-      });
     }
     
     return items;
@@ -153,7 +112,7 @@ export function WorkSection({ visible }: WorkSectionProps) {
 
   return (
     <group position={[0, 0, -5]}>
-      <CurvedDisplayWall />
+      <FlatDisplayWall />
       
       <ambientLight intensity={0.15} color="#ffffff" />
       <pointLight position={[0, 3, -10]} intensity={1} color="#ffffff" distance={30} decay={2} />
