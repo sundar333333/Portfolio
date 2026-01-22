@@ -255,8 +255,6 @@ export function WorkSection({ visible }: WorkSectionProps) {
         color="#ff00ff" 
       />
       
-      <MonitorWall />
-      
       <FloatingParticles />
       
       <ambientLight intensity={0.1} color="#0a0a20" />
