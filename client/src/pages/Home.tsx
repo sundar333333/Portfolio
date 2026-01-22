@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AudioToggle } from "@/components/AudioToggle";
 import { Scene3D } from "@/components/Scene3D";
-import { ProjectInfoOverlay, CaseStudyModal } from "@/components/WorkSection";
+import { ProjectInfoOverlay } from "@/components/WorkSection";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,20 +14,11 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showWorkSection, setShowWorkSection] = useState(false);
-  const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
   const handleWorkSectionChange = useCallback((visible: boolean) => {
     setShowWorkSection(visible);
-  }, []);
-
-  const handleOpenCaseStudy = useCallback(() => {
-    setIsCaseStudyOpen(true);
-  }, []);
-
-  const handleCloseCaseStudy = useCallback(() => {
-    setIsCaseStudyOpen(false);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -67,12 +58,9 @@ export default function Home() {
             onTVClick={handleTVClick}
             isVideoPlaying={isVideoPlaying}
             onWorkSectionChange={handleWorkSectionChange}
-            onOpenCaseStudy={handleOpenCaseStudy}
           />
           
           <ProjectInfoOverlay visible={showWorkSection} />
-          
-          <CaseStudyModal isOpen={isCaseStudyOpen} onClose={handleCloseCaseStudy} />
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
