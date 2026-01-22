@@ -9,6 +9,7 @@ interface Scene3DProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
+  onOpenCaseStudy?: () => void;
 }
 
 function useStaticTexture() {
@@ -542,9 +543,10 @@ interface ScrollSceneProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
+  onOpenCaseStudy?: () => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onOpenCaseStudy }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
@@ -655,12 +657,12 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
       <GlitchOverlay intensity={glitchIntensity} />
 
-      <WorkSection visible={showWorkSection} />
+      <WorkSection visible={showWorkSection} onOpenCaseStudy={onOpenCaseStudy} />
     </>
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onOpenCaseStudy }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -681,6 +683,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
               onTVClick={onTVClick}
               isVideoPlaying={isVideoPlaying}
               onWorkSectionChange={onWorkSectionChange}
+              onOpenCaseStudy={onOpenCaseStudy}
             />
           </ScrollControls>
         </Suspense>

@@ -1,14 +1,13 @@
 import { useRef, useMemo, useState } from "react";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { TextureLoader } from "three";
-import posterImage from "@assets/Tabloid_-_2_1769105145589.png";
 
 interface WorkSectionProps {
   visible: boolean;
+  onOpenCaseStudy?: () => void;
 }
 
-const FIGMA_CASE_STUDY_URL = "https://www.figma.com/design/6D1cHJn9cNle6SrkOGKiwb/Untitled?node-id=7-21388&t=sTXlqiMvFTKS7ZVR-1";
+const FIGMA_CASE_STUDY_URL = "https://www.figma.com/proto/6D1cHJn9cNle6SrkOGKiwb/Untitled?page-id=0%3A1&node-id=7-21388&viewport=-2836%2C166%2C0.05&t=0nqb9yoqrLCZxWQt-1&scaling=min-zoom&content-scaling=fixed";
 
 function NeonGrid({ position, rotation, color }: { position: [number, number, number]; rotation: [number, number, number]; color: string }) {
   const gridRef = useRef<THREE.Mesh>(null);
@@ -247,7 +246,108 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
   const glassRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   
-  const texture = useLoader(TextureLoader, posterImage);
+  const posterTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 640;
+    const ctx = canvas.getContext("2d")!;
+    
+    const gradient = ctx.createLinearGradient(0, 0, 1024, 640);
+    gradient.addColorStop(0, "#667eea");
+    gradient.addColorStop(0.5, "#764ba2");
+    gradient.addColorStop(1, "#f093fb");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1024, 640);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+    for (let i = 0; i < 20; i++) {
+      const x = Math.random() * 1024;
+      const y = Math.random() * 640;
+      const r = Math.random() * 150 + 50;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.beginPath();
+    ctx.moveTo(0, 640);
+    ctx.lineTo(400, 640);
+    ctx.lineTo(600, 400);
+    ctx.lineTo(200, 400);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 72px 'Inter', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Current", 60, 120);
+    
+    ctx.font = "300 36px 'Inter', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillText("Mobile Payment App", 60, 170);
+    
+    ctx.font = "bold 160px 'Inter', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.fillText("$", 750, 550);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.beginPath();
+    ctx.roundRect(60, 220, 180, 50, 25);
+    ctx.fill();
+    
+    ctx.fillStyle = "#667eea";
+    ctx.font = "600 18px 'Inter', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("VIEW CASE STUDY", 150, 252);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.font = "14px 'Inter', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("40+ Screens  •  UI/UX Design  •  Fintech", 60, 560);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.beginPath();
+    ctx.roundRect(700, 80, 260, 460, 30);
+    ctx.fill();
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.roundRect(720, 100, 220, 420, 20);
+    ctx.fill();
+    
+    ctx.fillStyle = "#667eea";
+    ctx.beginPath();
+    ctx.roundRect(740, 120, 180, 60, 10);
+    ctx.fill();
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 24px 'Inter', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Current", 830, 160);
+    
+    ctx.fillStyle = "#f0f0f0";
+    ctx.beginPath();
+    ctx.roundRect(740, 200, 180, 100, 10);
+    ctx.fill();
+    
+    ctx.fillStyle = "#333";
+    ctx.font = "14px 'Inter', sans-serif";
+    ctx.fillText("Your Balance", 830, 230);
+    ctx.font = "bold 28px 'Inter', sans-serif";
+    ctx.fillText("$10,800", 830, 270);
+    
+    ctx.fillStyle = "#e0e0e0";
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.roundRect(740, 320 + i * 60, 180, 50, 8);
+      ctx.fill();
+    }
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
 
   useFrame((state) => {
     if (posterRef.current) {
@@ -281,7 +381,7 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
       
       <mesh position={[0, 0, 0.01]}>
         <planeGeometry args={[6, 3.8]} />
-        <meshBasicMaterial map={texture} />
+        <meshBasicMaterial map={posterTexture} />
       </mesh>
       
       <mesh ref={glassRef} position={[0, 0, 0.06]}>
@@ -328,9 +428,9 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
   );
 }
 
-export function WorkSection({ visible }: WorkSectionProps) {
+export function WorkSection({ visible, onOpenCaseStudy }: WorkSectionProps) {
   const handlePosterClick = () => {
-    window.open(FIGMA_CASE_STUDY_URL, "_blank");
+    onOpenCaseStudy?.();
   };
 
   if (!visible) return null;
@@ -384,6 +484,44 @@ export function ProjectInfoOverlay({ visible }: { visible: boolean }) {
             {tag}
           </span>
         ))}
+      </div>
+    </div>
+  );
+}
+
+export function CaseStudyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  if (!isOpen) return null;
+  
+  const caseStudyUrl = "https://www.figma.com/proto/6D1cHJn9cNle6SrkOGKiwb/Untitled?page-id=0%3A1&node-id=7-21388&viewport=-2836%2C166%2C0.05&t=0nqb9yoqrLCZxWQt-1&scaling=min-zoom&content-scaling=fixed&embed-host=share";
+  
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      onClick={onClose}
+      data-testid="case-study-modal-backdrop"
+    >
+      <div 
+        className="relative w-[95vw] h-[90vh] bg-black rounded-lg overflow-hidden border border-white/20"
+        onClick={(e) => e.stopPropagation()}
+        data-testid="case-study-modal-content"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20"
+          data-testid="button-close-modal"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+        
+        <iframe
+          src={caseStudyUrl}
+          className="w-full h-full"
+          title="Case Study"
+          allowFullScreen
+          data-testid="case-study-iframe"
+        />
       </div>
     </div>
   );
