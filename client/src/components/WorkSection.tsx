@@ -73,8 +73,8 @@ function CurvedDisplayWall() {
     const displaySize = 1.5;
     
     const rows = 8;
-    const cols = 20;
-    const angleSpan = Math.PI * 1.2;
+    const cols = 28;
+    const angleSpan = Math.PI * 1.8;
     const startAngle = -angleSpan / 2;
     
     for (let row = 0; row < rows; row++) {
