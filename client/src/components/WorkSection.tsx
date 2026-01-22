@@ -1,10 +1,14 @@
-import { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useState } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
+import { TextureLoader } from "three";
+import posterImage from "@assets/Tabloid_-_2_1769105145589.png";
 
 interface WorkSectionProps {
   visible: boolean;
 }
+
+const FIGMA_CASE_STUDY_URL = "https://www.figma.com/design/6D1cHJn9cNle6SrkOGKiwb/Untitled?node-id=7-21388&t=sTXlqiMvFTKS7ZVR-1";
 
 function NeonGrid({ position, rotation, color }: { position: [number, number, number]; rotation: [number, number, number]; color: string }) {
   const gridRef = useRef<THREE.Mesh>(null);
@@ -238,7 +242,97 @@ function FloatingParticles() {
   );
 }
 
+function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
+  const posterRef = useRef<THREE.Group>(null);
+  const glassRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  
+  const texture = useLoader(TextureLoader, posterImage);
+
+  useFrame((state) => {
+    if (posterRef.current) {
+      posterRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
+      posterRef.current.position.y = 2 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+    }
+    if (glassRef.current) {
+      const material = glassRef.current.material as THREE.MeshPhysicalMaterial;
+      material.opacity = hovered ? 0.25 : 0.15;
+    }
+  });
+
+  return (
+    <group 
+      ref={posterRef} 
+      position={[0, 2, -12]}
+      onClick={onPosterClick}
+      onPointerOver={() => {
+        setHovered(true);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        setHovered(false);
+        document.body.style.cursor = "default";
+      }}
+    >
+      <mesh position={[0, 0, -0.05]}>
+        <boxGeometry args={[6.5, 4.2, 0.1]} />
+        <meshStandardMaterial color="#0a0a0a" metalness={0.9} roughness={0.2} />
+      </mesh>
+      
+      <mesh position={[0, 0, 0.01]}>
+        <planeGeometry args={[6, 3.8]} />
+        <meshBasicMaterial map={texture} />
+      </mesh>
+      
+      <mesh ref={glassRef} position={[0, 0, 0.06]}>
+        <planeGeometry args={[6.2, 4]} />
+        <meshPhysicalMaterial 
+          color="#ffffff"
+          transparent
+          opacity={0.15}
+          roughness={0.1}
+          metalness={0.1}
+          clearcoat={1}
+          clearcoatRoughness={0.1}
+          reflectivity={1}
+          envMapIntensity={1}
+        />
+      </mesh>
+      
+      <mesh position={[0, 0, 0.07]}>
+        <planeGeometry args={[6.3, 4.1]} />
+        <meshBasicMaterial 
+          color={hovered ? "#00ffff" : "#ffffff"} 
+          transparent 
+          opacity={hovered ? 0.15 : 0.05} 
+        />
+      </mesh>
+      
+      <pointLight 
+        position={[0, 0, 2]} 
+        intensity={hovered ? 3 : 1} 
+        color="#00ffff" 
+        distance={8} 
+        decay={2} 
+      />
+      
+      {[-3.3, 3.3].map((x) => (
+        [-2.1, 2.1].map((y) => (
+          <mesh key={`${x}-${y}`} position={[x, y, 0]}>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial color="#333333" metalness={0.9} roughness={0.3} />
+          </mesh>
+        ))
+      ))}
+    </group>
+  );
+}
+
 export function WorkSection({ visible }: WorkSectionProps) {
+  const handlePosterClick = () => {
+    window.open(FIGMA_CASE_STUDY_URL, "_blank");
+  };
+
   if (!visible) return null;
 
   return (
@@ -255,6 +349,8 @@ export function WorkSection({ visible }: WorkSectionProps) {
         color="#ff00ff" 
       />
       
+      <GlassyPoster onPosterClick={handlePosterClick} />
+      
       <FloatingParticles />
       
       <ambientLight intensity={0.1} color="#0a0a20" />
@@ -262,5 +358,33 @@ export function WorkSection({ visible }: WorkSectionProps) {
       <pointLight position={[-10, 3, -20]} intensity={1} color="#ff00ff" distance={20} decay={2} />
       <pointLight position={[10, 3, -20]} intensity={1} color="#ff6600" distance={20} decay={2} />
     </group>
+  );
+}
+
+export function ProjectInfoOverlay({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  
+  return (
+    <div 
+      className="fixed bottom-8 left-8 z-50 pointer-events-none"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
+      <div className="text-white/60 text-sm tracking-widest mb-1">
+        CURRENT MOBILE PAYMENT APPLICATION
+      </div>
+      <div className="text-white text-2xl font-bold tracking-wide">
+        PAYMENT APPLICATION
+      </div>
+      <div className="flex gap-2 mt-3">
+        {["fintech", "mobile", "ui/ux", "figma"].map((tag) => (
+          <span 
+            key={tag}
+            className="px-3 py-1 border border-white/30 text-white/70 text-xs uppercase tracking-wider"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
