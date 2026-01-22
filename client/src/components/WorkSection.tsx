@@ -1,13 +1,13 @@
-import { useRef, useMemo, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useState, useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import posterImage from "@assets/Payment_Mobile_Application_1769106866544.png";
 
 interface WorkSectionProps {
   visible: boolean;
   onOpenCaseStudy?: () => void;
 }
-
-const FIGMA_CASE_STUDY_URL = "https://www.figma.com/proto/6D1cHJn9cNle6SrkOGKiwb/Untitled?page-id=0%3A1&node-id=7-21388&viewport=-2836%2C166%2C0.05&t=0nqb9yoqrLCZxWQt-1&scaling=min-zoom&content-scaling=fixed";
 
 function NeonGrid({ position, rotation, color }: { position: [number, number, number]; rotation: [number, number, number]; color: string }) {
   const gridRef = useRef<THREE.Mesh>(null);
@@ -67,140 +67,22 @@ function NeonGrid({ position, rotation, color }: { position: [number, number, nu
   );
 }
 
-function Monitor({ position, rotation, projectIndex }: { position: [number, number, number]; rotation: [number, number, number]; projectIndex: number }) {
-  const monitorRef = useRef<THREE.Group>(null);
-  const screenRef = useRef<THREE.Mesh>(null);
-
-  const colors = ["#ff00ff", "#00ffff", "#ff6600", "#00ff66", "#6600ff", "#ffff00"];
-  const color = colors[projectIndex % colors.length];
-
-  const screenTexture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 192;
-    const ctx = canvas.getContext("2d")!;
-    
-    const gradient = ctx.createLinearGradient(0, 0, 256, 192);
-    gradient.addColorStop(0, "#0a0a0a");
-    gradient.addColorStop(1, "#1a1a1a");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 256, 192);
-    
-    for (let y = 0; y < 192; y += 2) {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-      ctx.fillRect(0, y, 256, 1);
-    }
-    
-    ctx.fillStyle = color;
-    ctx.font = "bold 24px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(`PROJECT ${projectIndex + 1}`, 128, 100);
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    return tex;
-  }, [color, projectIndex]);
-
-  useFrame((state) => {
-    if (monitorRef.current) {
-      monitorRef.current.position.y += Math.sin(state.clock.elapsedTime * 0.5 + projectIndex) * 0.001;
-    }
-    if (screenRef.current) {
-      const material = screenRef.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.8 + Math.sin(state.clock.elapsedTime * 3 + projectIndex * 0.5) * 0.2;
-    }
-  });
-
-  return (
-    <group ref={monitorRef} position={position} rotation={rotation}>
-      <mesh>
-        <boxGeometry args={[2.2, 1.7, 0.15]} />
-        <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.3} />
-      </mesh>
-      
-      <mesh ref={screenRef} position={[0, 0, 0.08]}>
-        <planeGeometry args={[2, 1.5]} />
-        <meshBasicMaterial map={screenTexture} transparent opacity={0.9} />
-      </mesh>
-      
-      <mesh position={[0, 0, 0.09]}>
-        <planeGeometry args={[2.02, 1.52]} />
-        <meshBasicMaterial color={color} transparent opacity={0.05} />
-      </mesh>
-      
-      <pointLight position={[0, 0, 0.5]} intensity={0.5} color={color} distance={3} decay={2} />
-    </group>
-  );
-}
-
-function MonitorWall() {
-  const monitors = useMemo(() => {
-    const items: { position: [number, number, number]; rotation: [number, number, number]; index: number }[] = [];
-    
-    const curveRadius = 12;
-    const numMonitors = 7;
-    const angleSpan = Math.PI * 0.6;
-    const startAngle = -angleSpan / 2;
-    
-    for (let i = 0; i < numMonitors; i++) {
-      const angle = startAngle + (i / (numMonitors - 1)) * angleSpan;
-      const x = Math.sin(angle) * curveRadius;
-      const z = -20 - Math.cos(angle) * curveRadius;
-      const y = (i % 2 === 0) ? 1 : 2.5;
-      const rotY = -angle;
-      
-      items.push({
-        position: [x, y, z],
-        rotation: [0, rotY, 0],
-        index: i,
-      });
-    }
-    
-    for (let i = 0; i < 5; i++) {
-      const angle = startAngle + ((i + 0.5) / (numMonitors - 1)) * angleSpan;
-      const x = Math.sin(angle) * (curveRadius + 3);
-      const z = -24 - Math.cos(angle) * curveRadius;
-      const y = 4;
-      const rotY = -angle;
-      
-      items.push({
-        position: [x, y, z],
-        rotation: [0, rotY, 0],
-        index: i + numMonitors,
-      });
-    }
-    
-    return items;
-  }, []);
-
-  return (
-    <group>
-      {monitors.map((monitor, i) => (
-        <Monitor
-          key={i}
-          position={monitor.position}
-          rotation={monitor.rotation}
-          projectIndex={monitor.index}
-        />
-      ))}
-    </group>
-  );
-}
-
 function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null);
   
   const { positions, colors } = useMemo(() => {
-    const count = 200;
+    const count = 300;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 40;
-      positions[i * 3 + 1] = Math.random() * 10;
-      positions[i * 3 + 2] = -10 - Math.random() * 30;
+      positions[i * 3] = (Math.random() - 0.5) * 50;
+      positions[i * 3 + 1] = Math.random() * 15 - 2;
+      positions[i * 3 + 2] = -5 - Math.random() * 35;
       
       const color = new THREE.Color();
-      color.setHSL(Math.random() * 0.3 + 0.5, 1, 0.5);
+      const hue = Math.random() > 0.5 ? 0.8 + Math.random() * 0.1 : 0.75 + Math.random() * 0.05;
+      color.setHSL(hue, 0.8, 0.6);
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
@@ -211,10 +93,11 @@ function FloatingParticles() {
 
   useFrame((state) => {
     if (particlesRef.current) {
-      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.02;
+      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.015;
       const posArray = particlesRef.current.geometry.attributes.position.array as Float32Array;
       for (let i = 0; i < posArray.length / 3; i++) {
-        posArray[i * 3 + 1] += Math.sin(state.clock.elapsedTime + i) * 0.002;
+        posArray[i * 3 + 1] += Math.sin(state.clock.elapsedTime * 0.5 + i * 0.1) * 0.003;
+        posArray[i * 3] += Math.cos(state.clock.elapsedTime * 0.3 + i * 0.05) * 0.001;
       }
       particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
@@ -236,8 +119,75 @@ function FloatingParticles() {
           itemSize={3}
         />
       </bufferGeometry>
-      <pointsMaterial size={0.1} vertexColors transparent opacity={0.8} />
+      <pointsMaterial size={0.08} vertexColors transparent opacity={0.9} />
     </points>
+  );
+}
+
+function ColorOrbs() {
+  const orbsRef = useRef<THREE.Group>(null);
+  
+  const orbs = useMemo(() => [
+    { position: [-8, 3, -18], color: "#a855f7", size: 3, speed: 0.3 },
+    { position: [10, 5, -22], color: "#ec4899", size: 4, speed: 0.2 },
+    { position: [-5, -1, -15], color: "#8b5cf6", size: 2.5, speed: 0.4 },
+    { position: [7, 1, -14], color: "#d946ef", size: 2, speed: 0.35 },
+    { position: [0, 6, -25], color: "#c084fc", size: 5, speed: 0.15 },
+    { position: [-12, 4, -20], color: "#f472b6", size: 3.5, speed: 0.25 },
+  ], []);
+
+  useFrame((state) => {
+    if (orbsRef.current) {
+      orbsRef.current.children.forEach((orb, i) => {
+        const orbData = orbs[i];
+        orb.position.y = orbData.position[1] + Math.sin(state.clock.elapsedTime * orbData.speed + i) * 1.5;
+        orb.position.x = orbData.position[0] + Math.cos(state.clock.elapsedTime * orbData.speed * 0.5 + i) * 1;
+      });
+    }
+  });
+
+  return (
+    <group ref={orbsRef}>
+      {orbs.map((orb, i) => (
+        <mesh key={i} position={orb.position as [number, number, number]}>
+          <sphereGeometry args={[orb.size, 32, 32]} />
+          <meshBasicMaterial 
+            color={orb.color} 
+            transparent 
+            opacity={0.15} 
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function GlowRings() {
+  const ringsRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (ringsRef.current) {
+      ringsRef.current.rotation.z = state.clock.elapsedTime * 0.1;
+      ringsRef.current.children.forEach((ring, i) => {
+        ring.rotation.x = state.clock.elapsedTime * 0.05 * (i + 1);
+        ring.rotation.y = state.clock.elapsedTime * 0.03 * (i + 1);
+      });
+    }
+  });
+
+  return (
+    <group ref={ringsRef} position={[0, 2, -16]}>
+      {[6, 8, 10].map((radius, i) => (
+        <mesh key={i} rotation={[Math.PI / 2 + i * 0.3, 0, 0]}>
+          <torusGeometry args={[radius, 0.02, 16, 100]} />
+          <meshBasicMaterial 
+            color={i === 0 ? "#a855f7" : i === 1 ? "#ec4899" : "#8b5cf6"} 
+            transparent 
+            opacity={0.3 - i * 0.08} 
+          />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -245,120 +195,68 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
   const posterRef = useRef<THREE.Group>(null);
   const glassRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [gyro, setGyro] = useState({ x: 0, y: 0 });
+  const { viewport } = useThree();
   
-  const posterTexture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 640;
-    const ctx = canvas.getContext("2d")!;
+  const texture = useTexture(posterImage);
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setMousePos({ x, y });
+    };
     
-    const gradient = ctx.createLinearGradient(0, 0, 1024, 640);
-    gradient.addColorStop(0, "#667eea");
-    gradient.addColorStop(0.5, "#764ba2");
-    gradient.addColorStop(1, "#f093fb");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 640);
+    const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma !== null && e.beta !== null) {
+        setGyro({
+          x: (e.gamma / 45) * 0.3,
+          y: ((e.beta - 45) / 45) * 0.3,
+        });
+      }
+    };
     
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-    for (let i = 0; i < 20; i++) {
-      const x = Math.random() * 1024;
-      const y = Math.random() * 640;
-      const r = Math.random() * 150 + 50;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("deviceorientation", handleDeviceOrientation);
     
-    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-    ctx.beginPath();
-    ctx.moveTo(0, 640);
-    ctx.lineTo(400, 640);
-    ctx.lineTo(600, 400);
-    ctx.lineTo(200, 400);
-    ctx.closePath();
-    ctx.fill();
-    
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 72px 'Inter', sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("Current", 60, 120);
-    
-    ctx.font = "300 36px 'Inter', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.fillText("Mobile Payment App", 60, 170);
-    
-    ctx.font = "bold 160px 'Inter', sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.fillText("$", 750, 550);
-    
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.beginPath();
-    ctx.roundRect(60, 220, 180, 50, 25);
-    ctx.fill();
-    
-    ctx.fillStyle = "#667eea";
-    ctx.font = "600 18px 'Inter', sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("VIEW CASE STUDY", 150, 252);
-    
-    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-    ctx.font = "14px 'Inter', sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("40+ Screens  •  UI/UX Design  •  Fintech", 60, 560);
-    
-    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.beginPath();
-    ctx.roundRect(700, 80, 260, 460, 30);
-    ctx.fill();
-    
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.roundRect(720, 100, 220, 420, 20);
-    ctx.fill();
-    
-    ctx.fillStyle = "#667eea";
-    ctx.beginPath();
-    ctx.roundRect(740, 120, 180, 60, 10);
-    ctx.fill();
-    
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px 'Inter', sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Current", 830, 160);
-    
-    ctx.fillStyle = "#f0f0f0";
-    ctx.beginPath();
-    ctx.roundRect(740, 200, 180, 100, 10);
-    ctx.fill();
-    
-    ctx.fillStyle = "#333";
-    ctx.font = "14px 'Inter', sans-serif";
-    ctx.fillText("Your Balance", 830, 230);
-    ctx.font = "bold 28px 'Inter', sans-serif";
-    ctx.fillText("$10,800", 830, 270);
-    
-    ctx.fillStyle = "#e0e0e0";
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      ctx.roundRect(740, 320 + i * 60, 180, 50, 8);
-      ctx.fill();
-    }
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    return tex;
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("deviceorientation", handleDeviceOrientation);
+    };
   }, []);
 
   useFrame((state) => {
     if (posterRef.current) {
-      posterRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
-      posterRef.current.position.y = 2 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      const targetRotY = (mousePos.x * 0.15 + gyro.x) * (hovered ? 1.5 : 1);
+      const targetRotX = (-mousePos.y * 0.1 + gyro.y) * (hovered ? 1.5 : 1);
+      
+      posterRef.current.rotation.y = THREE.MathUtils.lerp(
+        posterRef.current.rotation.y,
+        targetRotY,
+        0.05
+      );
+      posterRef.current.rotation.x = THREE.MathUtils.lerp(
+        posterRef.current.rotation.x,
+        targetRotX,
+        0.05
+      );
+      
+      posterRef.current.position.y = 2 + Math.sin(state.clock.elapsedTime * 0.5) * 0.15;
+      
+      const targetScale = hovered ? 1.08 : 1;
+      posterRef.current.scale.x = THREE.MathUtils.lerp(posterRef.current.scale.x, targetScale, 0.1);
+      posterRef.current.scale.y = THREE.MathUtils.lerp(posterRef.current.scale.y, targetScale, 0.1);
     }
     if (glassRef.current) {
       const material = glassRef.current.material as THREE.MeshPhysicalMaterial;
-      material.opacity = hovered ? 0.25 : 0.15;
+      material.opacity = hovered ? 0.25 : 0.12;
     }
   });
+
+  const aspectRatio = 9 / 16;
+  const posterHeight = 5;
+  const posterWidth = posterHeight * aspectRatio;
 
   return (
     <group 
@@ -374,55 +272,84 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
         document.body.style.cursor = "default";
       }}
     >
-      <mesh position={[0, 0, -0.05]}>
-        <boxGeometry args={[6.5, 4.2, 0.1]} />
-        <meshStandardMaterial color="#0a0a0a" metalness={0.9} roughness={0.2} />
-      </mesh>
-      
-      <mesh position={[0, 0, 0.01]}>
-        <planeGeometry args={[6, 3.8]} />
-        <meshBasicMaterial map={posterTexture} />
-      </mesh>
-      
-      <mesh ref={glassRef} position={[0, 0, 0.06]}>
-        <planeGeometry args={[6.2, 4]} />
-        <meshPhysicalMaterial 
-          color="#ffffff"
-          transparent
-          opacity={0.15}
-          roughness={0.1}
-          metalness={0.1}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          reflectivity={1}
-          envMapIntensity={1}
+      <mesh position={[0, 0, -0.08]}>
+        <boxGeometry args={[posterWidth + 0.3, posterHeight + 0.3, 0.12]} />
+        <meshStandardMaterial 
+          color="#1a1a2e" 
+          metalness={0.95} 
+          roughness={0.15}
+          emissive="#2a1a4a"
+          emissiveIntensity={0.1}
         />
       </mesh>
       
-      <mesh position={[0, 0, 0.07]}>
-        <planeGeometry args={[6.3, 4.1]} />
+      <mesh position={[0, 0, 0.01]}>
+        <planeGeometry args={[posterWidth, posterHeight]} />
+        <meshBasicMaterial map={texture} />
+      </mesh>
+      
+      <mesh ref={glassRef} position={[0, 0, 0.08]}>
+        <planeGeometry args={[posterWidth + 0.15, posterHeight + 0.15]} />
+        <meshPhysicalMaterial 
+          color="#ffffff"
+          transparent
+          opacity={0.12}
+          roughness={0.05}
+          metalness={0.1}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+          reflectivity={1}
+          envMapIntensity={2}
+        />
+      </mesh>
+      
+      <mesh position={[0, 0, 0.1]}>
+        <planeGeometry args={[posterWidth + 0.2, posterHeight + 0.2]} />
         <meshBasicMaterial 
-          color={hovered ? "#00ffff" : "#ffffff"} 
+          color={hovered ? "#a855f7" : "#8b5cf6"} 
           transparent 
-          opacity={hovered ? 0.15 : 0.05} 
+          opacity={hovered ? 0.2 : 0.08} 
         />
       </mesh>
       
       <pointLight 
-        position={[0, 0, 2]} 
-        intensity={hovered ? 3 : 1} 
-        color="#00ffff" 
+        position={[0, 0, 3]} 
+        intensity={hovered ? 4 : 1.5} 
+        color="#a855f7" 
+        distance={10} 
+        decay={2} 
+      />
+      <pointLight 
+        position={[-2, 2, 2]} 
+        intensity={hovered ? 2 : 0.8} 
+        color="#ec4899" 
+        distance={8} 
+        decay={2} 
+      />
+      <pointLight 
+        position={[2, -2, 2]} 
+        intensity={hovered ? 2 : 0.8} 
+        color="#8b5cf6" 
         distance={8} 
         decay={2} 
       />
       
-      {[-3.3, 3.3].map((x) => (
-        [-2.1, 2.1].map((y) => (
-          <mesh key={`${x}-${y}`} position={[x, y, 0]}>
-            <sphereGeometry args={[0.08, 16, 16]} />
-            <meshStandardMaterial color="#333333" metalness={0.9} roughness={0.3} />
-          </mesh>
-        ))
+      {[
+        [-posterWidth/2 - 0.15, -posterHeight/2 - 0.15],
+        [-posterWidth/2 - 0.15, posterHeight/2 + 0.15],
+        [posterWidth/2 + 0.15, -posterHeight/2 - 0.15],
+        [posterWidth/2 + 0.15, posterHeight/2 + 0.15],
+      ].map(([x, y], i) => (
+        <mesh key={i} position={[x, y, 0.02]}>
+          <sphereGeometry args={[0.06, 16, 16]} />
+          <meshStandardMaterial 
+            color="#c084fc" 
+            metalness={0.95} 
+            roughness={0.1}
+            emissive="#a855f7"
+            emissiveIntensity={hovered ? 0.5 : 0.2}
+          />
+        </mesh>
       ))}
     </group>
   );
@@ -440,23 +367,27 @@ export function WorkSection({ visible, onOpenCaseStudy }: WorkSectionProps) {
       <NeonGrid 
         position={[0, -1, -15]} 
         rotation={[-Math.PI / 2, 0, 0]} 
-        color="#00ffff" 
+        color="#a855f7" 
       />
       
       <NeonGrid 
         position={[0, 8, -15]} 
         rotation={[Math.PI / 2, 0, 0]} 
-        color="#ff00ff" 
+        color="#ec4899" 
       />
+      
+      <ColorOrbs />
+      <GlowRings />
       
       <GlassyPoster onPosterClick={handlePosterClick} />
       
       <FloatingParticles />
       
-      <ambientLight intensity={0.1} color="#0a0a20" />
-      <pointLight position={[0, 5, -15]} intensity={2} color="#00ffff" distance={30} decay={2} />
-      <pointLight position={[-10, 3, -20]} intensity={1} color="#ff00ff" distance={20} decay={2} />
-      <pointLight position={[10, 3, -20]} intensity={1} color="#ff6600" distance={20} decay={2} />
+      <ambientLight intensity={0.08} color="#1a0a2e" />
+      <pointLight position={[0, 5, -15]} intensity={2.5} color="#a855f7" distance={35} decay={2} />
+      <pointLight position={[-12, 3, -20]} intensity={1.5} color="#ec4899" distance={25} decay={2} />
+      <pointLight position={[12, 3, -20]} intensity={1.5} color="#8b5cf6" distance={25} decay={2} />
+      <pointLight position={[0, -2, -10]} intensity={1} color="#c084fc" distance={20} decay={2} />
     </group>
   );
 }
@@ -490,39 +421,181 @@ export function ProjectInfoOverlay({ visible }: { visible: boolean }) {
 }
 
 export function CaseStudyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
   if (!isOpen) return null;
   
-  const caseStudyUrl = "https://www.figma.com/proto/6D1cHJn9cNle6SrkOGKiwb/Untitled?page-id=0%3A1&node-id=7-21388&viewport=-2836%2C166%2C0.05&t=0nqb9yoqrLCZxWQt-1&scaling=min-zoom&content-scaling=fixed&embed-host=share";
-  
+  const slides = [
+    {
+      title: "Current - Mobile Payment App",
+      subtitle: "UI/UX Case Study",
+      description: "A modern fintech application designed to simplify money transfers and financial management for the digital generation.",
+      stats: ["40+ Screens", "3 Months", "Figma"],
+    },
+    {
+      title: "Problem Statement",
+      description: "Users struggle with complex payment interfaces that lack intuitive navigation and clear visual hierarchy, leading to transaction errors and frustration.",
+      points: [
+        "Confusing navigation patterns",
+        "Lack of transaction transparency",
+        "Poor onboarding experience",
+      ],
+    },
+    {
+      title: "Design Solution",
+      description: "Created a streamlined interface with clear visual hierarchy, intuitive gestures, and delightful micro-interactions.",
+      points: [
+        "Simplified 3-step payment flow",
+        "Real-time transaction tracking",
+        "Personalized dashboard",
+      ],
+    },
+    {
+      title: "Key Features",
+      points: [
+        "Instant P2P Transfers",
+        "Smart Bill Splitting",
+        "Expense Analytics",
+        "Biometric Authentication",
+        "Multi-currency Support",
+      ],
+    },
+  ];
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center"
       onClick={onClose}
       data-testid="case-study-modal-backdrop"
     >
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-black/95 to-pink-900/95 backdrop-blur-xl" />
+      
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-violet-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+      
       <div 
-        className="relative w-[95vw] h-[90vh] bg-black rounded-lg overflow-hidden border border-white/20"
+        className="relative w-[90vw] max-w-5xl h-[85vh] rounded-3xl overflow-hidden border border-white/10"
         onClick={(e) => e.stopPropagation()}
         data-testid="case-study-modal-content"
+        style={{
+          background: 'linear-gradient(135deg, rgba(30, 20, 50, 0.9) 0%, rgba(20, 10, 30, 0.95) 50%, rgba(40, 20, 60, 0.9) 100%)',
+          boxShadow: '0 0 80px rgba(168, 85, 247, 0.3), 0 0 120px rgba(236, 72, 153, 0.2)',
+        }}
       >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+        
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20"
+          className="absolute top-6 right-6 z-20 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 border border-white/20 hover:border-white/40 hover:scale-110"
           data-testid="button-close-modal"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
         
-        <iframe
-          src={caseStudyUrl}
-          className="w-full h-full"
-          title="Case Study"
-          allowFullScreen
-          data-testid="case-study-iframe"
-        />
+        <div className="h-full flex flex-col p-8 md:p-12">
+          <div className="flex-1 flex flex-col justify-center">
+            <div 
+              key={currentSlide}
+              className="animate-fadeIn"
+            >
+              {slides[currentSlide].subtitle && (
+                <p className="text-purple-300 text-sm tracking-[0.3em] uppercase mb-4">
+                  {slides[currentSlide].subtitle}
+                </p>
+              )}
+              
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+                {slides[currentSlide].title}
+              </h2>
+              
+              {slides[currentSlide].description && (
+                <p className="text-white/70 text-lg md:text-xl max-w-2xl leading-relaxed mb-8">
+                  {slides[currentSlide].description}
+                </p>
+              )}
+              
+              {slides[currentSlide].stats && (
+                <div className="flex gap-8 mb-8">
+                  {slides[currentSlide].stats.map((stat, i) => (
+                    <div key={i} className="px-6 py-3 bg-white/5 rounded-full border border-white/10">
+                      <span className="text-white font-medium">{stat}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {slides[currentSlide].points && (
+                <ul className="space-y-4">
+                  {slides[currentSlide].points.map((point, i) => (
+                    <li key={i} className="flex items-center gap-4 text-white/80 text-lg">
+                      <span className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between pt-8 border-t border-white/10">
+            <div className="flex gap-2">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    i === currentSlide 
+                      ? 'bg-gradient-to-r from-purple-400 to-pink-400 w-8' 
+                      : 'bg-white/30 hover:bg-white/50'
+                  }`}
+                  data-testid={`slide-indicator-${i}`}
+                />
+              ))}
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={prevSlide}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 border border-white/20 hover:border-white/40 text-white flex items-center gap-2"
+                data-testid="button-prev-slide"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                Previous
+              </button>
+              <button
+                onClick={nextSlide}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 rounded-full transition-all duration-300 text-white flex items-center gap-2"
+                data-testid="button-next-slide"
+              >
+                Next
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+      
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
