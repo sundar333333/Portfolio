@@ -581,10 +581,21 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
     } else {
-      const postProgress = Math.min((offset - transitionThreshold) / 0.3, 1);
-      targetZ = screenZ - (screenZ - spaceZ) * postProgress;
-      targetY = tvScreenY + postProgress * 5;
-      targetX = 0;
+      const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
+      const approachEnd = 0.25;
+      
+      if (workProgress < approachEnd) {
+        const approachT = workProgress / approachEnd;
+        const eased = 1 - Math.pow(1 - approachT, 3);
+        
+        targetY = 15 - eased * 13;
+        targetZ = 10 - eased * 15;
+        targetX = 0;
+      } else {
+        targetY = 2;
+        targetZ = -5;
+        targetX = 0;
+      }
     }
     
     camera.position.x += (targetX - camera.position.x) * 0.08;

@@ -1,0 +1,39 @@
+I am ready to build the main "Works" section. This is a complex, cinematic, scrollytelling experience that triggers after the camera has zoomed fully into the TV "portal" on the landing page.
+
+This new scene requires a completely different environment, advanced camera choreography based on scroll percentage, and complex object animations.
+
+### The Aesthetic Vision (Reference: alche.studio fluid movement)
+The vibe is dark, cosmic, and highly geometric. We are inside a massive gravity well or wormhole. The movement must be slow, smooth, and weighty.
+
+### 1. The Environment Setup (The Stage)
+Once through the TV portal, transition to this new scene:
+* **The "Space Blanket" Wormhole:** Create a massive, highly subdivided plane geometry to act as the ground.
+    * **Deformation:** Do not keep it flat. Deform the vertices to create a dramatic "gravity funnel" or wormhole shape that dips sharply in the center. It should feel like the fabric of space bending.
+    * **Material:** A glowing, futuristic grid/mesh material (neon blue/purple lines on black).
+* **The Central Sphere:** In the exact center of the wormhole funnel, place a large, complex **Geometric Wireframe Sphere** (like a highly detailed Icosahedron).
+    * **Interaction:** Apply a standard **Gyroscopic effect** to this sphere. Mouse movement should subtly rotate it (not reverse gyro).
+* **Lighting:** Dramatic rim lighting from below to highlight the grid and the sphere's edges.
+
+### 2. The Scrollytelling Timeline (Camera & Object Choreography)
+Use `ScrollControls` (e.g., with 10 pages to allow for a long, smooth experience) and `useScroll` to map the following sequence precisely.
+
+**Phase A: The Approach (Scroll 0% - 25%)**
+* **Camera Start:** The camera starts far back on the edge of the "Space Blanket," looking down towards the distant sphere in the center.
+* **Action:** Over "2-3 scrolls" worth of distance, the camera smoothly travels along the curve of the blanket, moving closer and lower, ending up near the sphere, looking slightly up at it to make it feel massive.
+
+**Phase B: The Sphere Interaction (Scroll 25% - 40%)**
+* **Camera:** The camera holds its position near the sphere.
+* **Action:** Over the next "2-3 scrolls," the user's scrolling directly drives the rotation of the central Wireframe Sphere, spinning it faster as they scroll.
+
+**Phase C: The "WORKS" Title Reveal (Scroll 40% - 50%)**
+* **Action:** Large 3D text "WORKS" emerges. It should orbit halfway around the sphere and simultaneously fade out and dissolve into particles or transparency by the 50% mark.
+
+**Phase D: The Project Poster Sequence (Scroll 50% - 100%)**
+* This is the core showcase. I have 4 projects. Divide the remaining scroll space for them.
+* **The Posters:** They must be rectangular planes with a **"Glassy" material** (high transmission, roughness, slight refraction) so they distort the wormhole behind them. They contain my project screenshots.
+* **The Animation Loop (Repeat for each of the 4 projects):**
+    1.  **Appear & Orbit:** The glassy poster materializes and slowly orbits the central sphere, presenting itself clearly to the camera.
+    2.  **The "Spring Dissolve" into the Wormhole:** As the user continues scrolling to dismiss the project, the poster must spiral tightly towards the dead center of the wormhole funnel. As it approaches the center point, it must rapidly scale down to zero while rotating furiously (a "springing" motion) and vanish into the black hole.
+    3.  **Next Project:** The next poster begins its cycle.
+
+Please build this entire sequence, focusing heavily on smooth transitions and the specific "glassy spring dissolve" animation for the posters.
