@@ -549,9 +549,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
-  const transitionThreshold = 0.12;
+  const transitionThreshold = 0.45;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -568,53 +567,39 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     
     const startZ = 1.8;
     const screenZ = 0.3;
-    const spaceZ = -20;
+    const endZ = -15;
     
     const tvScreenY = 0.22;
     
     let targetZ: number;
     let targetY: number;
-    let targetX = -0.05;
     
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
     } else {
-      const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
-      const approachEnd = 0.25;
-      
-      if (workProgress < approachEnd) {
-        const approachT = workProgress / approachEnd;
-        const eased = 1 - Math.pow(1 - approachT, 3);
-        
-        targetY = 15 - eased * 13;
-        targetZ = 10 - eased * 15;
-        targetX = 0;
-      } else {
-        targetY = 2;
-        targetZ = -5;
-        targetX = 0;
-      }
+      const postProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
+      targetZ = screenZ - (screenZ - endZ) * postProgress;
+      targetY = tvScreenY + postProgress * 1.5;
     }
     
-    camera.position.x += (targetX - camera.position.x) * 0.08;
-    camera.position.y += (targetY - camera.position.y) * 0.08;
-    camera.position.z += (targetZ - camera.position.z) * 0.08;
+    const targetX = -0.05;
+    camera.position.x += (targetX - camera.position.x) * 0.1;
+    camera.position.y += (targetY - camera.position.y) * 0.1;
+    camera.position.z += (targetZ - camera.position.z) * 0.1;
     
     if (offset < transitionThreshold) {
       camera.lookAt(targetX, tvScreenY, 0);
     } else {
-      camera.lookAt(0, 0, -25);
+      camera.lookAt(targetX, camera.position.y, camera.position.z - 10);
     }
     
-    const glitchProgress = Math.max(0, Math.min(1, (offset - 0.05) / 0.1));
-    setGlitchIntensity(glitchProgress * (offset < transitionThreshold + 0.1 ? 1 : 0));
+    const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
+    setGlitchIntensity(glitchProgress);
     
     const isWorkVisible = offset > transitionThreshold;
     setShowWorkSection(isWorkVisible);
-    const workProgress = isWorkVisible ? Math.min(Math.max((offset - transitionThreshold) / (1 - transitionThreshold), 0), 1) : 0;
-    setScrollProgress(workProgress);
     onWorkSectionChange?.(isWorkVisible);
   });
 
@@ -670,7 +655,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
       <GlitchOverlay intensity={glitchIntensity} />
 
-      <WorkSection visible={showWorkSection} scrollProgress={scrollProgress} />
+      <WorkSection visible={showWorkSection} />
     </>
   );
 }
@@ -690,7 +675,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={6} damping={0.15}>
+          <ScrollControls pages={2} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}
