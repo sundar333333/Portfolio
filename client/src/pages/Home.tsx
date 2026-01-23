@@ -59,8 +59,6 @@ export default function Home() {
             isVideoPlaying={isVideoPlaying}
             onWorkSectionChange={handleWorkSectionChange}
           />
-          
-          <ProjectInfoOverlay visible={showWorkSection} />
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />

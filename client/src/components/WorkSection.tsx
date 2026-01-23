@@ -329,34 +329,11 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
 }
 
 export function WorkSection({ visible }: WorkSectionProps) {
-  const handlePosterClick = () => {
-    window.open(FIGMA_CASE_STUDY_URL, "_blank");
-  };
-
   if (!visible) return null;
 
   return (
     <group position={[0, 0, -5]}>
-      <NeonGrid 
-        position={[0, -1, -15]} 
-        rotation={[-Math.PI / 2, 0, 0]} 
-        color="#00ffff" 
-      />
-      
-      <NeonGrid 
-        position={[0, 8, -15]} 
-        rotation={[Math.PI / 2, 0, 0]} 
-        color="#ff00ff" 
-      />
-      
-      <GlassyPoster onPosterClick={handlePosterClick} />
-      
-      <FloatingParticles />
-      
-      <ambientLight intensity={0.1} color="#0a0a20" />
-      <pointLight position={[0, 5, -15]} intensity={2} color="#00ffff" distance={30} decay={2} />
-      <pointLight position={[-10, 3, -20]} intensity={1} color="#ff00ff" distance={20} decay={2} />
-      <pointLight position={[10, 3, -20]} intensity={1} color="#ff6600" distance={20} decay={2} />
+      <ambientLight intensity={0.05} color="#0a0a20" />
     </group>
   );
 }
