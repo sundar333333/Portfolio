@@ -4,11 +4,9 @@ import { Menu, X } from "lucide-react";
 
 interface HeaderProps {
   onTextHover: (text: string | null) => void;
-  theme?: "dark" | "light";
 }
 
-export function Header({ onTextHover, theme = "dark" }: HeaderProps) {
-  const isDark = theme === "dark";
+export function Header({ onTextHover }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -27,7 +25,7 @@ export function Header({ onTextHover, theme = "dark" }: HeaderProps) {
         data-testid="header"
       >
         <motion.div
-          className={`font-anton text-xl md:text-3xl tracking-wide cursor-pointer ${isDark ? "text-white" : "text-black"}`}
+          className="font-anton text-xl md:text-3xl text-white tracking-wide cursor-pointer"
           onMouseEnter={() => onTextHover("SUNDAR RAM")}
           onMouseLeave={() => onTextHover(null)}
           whileHover={{ scale: 1.02 }}
@@ -41,7 +39,7 @@ export function Header({ onTextHover, theme = "dark" }: HeaderProps) {
             <motion.a
               key={item.label}
               href={item.href}
-              className={`text-sm font-medium transition-colors duration-300 ${isDark ? "text-white/80 hover:text-white" : "text-black/70 hover:text-black"}`}
+              className="text-white/80 hover:text-white text-sm font-medium transition-colors duration-300"
               onMouseEnter={() => onTextHover(item.label)}
               onMouseLeave={() => onTextHover(null)}
               whileHover={{ y: -2 }}
@@ -55,7 +53,7 @@ export function Header({ onTextHover, theme = "dark" }: HeaderProps) {
         <div className="flex items-center gap-3">
           <motion.a
             href="#contact"
-            className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-full transition-colors duration-300 ${isDark ? "text-black bg-white hover:bg-white/90" : "text-white bg-black hover:bg-black/90"}`}
+            className="hidden sm:block px-4 py-2 text-sm font-medium text-black bg-white rounded-full hover:bg-white/90 transition-colors duration-300"
             onMouseEnter={() => onTextHover("Contact / Recruit Me")}
             onMouseLeave={() => onTextHover(null)}
             whileHover={{ scale: 1.05 }}
@@ -66,7 +64,7 @@ export function Header({ onTextHover, theme = "dark" }: HeaderProps) {
           </motion.a>
 
           <motion.button
-            className={`md:hidden flex items-center justify-center w-10 h-10 ${isDark ? "text-white" : "text-black"}`}
+            className="md:hidden flex items-center justify-center w-10 h-10 text-white"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileTap={{ scale: 0.95 }}
             data-testid="button-mobile-menu"

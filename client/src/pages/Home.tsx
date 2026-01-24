@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AudioToggle } from "@/components/AudioToggle";
 import { Scene3D } from "@/components/Scene3D";
-import { WorksSection } from "@/components/WorksSection";
+import { ProjectInfoOverlay } from "@/components/WorkSection";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,10 +19,6 @@ export default function Home() {
 
   const handleWorkSectionChange = useCallback((visible: boolean) => {
     setShowWorkSection(visible);
-  }, []);
-
-  const handleExitToLanding = useCallback(() => {
-    setShowWorkSection(false);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -64,13 +60,9 @@ export default function Home() {
             onWorkSectionChange={handleWorkSectionChange}
           />
 
-          <WorksSection visible={showWorkSection} onExitToLanding={handleExitToLanding} />
-
-          {!showWorkSection && (
-            <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
-              <Header onTextHover={handleTextHover} theme="dark" />
-            </div>
-          )}
+          <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
+            <Header onTextHover={handleTextHover} />
+          </div>
 
           <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
 
