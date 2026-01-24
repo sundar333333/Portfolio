@@ -1,6 +1,7 @@
-import { useEffect, useRef, RefObject } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Lenis from "lenis";
+import { useRef, useState, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
+import * as THREE from "three";
 
 import currentPoster from "@assets/p3_1769264586742.png";
 import eventifyPoster from "@assets/p4_1769264589735.png";
@@ -44,76 +45,93 @@ const projects: Project[] = [
 interface ProjectCardProps {
   project: Project;
   index: number;
-  containerRef: RefObject<HTMLDivElement>;
+  scrollProgress: number;
+  totalProjects: number;
+  onClick: () => void;
+  isActive: boolean;
 }
 
-function ProjectCard({ project, index, containerRef }: ProjectCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
+function ProjectCard3D({ project, index, scrollProgress, totalProjects, onClick, isActive }: ProjectCardProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const texture = useTexture(project.image);
   
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    container: containerRef,
-    offset: ["start end", "end start"],
+  const spacing = 4;
+  const centerOffset = (totalProjects - 1) / 2;
+  
+  useFrame(() => {
+    if (!meshRef.current) return;
+    
+    const baseX = (index - centerOffset) * spacing;
+    const scrollOffset = scrollProgress * spacing * totalProjects;
+    let x = baseX - scrollOffset;
+    
+    while (x < -spacing * 2) x += spacing * totalProjects;
+    while (x > spacing * (totalProjects - 2)) x -= spacing * totalProjects;
+    
+    const distanceFromCenter = Math.abs(x);
+    const z = -distanceFromCenter * 0.8;
+    const rotationY = x * 0.15;
+    const scale = Math.max(0.6, 1 - distanceFromCenter * 0.1);
+    
+    meshRef.current.position.x = x;
+    meshRef.current.position.z = z;
+    meshRef.current.rotation.y = rotationY;
+    meshRef.current.scale.setScalar(scale);
+    
+    const material = meshRef.current.material as THREE.MeshBasicMaterial;
+    material.opacity = Math.max(0.3, 1 - distanceFromCenter * 0.15);
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.95, 1, 1, 0.95]);
+  return (
+    <mesh
+      ref={meshRef}
+      onClick={onClick}
+      onPointerOver={() => document.body.style.cursor = "pointer"}
+      onPointerOut={() => document.body.style.cursor = "default"}
+    >
+      <planeGeometry args={[3, 2]} />
+      <meshBasicMaterial 
+        map={texture} 
+        transparent 
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
+interface CarouselSceneProps {
+  scrollProgress: number;
+  onProjectClick: (project: Project) => void;
+  activeProject: number | null;
+}
+
+function CarouselScene({ scrollProgress, onProjectClick, activeProject }: CarouselSceneProps) {
+  const { camera } = useThree();
+  
+  useFrame(() => {
+    camera.position.z = 5;
+    camera.position.y = 0;
+    camera.lookAt(0, 0, 0);
+  });
 
   return (
-    <motion.div
-      ref={cardRef}
-      className="relative flex flex-col items-center justify-center min-h-screen py-32"
-      style={{ opacity }}
-      data-testid={`project-card-${project.id}`}
-    >
-      <motion.div
-        className="relative w-full max-w-4xl mx-auto px-8"
-        style={{ y, scale }}
-      >
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl group cursor-pointer">
-          <motion.img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: index * 0.1 }}
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          <div className="absolute inset-0 border border-white/10 rounded-2xl pointer-events-none" />
-          
-          <motion.div 
-            className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)",
-            }}
-          />
-        </div>
-        
-        <motion.div 
-          className="mt-8 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <span className="text-white/40 text-sm uppercase tracking-[0.3em] font-light">
-            {project.category}
-          </span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold text-white tracking-tight">
-            {project.title}
-          </h2>
-        </motion.div>
-      </motion.div>
+    <>
+      <color attach="background" args={["#030308"]} />
+      <ambientLight intensity={0.5} />
+      <pointLight position={[0, 5, 5]} intensity={1} />
       
-      <div className="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:block">
-        <span className="text-white/20 text-8xl font-bold">
-          {String(index + 1).padStart(2, "0")}
-        </span>
-      </div>
-    </motion.div>
+      {projects.map((project, index) => (
+        <ProjectCard3D
+          key={project.id}
+          project={project}
+          index={index}
+          scrollProgress={scrollProgress}
+          totalProjects={projects.length}
+          onClick={() => onProjectClick(project)}
+          isActive={activeProject === project.id}
+        />
+      ))}
+    </>
   );
 }
 
@@ -123,103 +141,103 @@ interface WorksSectionProps {
 
 export function WorksSection({ visible }: WorksSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const lenisRef = useRef<Lenis | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeProject, setActiveProject] = useState<number | null>(null);
+  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
+  const targetScrollRef = useRef(0);
+  const currentScrollRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!visible || !containerRef.current || !contentRef.current) return;
+    if (!visible) return;
 
-    lenisRef.current = new Lenis({
-      wrapper: containerRef.current,
-      content: contentRef.current,
-      duration: 1.4,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 0.8,
-      touchMultiplier: 1.5,
-    });
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      targetScrollRef.current += e.deltaY * 0.0005;
+      targetScrollRef.current = Math.max(0, Math.min(1, targetScrollRef.current));
+    };
 
-    function raf(time: number) {
-      lenisRef.current?.raf(time);
-      rafIdRef.current = requestAnimationFrame(raf);
-    }
+    const animate = () => {
+      currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * 0.08;
+      setScrollProgress(currentScrollRef.current);
+      
+      const projectIndex = Math.round(currentScrollRef.current * (projects.length - 1));
+      setCurrentProjectIndex(Math.max(0, Math.min(projects.length - 1, projectIndex)));
+      
+      rafIdRef.current = requestAnimationFrame(animate);
+    };
 
-    rafIdRef.current = requestAnimationFrame(raf);
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    rafIdRef.current = requestAnimationFrame(animate);
 
     return () => {
+      window.removeEventListener("wheel", handleWheel);
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
       }
-      lenisRef.current?.destroy();
-      lenisRef.current = null;
     };
   }, [visible]);
 
+  const handleProjectClick = (project: Project) => {
+    setActiveProject(project.id);
+  };
+
   if (!visible) return null;
+
+  const currentProject = projects[currentProjectIndex];
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-30 bg-[#030308] overflow-y-auto overflow-x-hidden"
+      className="fixed inset-0 z-30 bg-[#030308]"
       data-testid="works-section"
     >
-      <div ref={contentRef}>
-        <div className="absolute inset-0 pointer-events-none">
-          <div 
-            className="absolute inset-0 opacity-30"
-            style={{
-              background: "radial-gradient(ellipse at 50% 0%, rgba(100, 100, 255, 0.15) 0%, transparent 50%)",
-            }}
-          />
-          <div 
-            className="absolute inset-0 opacity-20"
-            style={{
-              background: "radial-gradient(ellipse at 50% 100%, rgba(255, 100, 200, 0.1) 0%, transparent 50%)",
-            }}
-          />
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            background: "radial-gradient(ellipse at 50% 50%, rgba(100, 100, 255, 0.1) 0%, transparent 60%)",
+          }}
+        />
+      </div>
+
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 50 }}
+        className="absolute inset-0"
+      >
+        <CarouselScene
+          scrollProgress={scrollProgress}
+          onProjectClick={handleProjectClick}
+          activeProject={activeProject}
+        />
+      </Canvas>
+
+      <div className="absolute bottom-12 left-12 z-10 pointer-events-none">
+        <div className="text-white/40 text-xs uppercase tracking-[0.3em] mb-2">
+          {currentProject.category}
         </div>
-
-        <div className="relative z-10">
-          <div className="min-h-[50vh] flex items-center justify-center">
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.3 }}
-            >
-              <span className="text-white/30 text-sm uppercase tracking-[0.5em]">
-                Selected Works
-              </span>
-              <h1 className="mt-4 text-6xl md:text-8xl font-bold text-white tracking-tight">
-                Projects
-              </h1>
-            </motion.div>
-          </div>
-
-          {projects.map((project, index) => (
-            <ProjectCard 
-              key={project.id} 
-              project={project} 
-              index={index} 
-              containerRef={containerRef}
-            />
-          ))}
-
-          <div className="min-h-[30vh] flex items-center justify-center">
-            <motion.p
-              className="text-white/30 text-lg tracking-wide"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-            >
-              More projects coming soon
-            </motion.p>
+        <h2 className="text-white text-3xl md:text-4xl font-bold tracking-tight max-w-md">
+          {currentProject.title}
+        </h2>
+        <div className="flex items-center gap-3 mt-4">
+          <span className="text-white/60 text-sm">
+            {String(currentProjectIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
+          </span>
+          <div className="flex gap-1">
+            {projects.map((_, i) => (
+              <div
+                key={i}
+                className={`w-8 h-0.5 transition-all duration-300 ${
+                  i === currentProjectIndex ? "bg-white" : "bg-white/20"
+                }`}
+              />
+            ))}
           </div>
         </div>
+      </div>
+
+      <div className="absolute bottom-12 right-12 z-10 text-white/30 text-sm pointer-events-none">
+        Scroll to explore
       </div>
     </div>
   );
