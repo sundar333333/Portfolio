@@ -34,7 +34,7 @@ function ProjectCard({ project, index, totalProjects, carouselRotation, mousePos
   const meshRef = useRef<THREE.Mesh>(null);
   const texture = useLoader(THREE.TextureLoader, project.image);
   
-  const radius = 3.5;
+  const radius = 4;
   const angleOffset = (index / totalProjects) * Math.PI * 2;
   
   const enhancedTexture = useMemo(() => {
@@ -42,6 +42,7 @@ function ProjectCard({ project, index, totalProjects, carouselRotation, mousePos
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
     texture.needsUpdate = true;
     return texture;
   }, [texture]);
@@ -52,29 +53,30 @@ function ProjectCard({ project, index, totalProjects, carouselRotation, mousePos
     const currentAngle = angleOffset + carouselRotation;
     
     const x = Math.sin(currentAngle) * radius;
-    const z = Math.cos(currentAngle) * radius;
+    const z = -Math.cos(currentAngle) * radius;
     
     meshRef.current.position.x = x;
     meshRef.current.position.z = z;
     meshRef.current.position.y = 0;
     
-    meshRef.current.rotation.y = currentAngle;
+    meshRef.current.rotation.y = -currentAngle;
     
-    const cardFacingFront = Math.abs(Math.cos(currentAngle)) > 0.7 && Math.cos(currentAngle) > 0;
+    const normalizedAngle = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    const isFront = normalizedAngle < 0.5 || normalizedAngle > Math.PI * 2 - 0.5;
     
-    if (cardFacingFront) {
-      const gyroX = mousePosition.y * 0.15;
-      const gyroY = mousePosition.x * 0.15;
+    if (isFront) {
+      const gyroX = mousePosition.y * 0.12;
+      const gyroY = mousePosition.x * 0.12;
       meshRef.current.rotation.x = gyroX;
-      meshRef.current.rotation.y = currentAngle + gyroY;
+      meshRef.current.rotation.y = -currentAngle + gyroY;
     } else {
-      meshRef.current.rotation.x = 0;
+      meshRef.current.rotation.x *= 0.9;
     }
   });
 
   return (
     <mesh ref={meshRef}>
-      <planeGeometry args={[2.4, 3.2]} />
+      <planeGeometry args={[2.8, 3.8]} />
       <meshBasicMaterial
         map={enhancedTexture}
         side={THREE.DoubleSide}
@@ -93,14 +95,14 @@ function CarouselScene({ carouselRotation, mousePosition }: CarouselSceneProps) 
   const { camera } = useThree();
   
   useFrame(() => {
-    camera.position.set(0, 0, 0);
-    camera.lookAt(0, 0, -1);
+    camera.position.set(0, 0.5, 8);
+    camera.lookAt(0, 0, 0);
   });
 
   return (
     <>
       <color attach="background" args={["#fafafa"]} />
-      <ambientLight intensity={1.5} />
+      <ambientLight intensity={2} />
       
       {projects.map((project, index) => (
         <ProjectCard
@@ -126,9 +128,8 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
   const [carouselRotation, setCarouselRotation] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
-  const targetRotationRef = useRef(0);
-  const currentRotationRef = useRef(0);
   const velocityRef = useRef(0);
+  const currentRotationRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
   const exitAccumulatorRef = useRef(0);
 
@@ -136,7 +137,6 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
 
   useEffect(() => {
     if (!visible) {
-      targetRotationRef.current = 0;
       currentRotationRef.current = 0;
       velocityRef.current = 0;
       exitAccumulatorRef.current = 0;
@@ -162,7 +162,7 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
         exitAccumulatorRef.current = 0;
       }
       
-      velocityRef.current += delta * 0.0008;
+      velocityRef.current += delta * 0.0006;
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -172,7 +172,7 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
     };
 
     const animate = () => {
-      velocityRef.current *= 0.95;
+      velocityRef.current *= 0.92;
       currentRotationRef.current += velocityRef.current;
       
       setCarouselRotation(currentRotationRef.current);
@@ -203,8 +203,12 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
       <Header onTextHover={handleTextHover} theme="light" />
 
       <Canvas
-        camera={{ position: [0, 0, 0], fov: 60 }}
-        gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
+        camera={{ position: [0, 0.5, 8], fov: 50 }}
+        gl={{ 
+          antialias: true, 
+          toneMapping: THREE.NoToneMapping,
+          outputColorSpace: THREE.SRGBColorSpace
+        }}
         className="absolute inset-0"
       >
         <CarouselScene 
