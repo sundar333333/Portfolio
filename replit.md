@@ -37,9 +37,16 @@ Preferred communication style: Simple, everyday language.
 **Scroll Transition ("Signal Breach")**
 - Uses @react-three/drei ScrollControls with 2 pages and damping
 - Camera moves along Z-axis as user scrolls, zooming into the TV screen
-- At 45% scroll threshold, visibility toggles from TV room to Digital Void (WorkSection)
+- At 45% scroll threshold, visibility toggles from TV room to Works Section
 - Custom GlitchOverlay component creates visual distortion tied to scroll progress
 - Glitch intensity increases as camera approaches TV, peaks at transition moment
+
+**Works Section (Premium Portfolio)**
+- Uses Lenis for smooth inertia-based scrolling with "weight" and momentum
+- Linear finite scroll from Project 1 to Project 4
+- Parallax effects on project images using framer-motion useScroll/useTransform
+- Projects: Current Mobile Payment App (Fintech), Eventify (Event Management), Space Jump (Mobile Game), Ticking (Movie Booking)
+- Dark atmospheric background with subtle gradient effects
 
 **Styling Approach**
 - Tailwind CSS with custom configuration for the dark theme
