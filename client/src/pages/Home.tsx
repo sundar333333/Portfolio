@@ -68,7 +68,7 @@ export default function Home() {
 
           {!showWorkSection && (
             <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
-              <Header onTextHover={handleTextHover} />
+              <Header onTextHover={handleTextHover} theme="dark" />
             </div>
           )}
 
