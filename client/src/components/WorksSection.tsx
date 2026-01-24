@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -45,51 +45,47 @@ const projects: Project[] = [
 interface ProjectCardProps {
   project: Project;
   index: number;
-  scrollProgress: number;
+  rotationAngle: number;
   totalProjects: number;
-  onClick: () => void;
-  isActive: boolean;
 }
 
-function ProjectCard3D({ project, index, scrollProgress, totalProjects, onClick, isActive }: ProjectCardProps) {
+function ProjectCard3D({ project, index, rotationAngle, totalProjects }: ProjectCardProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const texture = useTexture(project.image);
   
-  const spacing = 4;
-  const centerOffset = (totalProjects - 1) / 2;
+  const radius = 8;
+  const anglePerCard = (Math.PI * 0.6) / totalProjects;
+  const startAngle = -Math.PI * 0.3;
   
   useFrame(() => {
     if (!meshRef.current) return;
     
-    const baseX = (index - centerOffset) * spacing;
-    const scrollOffset = scrollProgress * spacing * totalProjects;
-    let x = baseX - scrollOffset;
+    const cardAngle = startAngle + index * anglePerCard + rotationAngle;
     
-    while (x < -spacing * 2) x += spacing * totalProjects;
-    while (x > spacing * (totalProjects - 2)) x -= spacing * totalProjects;
-    
-    const distanceFromCenter = Math.abs(x);
-    const z = -distanceFromCenter * 0.8;
-    const rotationY = x * 0.15;
-    const scale = Math.max(0.6, 1 - distanceFromCenter * 0.1);
+    const x = Math.sin(cardAngle) * radius;
+    const z = Math.cos(cardAngle) * radius - radius;
     
     meshRef.current.position.x = x;
     meshRef.current.position.z = z;
-    meshRef.current.rotation.y = rotationY;
-    meshRef.current.scale.setScalar(scale);
+    meshRef.current.position.y = 0;
+    
+    meshRef.current.rotation.y = cardAngle;
+    
+    const distanceFromFront = Math.abs(cardAngle);
+    const scale = Math.max(0.7, 1.1 - distanceFromFront * 0.3);
+    meshRef.current.scale.set(scale, scale, 1);
     
     const material = meshRef.current.material as THREE.MeshBasicMaterial;
-    material.opacity = Math.max(0.3, 1 - distanceFromCenter * 0.15);
+    material.opacity = Math.max(0.4, 1 - distanceFromFront * 0.4);
   });
 
   return (
     <mesh
       ref={meshRef}
-      onClick={onClick}
       onPointerOver={() => document.body.style.cursor = "pointer"}
       onPointerOut={() => document.body.style.cursor = "default"}
     >
-      <planeGeometry args={[3, 2]} />
+      <planeGeometry args={[2.5, 3.5]} />
       <meshBasicMaterial 
         map={texture} 
         transparent 
@@ -100,35 +96,30 @@ function ProjectCard3D({ project, index, scrollProgress, totalProjects, onClick,
 }
 
 interface CarouselSceneProps {
-  scrollProgress: number;
-  onProjectClick: (project: Project) => void;
-  activeProject: number | null;
+  rotationAngle: number;
 }
 
-function CarouselScene({ scrollProgress, onProjectClick, activeProject }: CarouselSceneProps) {
+function CarouselScene({ rotationAngle }: CarouselSceneProps) {
   const { camera } = useThree();
   
   useFrame(() => {
-    camera.position.z = 5;
-    camera.position.y = 0;
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0, 4);
+    camera.lookAt(0, 0, -4);
   });
 
   return (
     <>
-      <color attach="background" args={["#030308"]} />
-      <ambientLight intensity={0.5} />
-      <pointLight position={[0, 5, 5]} intensity={1} />
+      <color attach="background" args={["#ffffff"]} />
+      <ambientLight intensity={0.8} />
+      <pointLight position={[0, 5, 5]} intensity={0.5} />
       
       {projects.map((project, index) => (
         <ProjectCard3D
           key={project.id}
           project={project}
           index={index}
-          scrollProgress={scrollProgress}
+          rotationAngle={rotationAngle}
           totalProjects={projects.length}
-          onClick={() => onProjectClick(project)}
-          isActive={activeProject === project.id}
         />
       ))}
     </>
@@ -137,32 +128,54 @@ function CarouselScene({ scrollProgress, onProjectClick, activeProject }: Carous
 
 interface WorksSectionProps {
   visible: boolean;
+  onExitToLanding?: () => void;
 }
 
-export function WorksSection({ visible }: WorksSectionProps) {
+export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeProject, setActiveProject] = useState<number | null>(null);
+  const [rotationAngle, setRotationAngle] = useState(0);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
-  const targetScrollRef = useRef(0);
-  const currentScrollRef = useRef(0);
+  const targetRotationRef = useRef(0);
+  const currentRotationRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
+  const scrollAccumulatorRef = useRef(0);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      targetRotationRef.current = 0;
+      currentRotationRef.current = 0;
+      scrollAccumulatorRef.current = 0;
+      setRotationAngle(0);
+      return;
+    }
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      targetScrollRef.current += e.deltaY * 0.0005;
-      targetScrollRef.current = Math.max(0, Math.min(1, targetScrollRef.current));
+      
+      if (e.deltaY < 0) {
+        scrollAccumulatorRef.current += e.deltaY;
+        
+        if (scrollAccumulatorRef.current < -150) {
+          if (onExitToLanding) {
+            onExitToLanding();
+          }
+          scrollAccumulatorRef.current = 0;
+          return;
+        }
+      } else {
+        scrollAccumulatorRef.current = 0;
+        targetRotationRef.current += e.deltaY * 0.001;
+      }
     };
 
     const animate = () => {
-      currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * 0.08;
-      setScrollProgress(currentScrollRef.current);
+      currentRotationRef.current += (targetRotationRef.current - currentRotationRef.current) * 0.06;
+      setRotationAngle(currentRotationRef.current);
       
-      const projectIndex = Math.round(currentScrollRef.current * (projects.length - 1));
-      setCurrentProjectIndex(Math.max(0, Math.min(projects.length - 1, projectIndex)));
+      const anglePerCard = (Math.PI * 0.6) / projects.length;
+      const projectIndex = Math.round(currentRotationRef.current / anglePerCard);
+      const clampedIndex = Math.max(0, Math.min(projects.length - 1, projectIndex));
+      setCurrentProjectIndex(clampedIndex);
       
       rafIdRef.current = requestAnimationFrame(animate);
     };
@@ -176,11 +189,7 @@ export function WorksSection({ visible }: WorksSectionProps) {
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [visible]);
-
-  const handleProjectClick = (project: Project) => {
-    setActiveProject(project.id);
-  };
+  }, [visible, onExitToLanding]);
 
   if (!visible) return null;
 
@@ -189,38 +198,45 @@ export function WorksSection({ visible }: WorksSectionProps) {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-30 bg-[#030308]"
+      className="fixed inset-0 z-30 bg-white"
       data-testid="works-section"
     >
-      <div className="absolute inset-0 pointer-events-none">
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            background: "radial-gradient(ellipse at 50% 50%, rgba(100, 100, 255, 0.1) 0%, transparent 60%)",
-          }}
-        />
-      </div>
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-8 py-6">
+        <h1 
+          className="text-2xl md:text-3xl font-bold tracking-tight text-black"
+          style={{ fontFamily: "'Anton', sans-serif" }}
+        >
+          SUNDAR RAM
+        </h1>
+        <nav className="flex items-center gap-8">
+          <span className="text-black/70 text-sm uppercase tracking-widest cursor-pointer hover:text-black transition-colors">
+            Works
+          </span>
+          <span className="text-black/70 text-sm uppercase tracking-widest cursor-pointer hover:text-black transition-colors">
+            About
+          </span>
+          <span className="text-black/70 text-sm uppercase tracking-widest cursor-pointer hover:text-black transition-colors">
+            Contact
+          </span>
+        </nav>
+      </header>
 
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        camera={{ position: [0, 0, 4], fov: 50 }}
         className="absolute inset-0"
       >
-        <CarouselScene
-          scrollProgress={scrollProgress}
-          onProjectClick={handleProjectClick}
-          activeProject={activeProject}
-        />
+        <CarouselScene rotationAngle={rotationAngle} />
       </Canvas>
 
       <div className="absolute bottom-12 left-12 z-10 pointer-events-none">
-        <div className="text-white/40 text-xs uppercase tracking-[0.3em] mb-2">
+        <div className="text-black/40 text-xs uppercase tracking-[0.3em] mb-2">
           {currentProject.category}
         </div>
-        <h2 className="text-white text-3xl md:text-4xl font-bold tracking-tight max-w-md">
+        <h2 className="text-black text-3xl md:text-4xl font-bold tracking-tight max-w-md">
           {currentProject.title}
         </h2>
         <div className="flex items-center gap-3 mt-4">
-          <span className="text-white/60 text-sm">
+          <span className="text-black/60 text-sm">
             {String(currentProjectIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
           </span>
           <div className="flex gap-1">
@@ -228,7 +244,7 @@ export function WorksSection({ visible }: WorksSectionProps) {
               <div
                 key={i}
                 className={`w-8 h-0.5 transition-all duration-300 ${
-                  i === currentProjectIndex ? "bg-white" : "bg-white/20"
+                  i === currentProjectIndex ? "bg-black" : "bg-black/20"
                 }`}
               />
             ))}
@@ -236,8 +252,8 @@ export function WorksSection({ visible }: WorksSectionProps) {
         </div>
       </div>
 
-      <div className="absolute bottom-12 right-12 z-10 text-white/30 text-sm pointer-events-none">
-        Scroll to explore
+      <div className="absolute bottom-12 right-12 z-10 text-black/30 text-sm pointer-events-none">
+        Scroll up to go back
       </div>
     </div>
   );

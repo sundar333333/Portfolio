@@ -21,6 +21,10 @@ export default function Home() {
     setShowWorkSection(visible);
   }, []);
 
+  const handleExitToLanding = useCallback(() => {
+    setShowWorkSection(false);
+  }, []);
+
   const handleLoadingComplete = useCallback(() => {
     setIsLoading(false);
   }, []);
@@ -60,11 +64,13 @@ export default function Home() {
             onWorkSectionChange={handleWorkSectionChange}
           />
 
-          <WorksSection visible={showWorkSection} />
+          <WorksSection visible={showWorkSection} onExitToLanding={handleExitToLanding} />
 
-          <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
-            <Header onTextHover={handleTextHover} />
-          </div>
+          {!showWorkSection && (
+            <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
+              <Header onTextHover={handleTextHover} />
+            </div>
+          )}
 
           <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
 
