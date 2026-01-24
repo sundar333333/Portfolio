@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect, useCallback } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
+import { useRef, useState, useEffect, useMemo } from "react";
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { Header } from "./Header";
 
@@ -17,114 +16,100 @@ interface Project {
 }
 
 const projects: Project[] = [
-  {
-    id: 1,
-    title: "Current Mobile Payment App",
-    category: "Fintech",
-    image: currentPoster,
-  },
-  {
-    id: 2,
-    title: "Eventify",
-    category: "Event Management",
-    image: eventifyPoster,
-  },
-  {
-    id: 3,
-    title: "Space Jump",
-    category: "Mobile Game",
-    image: spaceJumpPoster,
-  },
-  {
-    id: 4,
-    title: "Ticking",
-    category: "Movie Booking",
-    image: tickingPoster,
-  },
+  { id: 1, title: "Current Mobile Payment", category: "Fintech", image: currentPoster },
+  { id: 2, title: "Eventify", category: "Event Management", image: eventifyPoster },
+  { id: 3, title: "Space Jump", category: "Mobile Game", image: spaceJumpPoster },
+  { id: 4, title: "Ticking", category: "Movie Booking", image: tickingPoster },
 ];
 
 interface ProjectCardProps {
   project: Project;
   index: number;
-  scrollX: number;
   totalProjects: number;
+  carouselRotation: number;
+  mousePosition: { x: number; y: number };
 }
 
-function ProjectCard3D({ project, index, scrollX, totalProjects }: ProjectCardProps) {
+function ProjectCard({ project, index, totalProjects, carouselRotation, mousePosition }: ProjectCardProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const texture = useTexture(project.image);
+  const texture = useLoader(THREE.TextureLoader, project.image);
   
-  const cardWidth = 3;
-  const cardGap = 0.5;
-  const spacing = cardWidth + cardGap;
-  const curveRadius = 12;
+  const radius = 3.5;
+  const angleOffset = (index / totalProjects) * Math.PI * 2;
   
+  const enhancedTexture = useMemo(() => {
+    texture.anisotropy = 16;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
+    texture.needsUpdate = true;
+    return texture;
+  }, [texture]);
+
   useFrame(() => {
     if (!meshRef.current) return;
     
-    const baseX = index * spacing - (totalProjects * spacing) / 2 + spacing / 2;
-    const x = baseX - scrollX;
+    const currentAngle = angleOffset + carouselRotation;
     
-    const angle = x / curveRadius;
-    const curvedX = Math.sin(angle) * curveRadius;
-    const curvedZ = Math.cos(angle) * curveRadius - curveRadius;
+    const x = Math.sin(currentAngle) * radius;
+    const z = Math.cos(currentAngle) * radius;
     
-    meshRef.current.position.x = curvedX;
-    meshRef.current.position.z = curvedZ;
+    meshRef.current.position.x = x;
+    meshRef.current.position.z = z;
     meshRef.current.position.y = 0;
     
-    meshRef.current.rotation.y = angle;
+    meshRef.current.rotation.y = currentAngle;
     
-    const distanceFromCenter = Math.abs(x);
-    const maxDistance = 8;
-    const normalizedDistance = Math.min(distanceFromCenter / maxDistance, 1);
-    const scale = 1 - normalizedDistance * 0.3;
-    meshRef.current.scale.set(scale, scale, 1);
+    const cardFacingFront = Math.abs(Math.cos(currentAngle)) > 0.7 && Math.cos(currentAngle) > 0;
     
-    const material = meshRef.current.material as THREE.MeshBasicMaterial;
-    material.opacity = 1 - normalizedDistance * 0.5;
+    if (cardFacingFront) {
+      const gyroX = mousePosition.y * 0.15;
+      const gyroY = mousePosition.x * 0.15;
+      meshRef.current.rotation.x = gyroX;
+      meshRef.current.rotation.y = currentAngle + gyroY;
+    } else {
+      meshRef.current.rotation.x = 0;
+    }
   });
 
   return (
-    <mesh
-      ref={meshRef}
-      onPointerOver={() => document.body.style.cursor = "pointer"}
-      onPointerOut={() => document.body.style.cursor = "default"}
-    >
-      <planeGeometry args={[cardWidth, cardWidth * 1.4]} />
-      <meshBasicMaterial 
-        map={texture} 
-        transparent 
+    <mesh ref={meshRef}>
+      <planeGeometry args={[2.4, 3.2]} />
+      <meshBasicMaterial
+        map={enhancedTexture}
         side={THREE.DoubleSide}
+        toneMapped={false}
       />
     </mesh>
   );
 }
 
 interface CarouselSceneProps {
-  scrollX: number;
+  carouselRotation: number;
+  mousePosition: { x: number; y: number };
 }
 
-function CarouselScene({ scrollX }: CarouselSceneProps) {
+function CarouselScene({ carouselRotation, mousePosition }: CarouselSceneProps) {
   const { camera } = useThree();
   
   useFrame(() => {
-    camera.position.set(0, 0, 6);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0, 0);
+    camera.lookAt(0, 0, -1);
   });
 
   return (
     <>
       <color attach="background" args={["#fafafa"]} />
-      <ambientLight intensity={1} />
+      <ambientLight intensity={1.5} />
       
       {projects.map((project, index) => (
-        <ProjectCard3D
+        <ProjectCard
           key={project.id}
           project={project}
           index={index}
-          scrollX={scrollX}
           totalProjects={projects.length}
+          carouselRotation={carouselRotation}
+          mousePosition={mousePosition}
         />
       ))}
     </>
@@ -138,69 +123,69 @@ interface WorksSectionProps {
 
 export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollX, setScrollX] = useState(0);
-  const targetScrollRef = useRef(0);
-  const currentScrollRef = useRef(0);
+  const [carouselRotation, setCarouselRotation] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  const targetRotationRef = useRef(0);
+  const currentRotationRef = useRef(0);
+  const velocityRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
   const exitAccumulatorRef = useRef(0);
-  const canExitRef = useRef(true);
 
-  const handleTextHover = useCallback(() => {}, []);
+  const handleTextHover = () => {};
 
   useEffect(() => {
     if (!visible) {
-      targetScrollRef.current = 0;
-      currentScrollRef.current = 0;
+      targetRotationRef.current = 0;
+      currentRotationRef.current = 0;
+      velocityRef.current = 0;
       exitAccumulatorRef.current = 0;
-      canExitRef.current = true;
-      setScrollX(0);
+      setCarouselRotation(0);
       return;
     }
-
-    const cardWidth = 3;
-    const cardGap = 0.5;
-    const spacing = cardWidth + cardGap;
-    const maxScroll = (projects.length - 1) * spacing;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
-      const delta = e.deltaY || e.deltaX;
+      const delta = e.deltaY;
       
-      if (delta < 0 && currentScrollRef.current <= 0 && canExitRef.current) {
+      if (delta < 0) {
         exitAccumulatorRef.current += Math.abs(delta);
-        
-        if (exitAccumulatorRef.current > 200) {
+        if (exitAccumulatorRef.current > 300) {
           if (onExitToLanding) {
             onExitToLanding();
           }
           exitAccumulatorRef.current = 0;
-          canExitRef.current = false;
           return;
         }
       } else {
         exitAccumulatorRef.current = 0;
       }
       
-      if (delta > 0) {
-        canExitRef.current = true;
-      }
-      
-      targetScrollRef.current += delta * 0.008;
-      targetScrollRef.current = Math.max(0, Math.min(maxScroll, targetScrollRef.current));
+      velocityRef.current += delta * 0.0008;
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      setMousePosition({ x, y });
     };
 
     const animate = () => {
-      currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * 0.08;
-      setScrollX(currentScrollRef.current);
+      velocityRef.current *= 0.95;
+      currentRotationRef.current += velocityRef.current;
+      
+      setCarouselRotation(currentRotationRef.current);
       rafIdRef.current = requestAnimationFrame(animate);
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("mousemove", handleMouseMove);
     rafIdRef.current = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("mousemove", handleMouseMove);
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
@@ -218,10 +203,14 @@ export function WorksSection({ visible, onExitToLanding }: WorksSectionProps) {
       <Header onTextHover={handleTextHover} theme="light" />
 
       <Canvas
-        camera={{ position: [0, 0, 6], fov: 50 }}
+        camera={{ position: [0, 0, 0], fov: 60 }}
+        gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
         className="absolute inset-0"
       >
-        <CarouselScene scrollX={scrollX} />
+        <CarouselScene 
+          carouselRotation={carouselRotation} 
+          mousePosition={mousePosition}
+        />
       </Canvas>
     </div>
   );
