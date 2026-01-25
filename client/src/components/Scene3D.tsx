@@ -608,29 +608,31 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       <color attach="background" args={[showWorkSection ? "#0066ff" : "#050403"]} />
       <fog attach="fog" args={[showWorkSection ? "#0066ff" : "#050403", 3, showWorkSection ? 50 : 12]} />
       
-      <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
+      {!showWorkSection && (
+        <>
+          <ambientLight intensity={0.08} color="#1a1820" />
+          <spotLight
+            position={[0, 3.5, 1.5]}
+            angle={0.35}
+            penumbra={0.7}
+            intensity={15}
+            color="#fff8f0"
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0001}
+          />
+          <spotLight
+            position={[-1.5, 2, 2]}
+            angle={0.5}
+            penumbra={0.9}
+            intensity={3}
+            color="#aab8cc"
+          />
+        </>
+      )}
 
-      <spotLight
-        position={[0, 3.5, 1.5]}
-        angle={0.35}
-        penumbra={0.7}
-        intensity={showWorkSection ? 5 : 15}
-        color="#fff8f0"
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-bias={-0.0001}
-      />
-
-      <spotLight
-        position={[-1.5, 2, 2]}
-        angle={0.5}
-        penumbra={0.9}
-        intensity={showWorkSection ? 1 : 3}
-        color="#aab8cc"
-      />
-
-      <Environment preset="night" background={false} />
+      {!showWorkSection && <Environment preset="night" background={false} />}
       
       <TiledFloor visible={!showWorkSection} />
 
@@ -653,7 +655,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         glitchIntensity={glitchIntensity}
       />
 
-      <GlitchOverlay intensity={glitchIntensity} />
+      {!showWorkSection && <GlitchOverlay intensity={glitchIntensity} />}
 
       <WorkSection visible={showWorkSection} mousePosition={mousePosition} />
     </>
