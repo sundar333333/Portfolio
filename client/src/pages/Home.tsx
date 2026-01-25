@@ -5,6 +5,7 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { AudioToggle } from "@/components/AudioToggle";
 import { Scene3D } from "@/components/Scene3D";
 import { ProjectInfoOverlay } from "@/components/WorkSection";
+import { PixelEffect } from "@/components/PixelEffect";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -59,6 +60,8 @@ export default function Home() {
             isVideoPlaying={isVideoPlaying}
             onWorkSectionChange={handleWorkSectionChange}
           />
+
+          <PixelEffect visible={showWorkSection} />
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
