@@ -5,9 +5,8 @@ interface PixelEffectProps {
 }
 
 interface Pixel {
-  x: number;
-  y: number;
-  size: number;
+  gridX: number;
+  gridY: number;
   opacity: number;
   createdAt: number;
   lifetime: number;
@@ -15,16 +14,17 @@ interface Pixel {
   lightness: number;
 }
 
+const PIXEL_SIZE = 24;
+
 export function PixelEffect({ visible }: PixelEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pixelsRef = useRef<Pixel[]>([]);
+  const pixelMapRef = useRef<Map<string, Pixel>>(new Map());
   const mouseRef = useRef({ x: 0, y: 0, prevX: 0, prevY: 0 });
   const animationRef = useRef<number>(0);
-  const lastSpawnRef = useRef(0);
 
   useEffect(() => {
     if (!visible) {
-      pixelsRef.current = [];
+      pixelMapRef.current.clear();
       return;
     }
 
@@ -48,6 +48,8 @@ export function PixelEffect({ visible }: PixelEffectProps) {
 
     window.addEventListener("mousemove", handleMouseMove);
 
+    const getGridKey = (gx: number, gy: number) => `${gx},${gy}`;
+
     const spawnPixels = (timestamp: number) => {
       const { x, y, prevX, prevY } = mouseRef.current;
       const dx = x - prevX;
@@ -55,47 +57,42 @@ export function PixelEffect({ visible }: PixelEffectProps) {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < 3) return;
-      
+
       mouseRef.current.prevX = x;
       mouseRef.current.prevY = y;
 
-      const timeSinceLastSpawn = timestamp - lastSpawnRef.current;
-      if (timeSinceLastSpawn < 8) return;
+      const centerGridX = Math.floor(x / PIXEL_SIZE);
+      const centerGridY = Math.floor(y / PIXEL_SIZE);
 
-      lastSpawnRef.current = timestamp;
+      const radius = 6;
 
-      const numPixels = Math.min(Math.floor(distance / 3) + 8, 25);
+      for (let offsetX = -radius; offsetX <= radius; offsetX++) {
+        for (let offsetY = -radius; offsetY <= radius; offsetY++) {
+          const dist = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+          if (dist > radius) continue;
 
-      for (let i = 0; i < numPixels; i++) {
-        const t = Math.random();
-        const px = prevX + dx * t;
-        const py = prevY + dy * t;
+          if (Math.random() > 0.4) continue;
 
-        const size = 12 + Math.random() * 20;
-        
-        const angle = Math.random() * Math.PI * 2;
-        const spreadRadius = 80 + Math.random() * 180;
-        const offsetX = Math.cos(angle) * spreadRadius;
-        const offsetY = Math.sin(angle) * spreadRadius;
-        
-        const lifetime = 1200 + Math.random() * 1200;
-        const hue = 215 + Math.random() * 20;
-        const lightness = 45 + Math.random() * 25;
+          const gx = centerGridX + offsetX;
+          const gy = centerGridY + offsetY;
+          const key = getGridKey(gx, gy);
 
-        pixelsRef.current.push({
-          x: px + offsetX,
-          y: py + offsetY,
-          size,
-          opacity: 0.7 + Math.random() * 0.3,
-          createdAt: timestamp,
-          lifetime,
-          hue,
-          lightness,
-        });
-      }
+          if (!pixelMapRef.current.has(key)) {
+            const hue = 210 + Math.random() * 25;
+            const lightness = 40 + Math.random() * 30;
+            const lifetime = 1500 + Math.random() * 1000;
 
-      if (pixelsRef.current.length > 500) {
-        pixelsRef.current = pixelsRef.current.slice(-350);
+            pixelMapRef.current.set(key, {
+              gridX: gx,
+              gridY: gy,
+              opacity: 0.85,
+              createdAt: timestamp,
+              lifetime,
+              hue,
+              lightness,
+            });
+          }
+        }
       }
     };
 
@@ -110,30 +107,38 @@ export function PixelEffect({ visible }: PixelEffectProps) {
 
       spawnPixels(timestamp);
 
-      pixelsRef.current = pixelsRef.current.filter((pixel) => {
+      const sortedPixels = Array.from(pixelMapRef.current.entries())
+        .sort((a, b) => a[1].createdAt - b[1].createdAt);
+
+      for (const [key, pixel] of sortedPixels) {
         const age = timestamp - pixel.createdAt;
-        if (age >= pixel.lifetime) return false;
+        
+        if (age >= pixel.lifetime) {
+          pixelMapRef.current.delete(key);
+          continue;
+        }
 
         const progress = age / pixel.lifetime;
         const fadeProgress = easeOutCubic(progress);
         const currentOpacity = pixel.opacity * (1 - fadeProgress);
 
-        if (currentOpacity < 0.01) return false;
-        
+        if (currentOpacity < 0.01) {
+          pixelMapRef.current.delete(key);
+          continue;
+        }
+
         ctx.save();
         ctx.globalAlpha = currentOpacity;
-        ctx.fillStyle = `hsl(${pixel.hue}, 85%, ${pixel.lightness}%)`;
-        
+        ctx.fillStyle = `hsl(${pixel.hue}, 80%, ${pixel.lightness}%)`;
+
         ctx.fillRect(
-          Math.floor(pixel.x / pixel.size) * pixel.size,
-          Math.floor(pixel.y / pixel.size) * pixel.size,
-          pixel.size - 1,
-          pixel.size - 1
+          pixel.gridX * PIXEL_SIZE,
+          pixel.gridY * PIXEL_SIZE,
+          PIXEL_SIZE - 1,
+          PIXEL_SIZE - 1
         );
         ctx.restore();
-
-        return true;
-      });
+      }
 
       animationRef.current = requestAnimationFrame(animate);
     };
