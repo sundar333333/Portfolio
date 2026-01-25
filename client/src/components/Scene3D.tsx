@@ -9,6 +9,7 @@ interface Scene3DProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
+  onScrollProgress?: (progress: number) => void;
 }
 
 function useStaticTexture() {
@@ -542,9 +543,10 @@ interface ScrollSceneProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
+  onScrollProgress?: (progress: number) => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
@@ -596,6 +598,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const isWorkVisible = offset > transitionThreshold;
     setShowWorkSection(isWorkVisible);
     onWorkSectionChange?.(isWorkVisible);
+    
+    if (isWorkVisible) {
+      const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
+      onScrollProgress?.(workProgress);
+    } else {
+      onScrollProgress?.(0);
+    }
   });
 
   return (
@@ -655,7 +664,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -676,6 +685,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
               onTVClick={onTVClick}
               isVideoPlaying={isVideoPlaying}
               onWorkSectionChange={onWorkSectionChange}
+              onScrollProgress={onScrollProgress}
             />
           </ScrollControls>
         </Suspense>
