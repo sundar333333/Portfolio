@@ -10,8 +10,8 @@ export function Header({ onTextHover }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "Works", href: "#works" },
     { label: "About Me", href: "#about" },
+    { label: "Works", href: "#works" },
     { label: "3D Room", href: "#room" },
   ];
 
