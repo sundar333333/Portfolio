@@ -83,9 +83,9 @@ export function PixelEffect({ visible }: PixelEffectProps) {
             const hue = 210 + Math.random() * 25;
             const lightness = 40 + Math.random() * 30;
             
-            const orderIndex = pixelMapRef.current.size - currentCount;
-            const baseLifetime = 400;
-            const lifetime = baseLifetime + orderIndex * 200;
+            const globalOrder = pixelMapRef.current.size;
+            const baseLifetime = 300;
+            const lifetime = baseLifetime + globalOrder * 50;
 
             pixelMapRef.current.set(key, {
               gridX: gx,
