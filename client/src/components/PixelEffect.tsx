@@ -64,7 +64,7 @@ export function PixelEffect({ visible }: PixelEffectProps) {
       const centerGridX = Math.floor(x / PIXEL_SIZE);
       const centerGridY = Math.floor(y / PIXEL_SIZE);
 
-      const radius = 6;
+      const radius = 4;
 
       for (let offsetX = -radius; offsetX <= radius; offsetX++) {
         for (let offsetY = -radius; offsetY <= radius; offsetY++) {
