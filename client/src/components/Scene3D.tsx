@@ -549,6 +549,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.45;
 
@@ -556,6 +557,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const handleMouseMove = (e: MouseEvent) => {
       targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
       targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: -(e.clientY / window.innerHeight - 0.5) * 2,
+      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -605,8 +610,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
   return (
     <>
-      <color attach="background" args={[showWorkSection ? "#030308" : "#050403"]} />
-      <fog attach="fog" args={[showWorkSection ? "#030308" : "#050403", 3, showWorkSection ? 50 : 12]} />
+      <color attach="background" args={[showWorkSection ? "#0066ff" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection ? "#0066ff" : "#050403", 3, showWorkSection ? 50 : 12]} />
       
       <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
 
@@ -655,7 +660,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
       <GlitchOverlay intensity={glitchIntensity} />
 
-      <WorkSection visible={showWorkSection} />
+      <WorkSection visible={showWorkSection} mousePosition={mousePosition} />
     </>
   );
 }

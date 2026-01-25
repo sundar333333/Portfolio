@@ -328,12 +328,51 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
   );
 }
 
-export function WorkSection({ visible }: WorkSectionProps) {
+function PixelatedBackground({ mousePosition }: { mousePosition: { x: number; y: number } }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [pixels, setPixels] = useState<{ x: number; y: number; opacity: number; size: number }[]>([]);
+  
+  useFrame(() => {
+    if (Math.random() > 0.7 && pixels.length < 50) {
+      const newPixel = {
+        x: mousePosition.x * 10 + (Math.random() - 0.5) * 4,
+        y: mousePosition.y * 6 + (Math.random() - 0.5) * 4,
+        opacity: 1,
+        size: 0.3 + Math.random() * 0.5,
+      };
+      setPixels(prev => [...prev, newPixel]);
+    }
+    
+    setPixels(prev => 
+      prev
+        .map(p => ({ ...p, opacity: p.opacity - 0.02 }))
+        .filter(p => p.opacity > 0)
+    );
+  });
+
+  return (
+    <group position={[0, 2, -10]}>
+      {pixels.map((pixel, i) => (
+        <mesh key={i} position={[pixel.x, pixel.y, 0]}>
+          <boxGeometry args={[pixel.size, pixel.size, 0.05]} />
+          <meshBasicMaterial 
+            color="#4a6a8a" 
+            transparent 
+            opacity={pixel.opacity * 0.6} 
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+export function WorkSection({ visible, mousePosition }: WorkSectionProps & { mousePosition: { x: number; y: number } }) {
   if (!visible) return null;
 
   return (
     <group position={[0, 0, -5]}>
-      <ambientLight intensity={0.05} color="#0a0a20" />
+      <PixelatedBackground mousePosition={mousePosition} />
+      <ambientLight intensity={0.3} color="#0066ff" />
     </group>
   );
 }
