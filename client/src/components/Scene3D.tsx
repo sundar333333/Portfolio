@@ -579,9 +579,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
     } else {
-      const postProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
-      targetZ = screenZ - (screenZ - endZ) * postProgress;
-      targetY = tvScreenY + postProgress * 1.5;
+      targetZ = screenZ;
+      targetY = tvScreenY;
     }
     
     const targetX = -0.05;
@@ -589,11 +588,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
     
-    if (offset < transitionThreshold) {
-      camera.lookAt(targetX, tvScreenY, 0);
-    } else {
-      camera.lookAt(targetX, camera.position.y, camera.position.z - 10);
-    }
+    camera.lookAt(targetX, tvScreenY, 0);
     
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
@@ -605,8 +600,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
   return (
     <>
-      <color attach="background" args={[showWorkSection ? "#030308" : "#050403"]} />
-      <fog attach="fog" args={[showWorkSection ? "#030308" : "#050403", 3, showWorkSection ? 50 : 12]} />
+      <color attach="background" args={[showWorkSection ? "#0066FF" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection ? "#0066FF" : "#050403", 3, showWorkSection ? 50 : 12]} />
       
       <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
 
