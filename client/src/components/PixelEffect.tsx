@@ -66,6 +66,8 @@ export function PixelEffect({ visible }: PixelEffectProps) {
 
       const radius = 4;
 
+      const currentCount = pixelMapRef.current.size;
+      
       for (let offsetX = -radius; offsetX <= radius; offsetX++) {
         for (let offsetY = -radius; offsetY <= radius; offsetY++) {
           const dist = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
@@ -80,7 +82,10 @@ export function PixelEffect({ visible }: PixelEffectProps) {
           if (!pixelMapRef.current.has(key)) {
             const hue = 210 + Math.random() * 25;
             const lightness = 40 + Math.random() * 30;
-            const lifetime = 1500 + Math.random() * 1000;
+            
+            const orderIndex = pixelMapRef.current.size - currentCount;
+            const baseLifetime = 600;
+            const lifetime = baseLifetime + orderIndex * 80;
 
             pixelMapRef.current.set(key, {
               gridX: gx,
