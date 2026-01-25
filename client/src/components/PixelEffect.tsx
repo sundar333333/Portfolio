@@ -11,9 +11,8 @@ interface Pixel {
   opacity: number;
   createdAt: number;
   lifetime: number;
-  offsetX: number;
-  offsetY: number;
   hue: number;
+  lightness: number;
 }
 
 export function PixelEffect({ visible }: PixelEffectProps) {
@@ -57,46 +56,50 @@ export function PixelEffect({ visible }: PixelEffectProps) {
       const dy = y - prevY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < 2) return;
+      if (distance < 1) return;
 
       const timeSinceLastSpawn = timestamp - lastSpawnRef.current;
-      if (timeSinceLastSpawn < 16) return;
+      if (timeSinceLastSpawn < 8) return;
 
       lastSpawnRef.current = timestamp;
 
-      const numPixels = Math.min(Math.floor(distance / 8) + 1, 5);
+      const numPixels = Math.min(Math.floor(distance / 3) + 8, 25);
 
       for (let i = 0; i < numPixels; i++) {
-        const t = i / numPixels;
+        const t = Math.random();
         const px = prevX + dx * t;
         const py = prevY + dy * t;
 
-        const size = 4 + Math.random() * 4;
-        const offsetX = (Math.random() - 0.5) * 20;
-        const offsetY = (Math.random() - 0.5) * 20;
-        const lifetime = 1000 + Math.random() * 1000;
-        const hue = 210 + Math.random() * 30;
+        const size = 12 + Math.random() * 20;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const spreadRadius = 80 + Math.random() * 180;
+        const offsetX = Math.cos(angle) * spreadRadius;
+        const offsetY = Math.sin(angle) * spreadRadius;
+        
+        const lifetime = 1200 + Math.random() * 1200;
+        const hue = 215 + Math.random() * 20;
+        const lightness = 45 + Math.random() * 25;
 
         pixelsRef.current.push({
           x: px + offsetX,
           y: py + offsetY,
           size,
-          opacity: 0.9,
+          opacity: 0.7 + Math.random() * 0.3,
           createdAt: timestamp,
           lifetime,
-          offsetX,
-          offsetY,
           hue,
+          lightness,
         });
       }
 
-      if (pixelsRef.current.length > 300) {
-        pixelsRef.current = pixelsRef.current.slice(-200);
+      if (pixelsRef.current.length > 500) {
+        pixelsRef.current = pixelsRef.current.slice(-350);
       }
     };
 
-    const easeOutQuad = (t: number): number => {
-      return 1 - (1 - t) * (1 - t);
+    const easeOutCubic = (t: number): number => {
+      return 1 - Math.pow(1 - t, 3);
     };
 
     const animate = (timestamp: number) => {
@@ -111,20 +114,20 @@ export function PixelEffect({ visible }: PixelEffectProps) {
         if (age >= pixel.lifetime) return false;
 
         const progress = age / pixel.lifetime;
-        const fadeProgress = easeOutQuad(progress);
-        pixel.opacity = 0.9 * (1 - fadeProgress);
+        const fadeProgress = easeOutCubic(progress);
+        const currentOpacity = pixel.opacity * (1 - fadeProgress);
 
-        const jitter = Math.sin(timestamp * 0.01 + pixel.x) * 0.5;
+        if (currentOpacity < 0.01) return false;
         
         ctx.save();
-        ctx.globalAlpha = pixel.opacity;
-        ctx.fillStyle = `hsl(${pixel.hue}, 90%, 55%)`;
+        ctx.globalAlpha = currentOpacity;
+        ctx.fillStyle = `hsl(${pixel.hue}, 85%, ${pixel.lightness}%)`;
         
         ctx.fillRect(
-          pixel.x + jitter,
-          pixel.y + jitter,
-          pixel.size,
-          pixel.size
+          Math.floor(pixel.x / pixel.size) * pixel.size,
+          Math.floor(pixel.y / pixel.size) * pixel.size,
+          pixel.size - 1,
+          pixel.size - 1
         );
         ctx.restore();
 
