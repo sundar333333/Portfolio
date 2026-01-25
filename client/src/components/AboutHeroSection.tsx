@@ -6,7 +6,7 @@ interface AboutHeroSectionProps {
   scrollProgress: number;
 }
 
-const greetings = ["HELLO!", "¡HOLA!", "OLÁ!", "ПРИВЕТ!", "नमस्ते!"];
+const greetings = ["HELLO!", "¡HOLA!", "OLÁ!", "ПРИВЕТ!", "வணக்கம்!"];
 const roles = ["UI UX", "PRODUCT", "BRAND", "WEB"];
 
 export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionProps) {
@@ -35,7 +35,7 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  const aboutMeY = -100 + scrollProgress * (window.innerHeight + 200);
+  const aboutMeY = 80 + scrollProgress * (window.innerHeight + 100);
   const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
                          scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
   
