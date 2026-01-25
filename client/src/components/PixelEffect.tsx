@@ -1,46 +1,37 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface PixelEffectProps {
   visible: boolean;
-  backgroundColor?: string;
 }
 
-export function PixelEffect({ visible, backgroundColor = "#0066FF" }: PixelEffectProps) {
+interface Pixel {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  createdAt: number;
+  lifetime: number;
+  offsetX: number;
+  offsetY: number;
+  hue: number;
+}
+
+export function PixelEffect({ visible }: PixelEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const targetRef = useRef({ x: 0, y: 0 });
+  const pixelsRef = useRef<Pixel[]>([]);
+  const mouseRef = useRef({ x: 0, y: 0, prevX: 0, prevY: 0 });
   const animationRef = useRef<number>(0);
-  const [isActive, setIsActive] = useState(false);
+  const lastSpawnRef = useRef(0);
 
   useEffect(() => {
     if (!visible) {
-      setIsActive(false);
+      pixelsRef.current = [];
       return;
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      targetRef.current.x = e.clientX;
-      targetRef.current.y = e.clientY;
-      setIsActive(true);
-    };
-
-    const handleMouseLeave = () => {
-      setIsActive(false);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible || !canvasRef.current) return;
-
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -51,69 +42,106 @@ export function PixelEffect({ visible, backgroundColor = "#0066FF" }: PixelEffec
     resize();
     window.addEventListener("resize", resize);
 
-    const pixelSize = 20;
-    const effectRadius = 150;
-    const innerRadius = 40;
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.prevX = mouseRef.current.x;
+      mouseRef.current.prevY = mouseRef.current.y;
+      mouseRef.current.x = e.clientX;
+      mouseRef.current.y = e.clientY;
+    };
 
-    const animate = () => {
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const spawnPixels = (timestamp: number) => {
+      const { x, y, prevX, prevY } = mouseRef.current;
+      const dx = x - prevX;
+      const dy = y - prevY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 2) return;
+
+      const timeSinceLastSpawn = timestamp - lastSpawnRef.current;
+      if (timeSinceLastSpawn < 16) return;
+
+      lastSpawnRef.current = timestamp;
+
+      const numPixels = Math.min(Math.floor(distance / 8) + 1, 5);
+
+      for (let i = 0; i < numPixels; i++) {
+        const t = i / numPixels;
+        const px = prevX + dx * t;
+        const py = prevY + dy * t;
+
+        const size = 4 + Math.random() * 4;
+        const offsetX = (Math.random() - 0.5) * 20;
+        const offsetY = (Math.random() - 0.5) * 20;
+        const lifetime = 1000 + Math.random() * 1000;
+        const hue = 210 + Math.random() * 30;
+
+        pixelsRef.current.push({
+          x: px + offsetX,
+          y: py + offsetY,
+          size,
+          opacity: 0.9,
+          createdAt: timestamp,
+          lifetime,
+          offsetX,
+          offsetY,
+          hue,
+        });
+      }
+
+      if (pixelsRef.current.length > 300) {
+        pixelsRef.current = pixelsRef.current.slice(-200);
+      }
+    };
+
+    const easeOutQuad = (t: number): number => {
+      return 1 - (1 - t) * (1 - t);
+    };
+
+    const animate = (timestamp: number) => {
       if (!ctx || !visible) return;
-
-      mouseRef.current.x += (targetRef.current.x - mouseRef.current.x) * 0.15;
-      mouseRef.current.y += (targetRef.current.y - mouseRef.current.y) * 0.15;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (!isActive) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
+      spawnPixels(timestamp);
 
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
+      pixelsRef.current = pixelsRef.current.filter((pixel) => {
+        const age = timestamp - pixel.createdAt;
+        if (age >= pixel.lifetime) return false;
 
-      const startX = Math.max(0, Math.floor((mx - effectRadius) / pixelSize) * pixelSize);
-      const startY = Math.max(0, Math.floor((my - effectRadius) / pixelSize) * pixelSize);
-      const endX = Math.min(canvas.width, Math.ceil((mx + effectRadius) / pixelSize) * pixelSize);
-      const endY = Math.min(canvas.height, Math.ceil((my + effectRadius) / pixelSize) * pixelSize);
+        const progress = age / pixel.lifetime;
+        const fadeProgress = easeOutQuad(progress);
+        pixel.opacity = 0.9 * (1 - fadeProgress);
 
-      for (let x = startX; x < endX; x += pixelSize) {
-        for (let y = startY; y < endY; y += pixelSize) {
-          const centerX = x + pixelSize / 2;
-          const centerY = y + pixelSize / 2;
-          const dist = Math.sqrt((centerX - mx) ** 2 + (centerY - my) ** 2);
+        const jitter = Math.sin(timestamp * 0.01 + pixel.x) * 0.5;
+        
+        ctx.save();
+        ctx.globalAlpha = pixel.opacity;
+        ctx.fillStyle = `hsl(${pixel.hue}, 90%, 55%)`;
+        
+        ctx.fillRect(
+          pixel.x + jitter,
+          pixel.y + jitter,
+          pixel.size,
+          pixel.size
+        );
+        ctx.restore();
 
-          if (dist < effectRadius && dist > innerRadius) {
-            const falloff = 1 - (dist - innerRadius) / (effectRadius - innerRadius);
-            const alpha = falloff * 0.85;
-
-            const baseColor = { r: 0, g: 102, b: 255 };
-            const variation = Math.sin(x * 0.02 + y * 0.02) * 15;
-            
-            const r = Math.min(255, Math.max(0, baseColor.r + variation));
-            const g = Math.min(255, Math.max(0, baseColor.g + variation));
-            const b = Math.min(255, Math.max(0, baseColor.b + variation * 0.5));
-
-            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-            
-            const sizeVariation = 0.9 + Math.random() * 0.2;
-            const adjustedSize = pixelSize * sizeVariation;
-            const offset = (pixelSize - adjustedSize) / 2;
-            
-            ctx.fillRect(x + offset, y + offset, adjustedSize - 1, adjustedSize - 1);
-          }
-        }
-      }
+        return true;
+      });
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
-  }, [visible, isActive, backgroundColor]);
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -121,7 +149,6 @@ export function PixelEffect({ visible, backgroundColor = "#0066FF" }: PixelEffec
     <canvas
       ref={canvasRef}
       className="fixed inset-0 z-10 pointer-events-none"
-      style={{ mixBlendMode: "multiply" }}
       data-testid="pixel-effect-canvas"
     />
   );
