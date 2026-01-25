@@ -3,7 +3,6 @@ import { useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 import posterImage from "@assets/Tabloid_-_2_1769105145589.png";
-import { PixelatedBackground } from "./PixelatedBackground";
 
 interface WorkSectionProps {
   visible: boolean;
@@ -329,12 +328,12 @@ function GlassyPoster({ onPosterClick }: { onPosterClick: () => void }) {
   );
 }
 
-export function WorkSection({ visible, mousePosition }: WorkSectionProps & { mousePosition: { x: number; y: number } }) {
+export function WorkSection({ visible }: WorkSectionProps) {
   if (!visible) return null;
 
   return (
     <group position={[0, 0, -5]}>
-      <PixelatedBackground mousePosition={mousePosition} />
+      <ambientLight intensity={0.05} color="#0a0a20" />
     </group>
   );
 }

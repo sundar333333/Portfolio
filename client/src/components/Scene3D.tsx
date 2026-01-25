@@ -549,7 +549,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.45;
 
@@ -557,10 +556,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const handleMouseMove = (e: MouseEvent) => {
       targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
       targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: -(e.clientY / window.innerHeight - 0.5) * 2,
-      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -584,8 +579,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
     } else {
-      targetZ = screenZ;
-      targetY = tvScreenY;
+      const postProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
+      targetZ = screenZ - (screenZ - endZ) * postProgress;
+      targetY = tvScreenY + postProgress * 1.5;
     }
     
     const targetX = -0.05;
@@ -593,7 +589,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
     
-    camera.lookAt(targetX, tvScreenY, 0);
+    if (offset < transitionThreshold) {
+      camera.lookAt(targetX, tvScreenY, 0);
+    } else {
+      camera.lookAt(targetX, camera.position.y, camera.position.z - 10);
+    }
     
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
@@ -605,34 +605,32 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
 
   return (
     <>
-      <color attach="background" args={[showWorkSection ? "#0066ff" : "#050403"]} />
-      <fog attach="fog" args={[showWorkSection ? "#0066ff" : "#050403", 3, showWorkSection ? 50 : 12]} />
+      <color attach="background" args={[showWorkSection ? "#030308" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection ? "#030308" : "#050403", 3, showWorkSection ? 50 : 12]} />
       
-      {!showWorkSection && (
-        <>
-          <ambientLight intensity={0.08} color="#1a1820" />
-          <spotLight
-            position={[0, 3.5, 1.5]}
-            angle={0.35}
-            penumbra={0.7}
-            intensity={15}
-            color="#fff8f0"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0001}
-          />
-          <spotLight
-            position={[-1.5, 2, 2]}
-            angle={0.5}
-            penumbra={0.9}
-            intensity={3}
-            color="#aab8cc"
-          />
-        </>
-      )}
+      <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
 
-      {!showWorkSection && <Environment preset="night" background={false} />}
+      <spotLight
+        position={[0, 3.5, 1.5]}
+        angle={0.35}
+        penumbra={0.7}
+        intensity={showWorkSection ? 5 : 15}
+        color="#fff8f0"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-bias={-0.0001}
+      />
+
+      <spotLight
+        position={[-1.5, 2, 2]}
+        angle={0.5}
+        penumbra={0.9}
+        intensity={showWorkSection ? 1 : 3}
+        color="#aab8cc"
+      />
+
+      <Environment preset="night" background={false} />
       
       <TiledFloor visible={!showWorkSection} />
 
@@ -655,9 +653,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         glitchIntensity={glitchIntensity}
       />
 
-      {!showWorkSection && <GlitchOverlay intensity={glitchIntensity} />}
+      <GlitchOverlay intensity={glitchIntensity} />
 
-      <WorkSection visible={showWorkSection} mousePosition={mousePosition} />
+      <WorkSection visible={showWorkSection} />
     </>
   );
 }
