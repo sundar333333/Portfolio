@@ -42,8 +42,6 @@ export function PixelEffect({ visible }: PixelEffectProps) {
     window.addEventListener("resize", resize);
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current.prevX = mouseRef.current.x;
-      mouseRef.current.prevY = mouseRef.current.y;
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
     };
@@ -56,7 +54,10 @@ export function PixelEffect({ visible }: PixelEffectProps) {
       const dy = y - prevY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < 1) return;
+      if (distance < 3) return;
+      
+      mouseRef.current.prevX = x;
+      mouseRef.current.prevY = y;
 
       const timeSinceLastSpawn = timestamp - lastSpawnRef.current;
       if (timeSinceLastSpawn < 8) return;
