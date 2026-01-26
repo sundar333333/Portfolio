@@ -23,79 +23,143 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  const qaProgress = Math.max(0, (scrollProgress - 0.6) / 0.4);
+  // Q&A starts after hero fades (at 60% scroll progress)
+  // Each Q&A pair needs: 1.5 scroll for question (bottom to middle), 1.5 scroll for question (middle to top)
+  // Then 1.5 scroll for answer (bottom to middle), 1.5 scroll for answer (middle to top)
+  // Total per Q&A: 6 scroll units, but we overlap: 3 scroll units per Q&A item (question + answer)
   
-  const sectionPerQA = 1 / qaData.length;
+  const qaStartProgress = 0.6;
+  const qaProgress = Math.max(0, (scrollProgress - qaStartProgress) / (1 - qaStartProgress));
+  
+  // Each Q&A takes about 0.25 of the remaining scroll (question phase + answer phase)
+  // For 3 Q&As: 0.25 * 3 = 0.75, leaving 0.25 for final answer to stay in middle
+  const scrollPerQA = 0.28;
+  const scrollPerPhase = scrollPerQA / 4; // 4 phases: q-in, q-out, a-in, a-out
   
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {qaData.map((qa, index) => {
-        const qaStart = index * sectionPerQA;
-        const qaEnd = (index + 1) * sectionPerQA;
-        const qaMid = qaStart + sectionPerQA * 0.3;
+        const qaStart = index * scrollPerQA;
+        const isLastQA = index === qaData.length - 1;
         
-        const localProgress = (qaProgress - qaStart) / sectionPerQA;
+        // Question phases
+        const qInStart = qaStart;
+        const qInEnd = qaStart + scrollPerPhase * 1.5;
+        const qOutStart = qInEnd;
+        const qOutEnd = qaStart + scrollPerPhase * 3;
         
-        const questionProgress = Math.max(0, Math.min(1, localProgress * 3));
-        const questionY = 120 + (1 - questionProgress) * 300;
-        const questionRotation = -20 + questionProgress * 20;
-        const questionOpacity = localProgress < 0.1 ? localProgress * 10 :
-                               localProgress > 0.5 ? Math.max(0, (0.7 - localProgress) * 5) : 1;
+        // Answer phases
+        const aInStart = qOutStart;
+        const aInEnd = qaStart + scrollPerPhase * 3;
+        const aOutStart = aInEnd;
+        const aOutEnd = isLastQA ? 1.5 : qaStart + scrollPerPhase * 4; // Last answer stays
         
-        const answerProgress = Math.max(0, Math.min(1, (localProgress - 0.2) * 2));
-        const answerY = 50 - Math.max(0, localProgress - 0.6) * 300;
-        const answerOpacity = localProgress < 0.25 ? 0 :
-                             localProgress < 0.4 ? (localProgress - 0.25) * 6.67 :
-                             localProgress > 0.8 ? Math.max(0, (1 - localProgress) * 5) : 1;
-
-        const isActive = localProgress > -0.1 && localProgress < 1.1;
+        // Calculate question animation
+        const qInProgress = Math.max(0, Math.min(1, (qaProgress - qInStart) / (qInEnd - qInStart)));
+        const qOutProgress = Math.max(0, Math.min(1, (qaProgress - qOutStart) / (qOutEnd - qOutStart)));
         
-        if (!isActive) return null;
-
+        // Question position: starts at bottom-left (-45°), moves to center (0°), then to top-right (45°)
+        // Y position: 100% (bottom) -> 50% (middle) -> 0% (top)
+        // X position follows the diagonal
+        let questionY, questionX, questionRotation, questionOpacity;
+        
+        if (qInProgress < 1) {
+          // Phase 1: Bottom to middle (-45° angle)
+          questionY = 100 - qInProgress * 50; // 100% to 50%
+          questionX = -20 + qInProgress * 20; // starts off-screen left
+          questionRotation = -45 + qInProgress * 45; // -45° to 0°
+          questionOpacity = 0.3 + qInProgress * 0.7; // faded to full
+        } else {
+          // Phase 2: Middle to top (45° angle)
+          questionY = 50 - qOutProgress * 50; // 50% to 0%
+          questionX = qOutProgress * 30; // moves right as it goes up
+          questionRotation = qOutProgress * 45; // 0° to 45°
+          questionOpacity = 1 - qOutProgress; // full to faded
+        }
+        
+        // Calculate answer animation
+        const aInProgress = Math.max(0, Math.min(1, (qaProgress - aInStart) / (aInEnd - aInStart)));
+        const aOutProgress = isLastQA 
+          ? Math.max(0, Math.min(0.5, (qaProgress - aOutStart) / (aOutEnd - aOutStart))) // Last answer stops at middle
+          : Math.max(0, Math.min(1, (qaProgress - aOutStart) / (aOutEnd - aOutStart)));
+        
+        let answerY, answerOpacity;
+        
+        if (aInProgress < 1) {
+          // Phase 1: Bottom to middle
+          answerY = 100 - aInProgress * 50; // 100% to 50%
+          answerOpacity = aInProgress; // fade in
+        } else {
+          // Phase 2: Middle to top (or stay for last answer)
+          if (isLastQA && aOutProgress >= 0.5) {
+            // Last answer stays at middle
+            answerY = 50;
+            answerOpacity = 1;
+          } else {
+            answerY = 50 - aOutProgress * 50; // 50% to 0%
+            answerOpacity = 1 - aOutProgress; // fade out
+          }
+        }
+        
+        // Check if this Q&A is active
+        const isQuestionActive = qaProgress >= qInStart - 0.05 && qaProgress <= qOutEnd + 0.05 && questionOpacity > 0.01;
+        const isAnswerActive = qaProgress >= aInStart - 0.05 && (isLastQA || qaProgress <= aOutEnd + 0.05) && answerOpacity > 0.01;
+        
         return (
           <div key={index}>
-            <motion.div
-              className="absolute left-8 md:left-16"
-              style={{
-                top: questionY,
-                opacity: questionOpacity,
-                transform: `rotate(${questionRotation}deg)`,
-                transformOrigin: "left center",
-              }}
-            >
-              <span
-                className="text-white font-serif italic whitespace-nowrap"
+            {/* Question */}
+            {isQuestionActive && (
+              <motion.div
+                className="absolute left-8 md:left-16"
                 style={{
-                  fontSize: "clamp(2rem, 5vw, 4rem)",
-                  textShadow: "0 0 30px rgba(255,255,255,0.3)",
-                  fontWeight: 300,
+                  top: `${questionY}%`,
+                  left: `${Math.max(5, 5 + questionX)}%`,
+                  opacity: questionOpacity,
+                  transform: `rotate(${questionRotation}deg) translateY(-50%)`,
+                  transformOrigin: "left center",
                 }}
               >
-                {qa.question}
-              </span>
-            </motion.div>
+                <span
+                  className="whitespace-nowrap"
+                  style={{
+                    fontFamily: "'Times New Roman', Georgia, serif",
+                    fontStyle: "italic",
+                    fontSize: "clamp(3rem, 8vw, 6rem)",
+                    fontWeight: 400,
+                    color: `rgba(60, 60, 60, ${0.4 + questionOpacity * 0.6})`,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {qa.question}
+                </span>
+              </motion.div>
+            )}
 
-            <motion.div
-              className="absolute left-8 md:left-16 right-8 md:right-16"
-              style={{
-                top: `calc(50% + ${answerY}px)`,
-                opacity: answerOpacity,
-                transform: "translateY(-50%)",
-              }}
-            >
-              <p
-                className="text-white/90 max-w-3xl"
+            {/* Answer */}
+            {isAnswerActive && (
+              <motion.div
+                className="absolute left-8 md:left-16 right-8 md:right-16"
                 style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
-                  lineHeight: 1.8,
-                  fontWeight: 300,
-                  whiteSpace: "pre-line",
+                  top: `${answerY}%`,
+                  opacity: answerOpacity,
+                  transform: "translateY(-50%)",
                 }}
               >
-                {qa.answer}
-              </p>
-            </motion.div>
+                <p
+                  className="max-w-4xl"
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
+                    lineHeight: 1.9,
+                    fontWeight: 300,
+                    color: "rgba(255, 255, 255, 0.9)",
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {qa.answer}
+                </p>
+              </motion.div>
+            )}
           </div>
         );
       })}
