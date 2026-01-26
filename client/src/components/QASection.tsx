@@ -23,12 +23,8 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts at 60% scroll progress
-  const qaProgress = Math.max(0, Math.min(1, (scrollProgress - 0.55) / 0.45));
+  const qaProgress = Math.max(0, (scrollProgress - 0.6) / 0.4);
   
-  // Each Q&A pair gets equal portion of the remaining scroll
-  // Question phase: rotation from -90 to 0 to 90
-  // Answer phase: pop up from bottom, scroll up, fade away
   const sectionPerQA = 1 / qaData.length;
   
   return (
@@ -36,71 +32,49 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
       {qaData.map((qa, index) => {
         const qaStart = index * sectionPerQA;
         const qaEnd = (index + 1) * sectionPerQA;
+        const qaMid = qaStart + sectionPerQA * 0.3;
         
-        // Local progress within this Q&A (0 to 1)
         const localProgress = (qaProgress - qaStart) / sectionPerQA;
         
-        // Question phase: 0% to 40% of local progress
-        // -90° at start, 0° at 20%, 90° at 40%, then fade
-        const questionPhaseEnd = 0.4;
-        const questionProgress = Math.min(1, localProgress / questionPhaseEnd);
+        const questionProgress = Math.max(0, Math.min(1, localProgress * 3));
+        const questionY = 120 + (1 - questionProgress) * 300;
+        const questionRotation = -20 + questionProgress * 20;
+        const questionOpacity = localProgress < 0.1 ? localProgress * 10 :
+                               localProgress > 0.5 ? Math.max(0, (0.7 - localProgress) * 5) : 1;
         
-        // Rotation: -90 → 0 → 90 as questionProgress goes 0 → 0.5 → 1
-        const questionRotation = -90 + (questionProgress * 180);
-        
-        // Question opacity: fade in at start, fade out at end of question phase
-        const questionOpacity = localProgress < 0 ? 0 :
-                               localProgress < 0.05 ? localProgress * 20 :
-                               localProgress < 0.35 ? 1 :
-                               localProgress < 0.45 ? Math.max(0, (0.45 - localProgress) * 10) : 0;
-        
-        // Answer phase: 45% to 100% of local progress
-        const answerPhaseStart = 0.45;
-        const answerProgress = Math.max(0, (localProgress - answerPhaseStart) / (1 - answerPhaseStart));
-        
-        // Answer Y position: starts from bottom (100vh), moves up, then continues up and fades
-        const answerY = answerProgress < 0.3 ? 
-                        window.innerHeight * 0.4 * (1 - answerProgress / 0.3) : 
-                        -window.innerHeight * 0.5 * ((answerProgress - 0.3) / 0.7);
-        
-        // Answer opacity: fade in as it comes up, stay visible, fade out as it goes up
-        const answerOpacity = answerProgress < 0 ? 0 :
-                             answerProgress < 0.15 ? answerProgress * 6.67 :
-                             answerProgress < 0.7 ? 1 :
-                             Math.max(0, (1 - answerProgress) * 3.33);
+        const answerProgress = Math.max(0, Math.min(1, (localProgress - 0.2) * 2));
+        const answerY = 50 - Math.max(0, localProgress - 0.6) * 300;
+        const answerOpacity = localProgress < 0.25 ? 0 :
+                             localProgress < 0.4 ? (localProgress - 0.25) * 6.67 :
+                             localProgress > 0.8 ? Math.max(0, (1 - localProgress) * 5) : 1;
 
-        const isActive = localProgress > -0.1 && localProgress < 1.2;
+        const isActive = localProgress > -0.1 && localProgress < 1.1;
         
         if (!isActive) return null;
 
         return (
           <div key={index}>
-            {/* Question - rotates from -90° to 0° to 90° */}
             <motion.div
-              className="absolute"
+              className="absolute left-8 md:left-16"
               style={{
-                left: "60px",
-                top: "50%",
+                top: questionY,
                 opacity: questionOpacity,
-                transform: `translateY(-50%) rotate(${questionRotation}deg)`,
+                transform: `rotate(${questionRotation}deg)`,
                 transformOrigin: "left center",
               }}
             >
               <span
-                className="text-white whitespace-nowrap"
+                className="text-white font-serif italic whitespace-nowrap"
                 style={{
-                  fontFamily: "'Archivo Black', 'Anton', sans-serif",
-                  fontSize: "clamp(3rem, 8vw, 6rem)",
-                  fontWeight: 900,
-                  letterSpacing: "0.02em",
-                  textShadow: "0 0 40px rgba(255,255,255,0.4)",
+                  fontSize: "clamp(2rem, 5vw, 4rem)",
+                  textShadow: "0 0 30px rgba(255,255,255,0.3)",
+                  fontWeight: 300,
                 }}
               >
                 {qa.question}
               </span>
             </motion.div>
 
-            {/* Answer - pops up from bottom, scrolls upward */}
             <motion.div
               className="absolute left-8 md:left-16 right-8 md:right-16"
               style={{
@@ -113,8 +87,8 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
                 className="text-white/90 max-w-3xl"
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
-                  lineHeight: 1.9,
+                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
+                  lineHeight: 1.8,
                   fontWeight: 300,
                   whiteSpace: "pre-line",
                 }}
