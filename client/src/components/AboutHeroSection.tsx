@@ -35,10 +35,10 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  // ABOUT ME: original timing
-  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 2);
-  const aboutMeOpacity = scrollProgress < 0.05 ? scrollProgress * 20 : 
-                         scrollProgress > 0.4 ? Math.max(0, (0.5 - scrollProgress) * 10) : 1;
+  // ABOUT ME: faster scroll
+  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 4);
+  const aboutMeOpacity = scrollProgress < 0.03 ? scrollProgress * 33 : 
+                         scrollProgress > 0.25 ? Math.max(0, (0.35 - scrollProgress) * 10) : 1;
   
   // Hero: original timing
   const heroOpacity = scrollProgress > 0.15 && scrollProgress < 0.6 ? 
