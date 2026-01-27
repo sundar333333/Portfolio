@@ -679,7 +679,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={2} damping={0.2}>
+          <ScrollControls pages={3} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}

@@ -36,13 +36,13 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   if (!visible) return null;
 
   const aboutMeY = 120 + scrollProgress * (window.innerHeight);
-  const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
-                         scrollProgress > 0.6 ? Math.max(1 - (scrollProgress - 0.6) * 4, 0) : 1;
+  const aboutMeOpacity = scrollProgress < 0.05 ? scrollProgress * 20 : 
+                         scrollProgress > 0.35 ? Math.max(1 - (scrollProgress - 0.35) * 5, 0) : 1;
   
-  const heroOpacity = scrollProgress > 0.4 
-    ? (scrollProgress > 0.95 
-        ? Math.max(1 - (scrollProgress - 0.95) * 20, 0) 
-        : Math.min((scrollProgress - 0.4) * 2.5, 1)) 
+  const heroOpacity = scrollProgress > 0.25 
+    ? (scrollProgress > 0.75 
+        ? Math.max(1 - (scrollProgress - 0.75) * 4, 0) 
+        : Math.min((scrollProgress - 0.25) * 3, 1)) 
     : 0;
   const heroY = scrollProgress > 0.3 ? 
                 Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
