@@ -23,14 +23,13 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely disappears (at 0.12)
-  // Each phase gets ~0.098 of scroll progress (same as ABOUT ME duration)
-  const qaStartProgress = 0.12;
+  // Q&A starts after hero completely disappears (at 0.6)
+  // ABOUT ME takes ~0.5 scroll progress, so each Q&A phase should too
+  const qaStartProgress = 0.6;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
   // 3 Q&A pairs × 3 phases each = 9 total phases
-  // Each phase gets equal scroll time (matching ABOUT ME)
   const totalPhases = 9;
   const phaseSize = qaTotalRange / totalPhases;
   
@@ -40,16 +39,12 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         const isLastQuestion = index === qaData.length - 1;
         
         // Each Q&A pair gets 3 phases
-        // Phase 1: Question scrolls right to left
-        // Phase 2: Answer scrolls bottom to meet question
-        // Phase 3: Both scroll up and disappear
-        
         const qaPhaseStart = qaStartProgress + (index * 3 * phaseSize);
         const phase1End = qaPhaseStart + phaseSize;
         const phase2End = phase1End + phaseSize;
         const phase3End = phase2End + phaseSize;
         
-        // Determine current phase progress
+        // Calculate phase progress
         let phase1Progress = 0;
         let phase2Progress = 0;
         let phase3Progress = 0;
@@ -72,21 +67,18 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
           phase3Progress = 1;
         }
         
-        // Only render if we're in this Q&A's range
+        // Only render if in this Q&A's range
         if (scrollProgress < qaPhaseStart - 0.01 || scrollProgress > phase3End + 0.01) {
           return null;
         }
         
-        // Question X: scrolls from right (105%) to left (5%) during phase 1
-        const questionXStart = 105;
-        const questionXEnd = 5;
-        const questionX = questionXStart - phase1Progress * (questionXStart - questionXEnd);
+        // Question X: right to left during phase 1
+        const questionX = 105 - phase1Progress * 100;
         
-        // Question Y: stays at 25%, then moves up during phase 3
-        const questionYBase = 25;
-        let questionY = questionYBase;
+        // Question Y: stays at 25%, moves up during phase 3
+        let questionY = 25;
         if (phase3Progress > 0 && !isLastQuestion) {
-          questionY = questionYBase - phase3Progress * 80;
+          questionY = 25 - phase3Progress * 80;
         }
         
         // Question opacity
@@ -101,17 +93,12 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
           questionOpacity = 1;
         }
         
-        // Answer Y: scrolls from bottom (105%) to position (38%) during phase 2
-        const answerYStart = 105;
-        const answerYEnd = 38;
-        let answerY = answerYStart;
-        if (phase2Progress > 0) {
-          answerY = answerYStart - phase2Progress * (answerYStart - answerYEnd);
-        }
+        // Answer Y: bottom to position during phase 2
+        let answerY = 105 - phase2Progress * 67;
         
-        // Answer moves up with question during phase 3
+        // Answer moves up during phase 3
         if (phase3Progress > 0 && !isLastQuestion) {
-          answerY = answerYEnd - phase3Progress * 80;
+          answerY = 38 - phase3Progress * 80;
         }
         
         // Answer opacity
@@ -128,7 +115,6 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
 
         return (
           <div key={index}>
-            {/* Question - scrolls from right to left */}
             <motion.div
               className="absolute"
               style={{
@@ -151,7 +137,6 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
               </span>
             </motion.div>
 
-            {/* Answer - scrolls from bottom */}
             <motion.div
               className="absolute"
               style={{
