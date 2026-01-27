@@ -23,73 +23,127 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  const qaProgress = Math.max(0, (scrollProgress - 0.6) / 0.4);
+  // Q&A starts after hero fades (at 0.6 scroll progress)
+  // Each Q&A pair gets a larger section for slower scrolling
+  const qaStartProgress = 0.55;
+  const qaEndProgress = 1.0;
+  const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  const sectionPerQA = 1 / qaData.length;
+  // Each Q&A pair gets equal portion of the remaining scroll
+  const sectionPerQA = qaTotalRange / qaData.length;
+  
+  // Calculate local progress within Q&A section (0 to 1)
+  const qaProgress = Math.max(0, Math.min(1, (scrollProgress - qaStartProgress) / qaTotalRange));
   
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {qaData.map((qa, index) => {
+        const isLastQuestion = index === qaData.length - 1;
+        
+        // Calculate progress for this specific Q&A pair
         const qaStart = index * sectionPerQA;
         const qaEnd = (index + 1) * sectionPerQA;
-        const qaMid = qaStart + sectionPerQA * 0.3;
         
+        // Local progress within this Q&A (0 to 1)
         const localProgress = (qaProgress - qaStart) / sectionPerQA;
         
-        const questionProgress = Math.max(0, Math.min(1, localProgress * 3));
-        const questionY = 120 + (1 - questionProgress) * 300;
-        const questionRotation = -20 + questionProgress * 20;
-        const questionOpacity = localProgress < 0.1 ? localProgress * 10 :
-                               localProgress > 0.5 ? Math.max(0, (0.7 - localProgress) * 5) : 1;
+        // Phase 1: Question scrolls from right to center (0 - 0.25)
+        // Phase 2: Answer scrolls from bottom to center (0.25 - 0.5)
+        // Phase 3: Both stay in middle (0.5 - 0.65)
+        // Phase 4: Both scroll upward and disappear (0.65 - 1.0) - except last question
         
-        const answerProgress = Math.max(0, Math.min(1, (localProgress - 0.2) * 2));
-        const answerY = 50 - Math.max(0, localProgress - 0.6) * 300;
-        const answerOpacity = localProgress < 0.25 ? 0 :
-                             localProgress < 0.4 ? (localProgress - 0.25) * 6.67 :
-                             localProgress > 0.8 ? Math.max(0, (1 - localProgress) * 5) : 1;
+        // Question animation: right to center
+        // Starts off-screen right (100%), moves to center (50%)
+        const questionPhaseEnd = 0.25;
+        const questionX = localProgress < 0 ? 100 :
+                         localProgress < questionPhaseEnd ? 100 - (localProgress / questionPhaseEnd) * 50 : 50;
+        
+        // Question opacity
+        let questionOpacity = 0;
+        if (localProgress >= 0 && localProgress < 0.2) {
+          questionOpacity = localProgress / 0.2; // Fade in
+        } else if (localProgress >= 0.2 && localProgress < 0.7) {
+          questionOpacity = 1; // Fully visible
+        } else if (localProgress >= 0.7 && !isLastQuestion) {
+          questionOpacity = Math.max(0, 1 - (localProgress - 0.7) / 0.3); // Fade out
+        } else if (isLastQuestion && localProgress >= 0.2) {
+          questionOpacity = 1; // Stay visible for last question
+        }
+        
+        // Question Y position (moves up in phase 4)
+        const questionY = localProgress > 0.65 && !isLastQuestion ? 
+                         50 - (localProgress - 0.65) * 150 : 50;
+        
+        // Answer animation: bottom to center
+        const answerPhaseStart = 0.25;
+        const answerPhaseEnd = 0.5;
+        const answerY = localProgress < answerPhaseStart ? 100 :
+                       localProgress < answerPhaseEnd ? 
+                         100 - ((localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart)) * 50 : 
+                       localProgress > 0.65 && !isLastQuestion ?
+                         50 - (localProgress - 0.65) * 150 : 50;
+        
+        // Answer opacity
+        let answerOpacity = 0;
+        if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
+          answerOpacity = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart); // Fade in
+        } else if (localProgress >= answerPhaseEnd && localProgress < 0.7) {
+          answerOpacity = 1; // Fully visible
+        } else if (localProgress >= 0.7 && !isLastQuestion) {
+          answerOpacity = Math.max(0, 1 - (localProgress - 0.7) / 0.3); // Fade out
+        } else if (isLastQuestion && localProgress >= answerPhaseEnd) {
+          answerOpacity = 1; // Stay visible for last question
+        }
 
-        const isActive = localProgress > -0.1 && localProgress < 1.1;
+        // Only render if this Q&A is active
+        const isActive = localProgress > -0.1 && localProgress < 1.2;
         
         if (!isActive) return null;
 
         return (
           <div key={index}>
+            {/* Question - scrolls from right to center */}
             <motion.div
-              className="absolute left-8 md:left-16"
+              className="absolute w-full flex justify-center"
               style={{
-                top: questionY,
+                left: `${questionX - 50}%`,
+                top: `${questionY}%`,
+                transform: "translate(0, -50%)",
                 opacity: questionOpacity,
-                transform: `rotate(${questionRotation}deg)`,
-                transformOrigin: "left center",
               }}
             >
               <span
-                className="text-white font-serif italic whitespace-nowrap"
+                className="whitespace-nowrap"
                 style={{
-                  fontSize: "clamp(2rem, 5vw, 4rem)",
-                  textShadow: "0 0 30px rgba(255,255,255,0.3)",
-                  fontWeight: 300,
+                  fontFamily: "'Times New Roman', Georgia, serif",
+                  fontStyle: "italic",
+                  fontSize: "clamp(2.5rem, 6vw, 5rem)",
+                  fontWeight: 400,
+                  color: "#000000",
+                  letterSpacing: "0.02em",
                 }}
               >
                 {qa.question}
               </span>
             </motion.div>
 
+            {/* Answer - scrolls from bottom to center */}
             <motion.div
-              className="absolute left-8 md:left-16 right-8 md:right-16"
+              className="absolute w-full flex justify-center px-8 md:px-16"
               style={{
-                top: `calc(50% + ${answerY}px)`,
-                opacity: answerOpacity,
+                top: `${answerY}%`,
                 transform: "translateY(-50%)",
+                opacity: answerOpacity,
               }}
             >
               <p
-                className="text-white/90 max-w-3xl"
+                className="max-w-3xl text-center"
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
-                  lineHeight: 1.8,
+                  fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)",
+                  lineHeight: 1.9,
                   fontWeight: 300,
+                  color: "rgba(255, 255, 255, 0.9)",
                   whiteSpace: "pre-line",
                 }}
               >
