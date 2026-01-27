@@ -150,26 +150,13 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
           opacity: exclamationOpacity,
         }}
       >
-        <div className="flex flex-col items-center">
-          <span
-            style={{
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(8rem, 20vw, 16rem)",
-              color: "#000000",
-              lineHeight: 0.8,
-            }}
-          >
-            !
-          </span>
-          <div
-            style={{
-              width: "clamp(2rem, 5vw, 4rem)",
-              height: "clamp(2rem, 5vw, 4rem)",
-              backgroundColor: "#000000",
-              marginTop: "1rem",
-            }}
-          />
-        </div>
+        <div
+          style={{
+            width: "clamp(4rem, 10vw, 8rem)",
+            height: "clamp(4rem, 10vw, 8rem)",
+            backgroundColor: "#000000",
+          }}
+        />
       </motion.div>
     </div>
   );
