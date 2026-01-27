@@ -39,7 +39,23 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
                          scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
   
-  const heroOpacity = scrollProgress > 0.3 ? Math.min((scrollProgress - 0.3) * 3, 1) : 0;
+  const blackSquareStart = 0.5;
+  const blackSquareEnd = 1.0;
+  const blackSquareProgress = scrollProgress > blackSquareStart 
+    ? Math.min((scrollProgress - blackSquareStart) / (blackSquareEnd - blackSquareStart), 1) 
+    : 0;
+  
+  const blackSquareY = blackSquareProgress > 0 
+    ? window.innerHeight * (1 - blackSquareProgress) 
+    : window.innerHeight;
+  
+  const heroFadeFromSquare = blackSquareProgress > 0 
+    ? Math.max(1 - blackSquareProgress * 1.5, 0) 
+    : 1;
+  
+  const heroOpacity = scrollProgress > 0.3 
+    ? Math.min((scrollProgress - 0.3) * 3, 1) * heroFadeFromSquare 
+    : 0;
   const heroY = scrollProgress > 0.3 ? 
                 Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
 
@@ -131,6 +147,22 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
           </div>
         </div>
       </motion.div>
+
+      {blackSquareProgress > 0 && (
+        <motion.div
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            top: blackSquareY,
+            transform: "translateX(-50%)",
+            width: "120px",
+            height: "120px",
+            backgroundColor: "#000000",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        />
+      )}
     </div>
   );
 }
