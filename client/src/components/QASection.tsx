@@ -21,6 +21,12 @@ const qaData = [
   }
 ];
 
+function toTitleCase(str: string): string {
+  return str.split(' ').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+}
+
 function interpolate(value: number, inputRange: [number, number], outputRange: [number, number]): number {
   const [inputMin, inputMax] = inputRange;
   const [outputMin, outputMax] = outputRange;
@@ -91,6 +97,7 @@ function QuestionText({
           fontWeight: Math.round(fontWeight),
           textShadow: "0 0 40px rgba(0,0,0,0.2)",
           display: "block",
+          textTransform: "capitalize",
         }}
       >
         {text}
