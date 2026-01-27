@@ -35,43 +35,15 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  let aboutMeOpacity = 0;
-  let aboutMeY = 120;
+  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 2);
+  const aboutMeOpacity = scrollProgress < 0.05 ? scrollProgress * 20 : 
+                         scrollProgress > 0.4 ? Math.max(0, (0.5 - scrollProgress) * 10) : 1;
   
-  if (scrollProgress <= 0.15) {
-    const phase1Progress = scrollProgress / 0.15;
-    aboutMeY = 120 + phase1Progress * (window.innerHeight * 0.5);
-    aboutMeOpacity = phase1Progress < 0.3 ? phase1Progress * 3.33 : 
-                     phase1Progress > 0.7 ? (1 - phase1Progress) * 3.33 : 1;
-  }
-  
-  let heroOpacity = 0;
-  let heroY = 100;
-  
-  if (scrollProgress > 0.35 && scrollProgress <= 0.45) {
-    const heroEnterProgress = (scrollProgress - 0.35) / 0.1;
-    heroOpacity = heroEnterProgress;
-    heroY = 100 - heroEnterProgress * 100;
-  } else if (scrollProgress > 0.45 && scrollProgress <= 0.55) {
-    heroOpacity = 1;
-    heroY = 0;
-  } else if (scrollProgress > 0.55 && scrollProgress <= 0.65) {
-    const heroExitProgress = (scrollProgress - 0.55) / 0.1;
-    heroOpacity = 1 - heroExitProgress;
-    heroY = -heroExitProgress * window.innerHeight * 0.4;
-  }
-  
-  let squareOpacity = 0;
-  let squareY = window.innerHeight * 0.5;
-  
-  if (scrollProgress > 0.75 && scrollProgress <= 0.9) {
-    const squareProgress = (scrollProgress - 0.75) / 0.15;
-    squareOpacity = squareProgress;
-    squareY = window.innerHeight * 0.5 - squareProgress * window.innerHeight * 0.5;
-  } else if (scrollProgress > 0.9) {
-    squareOpacity = 1;
-    squareY = 0;
-  }
+  const heroOpacity = scrollProgress > 0.15 && scrollProgress < 0.6 ? 
+                      (scrollProgress < 0.25 ? (scrollProgress - 0.15) * 10 : 
+                       scrollProgress > 0.5 ? Math.max(0, (0.6 - scrollProgress) * 10) : 1) : 0;
+  const heroY = scrollProgress > 0.15 ? 
+                Math.max(0, 100 - (scrollProgress - 0.15) * 500) : 100;
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
@@ -160,23 +132,6 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
             <span className="text-white"> designer</span>
           </div>
         </div>
-      </motion.div>
-
-      <motion.div
-        className="absolute left-1/2 pointer-events-none"
-        style={{
-          opacity: squareOpacity,
-          transform: `translateX(-50%) translateY(${squareY}px)`,
-          top: "50%",
-        }}
-      >
-        <div
-          className="bg-black"
-          style={{
-            width: "60px",
-            height: "60px",
-          }}
-        />
       </motion.div>
     </div>
   );
