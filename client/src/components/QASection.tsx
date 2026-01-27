@@ -23,15 +23,16 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely fades (at 0.6 scroll progress)
-  const qaStartProgress = 0.6;
+  // Q&A starts after hero completely fades (at 0.55 scroll progress)
+  // Extended range for MUCH slower animation
+  const qaStartProgress = 0.55;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  // Each Q&A pair gets equal portion - this makes Q&A scroll slower relative to content
+  // Each Q&A pair gets equal portion - extended for very slow scrolling
   const sectionPerQA = qaTotalRange / qaData.length;
   
-  // Calculate local progress within Q&A section (0 to 1)
+  // Calculate local progress within Q&A section
   const qaProgress = Math.max(0, (scrollProgress - qaStartProgress) / qaTotalRange);
   
   return (
@@ -42,85 +43,90 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         // Calculate progress for this specific Q&A pair
         const qaStart = index * sectionPerQA;
         
-        // Local progress within this Q&A (scaled for slower animation)
+        // Local progress within this Q&A - very granular for frame-by-frame feel
         const localProgress = (qaProgress - qaStart) / sectionPerQA;
         
-        // Phase breakdown for slower Q&A animation:
-        // Phase 1: Question scrolls from right to left position (0 - 0.2)
-        // Phase 2: Answer appears from bottom (0.2 - 0.4)
-        // Phase 3: Both visible together (0.4 - 0.6)
-        // Phase 4: Both scroll upward and disappear (0.6 - 1.0) - except last question
+        // SLOW Phase breakdown:
+        // Phase 1: Question scrolls SLOWLY from right to left (0 - 0.35)
+        // Phase 2: Answer appears SLOWLY from bottom (0.35 - 0.55)
+        // Phase 3: Both visible together (0.55 - 0.7)
+        // Phase 4: Both scroll upward SLOWLY and disappear (0.7 - 1.0)
         
-        // Question X position: starts off-screen right, moves to left side
-        const questionXStart = 120; // Start off-screen right (percentage)
-        const questionXEnd = 5; // End at left side (percentage from left)
-        const questionPhaseEnd = 0.2;
+        // Question X position: very slow scroll from right to left
+        const questionXStart = 110; // Start off-screen right
+        const questionXEnd = 5; // End at left side
+        const questionPhaseEnd = 0.35; // Takes longer to complete
         
         let questionX = questionXStart;
         if (localProgress >= 0 && localProgress < questionPhaseEnd) {
-          questionX = questionXStart - (localProgress / questionPhaseEnd) * (questionXStart - questionXEnd);
+          // Smooth easing for frame-by-frame feel
+          const t = localProgress / questionPhaseEnd;
+          const eased = t; // Linear for consistent slow movement
+          questionX = questionXStart - eased * (questionXStart - questionXEnd);
         } else if (localProgress >= questionPhaseEnd) {
           questionX = questionXEnd;
         }
         
-        // Question Y position: starts above center, moves up when scrolling away
-        const questionYBase = 18; // Percentage from top
+        // Question Y position
+        const questionYBase = 18;
         let questionY = questionYBase;
-        if (localProgress > 0.6 && !isLastQuestion) {
-          questionY = questionYBase - (localProgress - 0.6) * 80;
+        if (localProgress > 0.7 && !isLastQuestion) {
+          const upProgress = (localProgress - 0.7) / 0.3;
+          questionY = questionYBase - upProgress * 70;
         }
         
-        // Question opacity
+        // Question opacity - slow fade in/out
         let questionOpacity = 0;
-        if (localProgress >= 0 && localProgress < 0.15) {
-          questionOpacity = localProgress / 0.15; // Fade in
-        } else if (localProgress >= 0.15 && localProgress < 0.7) {
-          questionOpacity = 1; // Fully visible
-        } else if (localProgress >= 0.7 && !isLastQuestion) {
-          questionOpacity = Math.max(0, 1 - (localProgress - 0.7) / 0.3); // Fade out
-        } else if (isLastQuestion && localProgress >= 0.15) {
-          questionOpacity = 1; // Stay visible for last question
+        if (localProgress >= 0 && localProgress < 0.2) {
+          questionOpacity = localProgress / 0.2;
+        } else if (localProgress >= 0.2 && localProgress < 0.75) {
+          questionOpacity = 1;
+        } else if (localProgress >= 0.75 && !isLastQuestion) {
+          questionOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
+        } else if (isLastQuestion && localProgress >= 0.2) {
+          questionOpacity = 1;
         }
         
-        // Answer Y position: starts off-screen bottom, moves to below question
-        const answerYStart = 120; // Start off-screen bottom (percentage)
-        const answerYEnd = 32; // End below question (percentage from top)
-        const answerPhaseStart = 0.2;
-        const answerPhaseEnd = 0.4;
+        // Answer Y position: slow scroll from bottom
+        const answerYStart = 110;
+        const answerYEnd = 32;
+        const answerPhaseStart = 0.35;
+        const answerPhaseEnd = 0.55;
         
         let answerY = answerYStart;
         if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
-          const answerProgress = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
-          answerY = answerYStart - answerProgress * (answerYStart - answerYEnd);
+          const t = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
+          answerY = answerYStart - t * (answerYStart - answerYEnd);
         } else if (localProgress >= answerPhaseEnd) {
           answerY = answerYEnd;
         }
         
-        // Answer moves up with question when scrolling away
-        if (localProgress > 0.6 && !isLastQuestion) {
-          answerY = answerYEnd - (localProgress - 0.6) * 80;
+        // Answer moves up slowly with question
+        if (localProgress > 0.7 && !isLastQuestion) {
+          const upProgress = (localProgress - 0.7) / 0.3;
+          answerY = answerYEnd - upProgress * 70;
         }
         
-        // Answer opacity
+        // Answer opacity - slow fade
         let answerOpacity = 0;
         if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
-          answerOpacity = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart); // Fade in
-        } else if (localProgress >= answerPhaseEnd && localProgress < 0.7) {
-          answerOpacity = 1; // Fully visible
-        } else if (localProgress >= 0.7 && !isLastQuestion) {
-          answerOpacity = Math.max(0, 1 - (localProgress - 0.7) / 0.3); // Fade out
+          answerOpacity = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
+        } else if (localProgress >= answerPhaseEnd && localProgress < 0.75) {
+          answerOpacity = 1;
+        } else if (localProgress >= 0.75 && !isLastQuestion) {
+          answerOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
         } else if (isLastQuestion && localProgress >= answerPhaseEnd) {
-          answerOpacity = 1; // Stay visible for last question
+          answerOpacity = 1;
         }
 
         // Only render if this Q&A is active
-        const isActive = localProgress > -0.1 && localProgress < 1.2;
+        const isActive = localProgress > -0.1 && localProgress < 1.15;
         
         if (!isActive) return null;
 
         return (
           <div key={index}>
-            {/* Question - scrolls from right to left, positioned at top-left */}
+            {/* Question - scrolls slowly from right to left */}
             <motion.div
               className="absolute"
               style={{
@@ -143,7 +149,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
               </span>
             </motion.div>
 
-            {/* Answer - scrolls from bottom to below question, left-aligned */}
+            {/* Answer - scrolls slowly from bottom, WHITE text */}
             <motion.div
               className="absolute"
               style={{
@@ -159,7 +165,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
                   fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)",
                   lineHeight: 1.8,
                   fontWeight: 400,
-                  color: "#000000",
+                  color: "#FFFFFF",
                   whiteSpace: "pre-line",
                 }}
               >
