@@ -23,101 +23,112 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely fades
-  const qaStartProgress = 0.5;
+  // Q&A starts after hero completely disappears (at 0.12)
+  // Each phase gets ~0.098 of scroll progress (same as ABOUT ME duration)
+  const qaStartProgress = 0.12;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  // Each Q&A pair gets exactly 1/3 of the total Q&A range - NO OVERLAP
-  const sectionPerQA = qaTotalRange / qaData.length;
+  // 3 Q&A pairs × 3 phases each = 9 total phases
+  // Each phase gets equal scroll time (matching ABOUT ME)
+  const totalPhases = 9;
+  const phaseSize = qaTotalRange / totalPhases;
   
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {qaData.map((qa, index) => {
         const isLastQuestion = index === qaData.length - 1;
         
-        // Calculate the exact start and end for this Q&A pair
-        const qaStart = qaStartProgress + (index * sectionPerQA);
-        const qaEnd = qaStart + sectionPerQA;
+        // Each Q&A pair gets 3 phases
+        // Phase 1: Question scrolls right to left
+        // Phase 2: Answer scrolls bottom to meet question
+        // Phase 3: Both scroll up and disappear
         
-        // Local progress within this Q&A (0 to 1)
-        const localProgress = (scrollProgress - qaStart) / sectionPerQA;
+        const qaPhaseStart = qaStartProgress + (index * 3 * phaseSize);
+        const phase1End = qaPhaseStart + phaseSize;
+        const phase2End = phase1End + phaseSize;
+        const phase3End = phase2End + phaseSize;
         
-        // Only render this Q&A if we're in its range
-        if (localProgress < -0.05 || localProgress > 1.05) return null;
+        // Determine current phase progress
+        let phase1Progress = 0;
+        let phase2Progress = 0;
+        let phase3Progress = 0;
         
-        // Phase breakdown within each Q&A's dedicated section:
-        // Phase 1 (0 - 0.33): Question scrolls from right to left
-        // Phase 2 (0.33 - 0.66): Answer pops up from bottom
-        // Phase 3 (0.66 - 1.0): Both move up and disappear (except last)
-        
-        // Question X position
-        const questionXStart = 105;
-        const questionXEnd = 5;
-        const questionPhaseEnd = 0.33;
-        
-        let questionX = questionXStart;
-        if (localProgress >= 0 && localProgress < questionPhaseEnd) {
-          questionX = questionXStart - (localProgress / questionPhaseEnd) * (questionXStart - questionXEnd);
-        } else if (localProgress >= questionPhaseEnd) {
-          questionX = questionXEnd;
+        if (scrollProgress >= qaPhaseStart && scrollProgress < phase1End) {
+          phase1Progress = (scrollProgress - qaPhaseStart) / phaseSize;
+        } else if (scrollProgress >= phase1End) {
+          phase1Progress = 1;
         }
         
-        // Question Y position
+        if (scrollProgress >= phase1End && scrollProgress < phase2End) {
+          phase2Progress = (scrollProgress - phase1End) / phaseSize;
+        } else if (scrollProgress >= phase2End) {
+          phase2Progress = 1;
+        }
+        
+        if (scrollProgress >= phase2End && scrollProgress < phase3End) {
+          phase3Progress = (scrollProgress - phase2End) / phaseSize;
+        } else if (scrollProgress >= phase3End) {
+          phase3Progress = 1;
+        }
+        
+        // Only render if we're in this Q&A's range
+        if (scrollProgress < qaPhaseStart - 0.01 || scrollProgress > phase3End + 0.01) {
+          return null;
+        }
+        
+        // Question X: scrolls from right (105%) to left (5%) during phase 1
+        const questionXStart = 105;
+        const questionXEnd = 5;
+        const questionX = questionXStart - phase1Progress * (questionXStart - questionXEnd);
+        
+        // Question Y: stays at 25%, then moves up during phase 3
         const questionYBase = 25;
         let questionY = questionYBase;
-        if (localProgress > 0.66 && !isLastQuestion) {
-          const exitProgress = (localProgress - 0.66) / 0.34;
-          questionY = questionYBase - exitProgress * 80;
+        if (phase3Progress > 0 && !isLastQuestion) {
+          questionY = questionYBase - phase3Progress * 80;
         }
         
         // Question opacity
         let questionOpacity = 0;
-        if (localProgress >= 0 && localProgress < 0.15) {
-          questionOpacity = localProgress / 0.15;
-        } else if (localProgress >= 0.15 && localProgress < 0.75) {
+        if (phase1Progress > 0 && phase1Progress < 0.3) {
+          questionOpacity = phase1Progress / 0.3;
+        } else if (phase1Progress >= 0.3 && phase3Progress < 0.7) {
           questionOpacity = 1;
-        } else if (localProgress >= 0.75 && !isLastQuestion) {
-          questionOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
-        } else if (isLastQuestion && localProgress >= 0.15) {
+        } else if (phase3Progress >= 0.7 && !isLastQuestion) {
+          questionOpacity = Math.max(0, 1 - (phase3Progress - 0.7) / 0.3);
+        } else if (isLastQuestion && phase1Progress >= 0.3) {
           questionOpacity = 1;
         }
         
-        // Answer Y position
+        // Answer Y: scrolls from bottom (105%) to position (38%) during phase 2
         const answerYStart = 105;
         const answerYEnd = 38;
-        const answerPhaseStart = 0.33;
-        const answerPhaseEnd = 0.66;
-        
         let answerY = answerYStart;
-        if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
-          const answerProgress = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
-          answerY = answerYStart - answerProgress * (answerYStart - answerYEnd);
-        } else if (localProgress >= answerPhaseEnd) {
-          answerY = answerYEnd;
+        if (phase2Progress > 0) {
+          answerY = answerYStart - phase2Progress * (answerYStart - answerYEnd);
         }
         
-        // Answer moves up with question
-        if (localProgress > 0.66 && !isLastQuestion) {
-          const exitProgress = (localProgress - 0.66) / 0.34;
-          answerY = answerYEnd - exitProgress * 80;
+        // Answer moves up with question during phase 3
+        if (phase3Progress > 0 && !isLastQuestion) {
+          answerY = answerYEnd - phase3Progress * 80;
         }
         
         // Answer opacity
         let answerOpacity = 0;
-        if (localProgress >= answerPhaseStart && localProgress < answerPhaseStart + 0.15) {
-          answerOpacity = (localProgress - answerPhaseStart) / 0.15;
-        } else if (localProgress >= answerPhaseStart + 0.15 && localProgress < 0.75) {
+        if (phase2Progress > 0 && phase2Progress < 0.3) {
+          answerOpacity = phase2Progress / 0.3;
+        } else if (phase2Progress >= 0.3 && phase3Progress < 0.7) {
           answerOpacity = 1;
-        } else if (localProgress >= 0.75 && !isLastQuestion) {
-          answerOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
-        } else if (isLastQuestion && localProgress >= answerPhaseStart + 0.15) {
+        } else if (phase3Progress >= 0.7 && !isLastQuestion) {
+          answerOpacity = Math.max(0, 1 - (phase3Progress - 0.7) / 0.3);
+        } else if (isLastQuestion && phase2Progress >= 0.3) {
           answerOpacity = 1;
         }
 
         return (
           <div key={index}>
-            {/* Question */}
+            {/* Question - scrolls from right to left */}
             <motion.div
               className="absolute"
               style={{
@@ -140,7 +151,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
               </span>
             </motion.div>
 
-            {/* Answer */}
+            {/* Answer - scrolls from bottom */}
             <motion.div
               className="absolute"
               style={{
