@@ -39,21 +39,9 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
                          scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
   
-  const heroAppear = scrollProgress > 0.3 ? Math.min((scrollProgress - 0.3) * 3, 1) : 0;
+  const heroOpacity = scrollProgress > 0.3 ? Math.min((scrollProgress - 0.3) * 3, 1) : 0;
   const heroY = scrollProgress > 0.3 ? 
                 Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
-  
-  const heroFadeStart = 0.6;
-  const heroFadeEnd = 0.85;
-  const heroFadeOut = scrollProgress > heroFadeStart 
-    ? Math.max(1 - (scrollProgress - heroFadeStart) / (heroFadeEnd - heroFadeStart), 0) 
-    : 1;
-  
-  const heroOpacity = heroAppear * heroFadeOut;
-  
-  const exclamationOpacity = scrollProgress > heroFadeStart 
-    ? Math.min((scrollProgress - heroFadeStart) / 0.15, 1) 
-    : 0;
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
@@ -142,21 +130,6 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
             <span className="text-white"> designer</span>
           </div>
         </div>
-      </motion.div>
-
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{
-          opacity: exclamationOpacity,
-        }}
-      >
-        <div
-          style={{
-            width: "clamp(4rem, 10vw, 8rem)",
-            height: "clamp(4rem, 10vw, 8rem)",
-            backgroundColor: "#000000",
-          }}
-        />
       </motion.div>
     </div>
   );
