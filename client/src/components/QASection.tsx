@@ -23,15 +23,18 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts ONLY after hero completely fades (at 0.65 scroll progress)
-  const qaStartProgress = 0.65;
+  // Q&A starts after hero completely fades (at 0.5 scroll progress)
+  // Each Q&A has 3 phases, each phase takes same time as ABOUT ME scroll
+  const qaStartProgress = 0.5;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  // Each Q&A pair gets equal portion for very slow scrolling
-  const sectionPerQA = qaTotalRange / qaData.length;
+  // 3 Q&A pairs, each with 3 equal phases (question, answer, exit)
+  // Total 9 phases spread across the Q&A range
+  const totalPhases = qaData.length * 3;
+  const phaseSize = qaTotalRange / totalPhases;
   
-  // Calculate local progress within Q&A section
+  // Calculate global Q&A progress
   const qaProgress = Math.max(0, (scrollProgress - qaStartProgress) / qaTotalRange);
   
   return (
@@ -39,91 +42,85 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
       {qaData.map((qa, index) => {
         const isLastQuestion = index === qaData.length - 1;
         
-        // Calculate progress for this specific Q&A pair
-        const qaStart = index * sectionPerQA;
+        // Each Q&A gets 3 phases worth of progress
+        const qaPhaseStart = (index * 3) / totalPhases;
         
-        // Local progress within this Q&A
-        const localProgress = (qaProgress - qaStart) / sectionPerQA;
+        // Calculate which phase we're in for this Q&A (0-3)
+        const localProgress = (qaProgress - qaPhaseStart) / (3 / totalPhases);
         
-        // VERY SLOW Phase breakdown:
-        // Phase 1: Question scrolls from right to left (0 - 0.4) - SLOW
-        // Phase 2: Answer appears from bottom (0.4 - 0.6) - SLOW
-        // Phase 3: Both visible together (0.6 - 0.75)
-        // Phase 4: Both scroll upward and disappear (0.75 - 1.0)
+        // Phase 0-1: Question scrolls from right to left
+        // Phase 1-2: Answer pops up from bottom
+        // Phase 2-3: Both move up and disappear (except last question)
         
-        // Question X position: very slow scroll from right to left
-        const questionXStart = 105; // Start off-screen right
-        const questionXEnd = 5; // End at left side
-        const questionPhaseEnd = 0.4; // Takes 40% of section to complete
+        // Question X position: scrolls from right to left during phase 0-1
+        const questionXStart = 105;
+        const questionXEnd = 5;
         
         let questionX = questionXStart;
-        if (localProgress >= 0 && localProgress < questionPhaseEnd) {
-          const t = localProgress / questionPhaseEnd;
-          questionX = questionXStart - t * (questionXStart - questionXEnd);
-        } else if (localProgress >= questionPhaseEnd) {
+        if (localProgress >= 0 && localProgress < 1) {
+          questionX = questionXStart - localProgress * (questionXStart - questionXEnd);
+        } else if (localProgress >= 1) {
           questionX = questionXEnd;
         }
         
-        // Question Y position - LOWER on screen (28% from top instead of 18%)
-        const questionYBase = 28;
+        // Question Y position - moves up during phase 2-3
+        const questionYBase = 25;
         let questionY = questionYBase;
-        if (localProgress > 0.75 && !isLastQuestion) {
-          const upProgress = (localProgress - 0.75) / 0.25;
-          questionY = questionYBase - upProgress * 80;
+        if (localProgress > 2 && !isLastQuestion) {
+          const exitProgress = localProgress - 2;
+          questionY = questionYBase - exitProgress * 100;
         }
         
-        // Question opacity - slow fade in/out
+        // Question opacity
         let questionOpacity = 0;
-        if (localProgress >= 0 && localProgress < 0.25) {
-          questionOpacity = localProgress / 0.25;
-        } else if (localProgress >= 0.25 && localProgress < 0.8) {
-          questionOpacity = 1;
-        } else if (localProgress >= 0.8 && !isLastQuestion) {
-          questionOpacity = Math.max(0, 1 - (localProgress - 0.8) / 0.2);
-        } else if (isLastQuestion && localProgress >= 0.25) {
-          questionOpacity = 1;
+        if (localProgress >= 0 && localProgress < 0.3) {
+          questionOpacity = localProgress / 0.3; // Fade in
+        } else if (localProgress >= 0.3 && localProgress < 2.5) {
+          questionOpacity = 1; // Fully visible
+        } else if (localProgress >= 2.5 && !isLastQuestion) {
+          questionOpacity = Math.max(0, 1 - (localProgress - 2.5) / 0.5); // Fade out
+        } else if (isLastQuestion && localProgress >= 0.3) {
+          questionOpacity = 1; // Stay visible for last question
         }
         
-        // Answer Y position: slow scroll from bottom - LOWER position (42% from top)
+        // Answer Y position: pops up during phase 1-2
         const answerYStart = 105;
-        const answerYEnd = 42;
-        const answerPhaseStart = 0.4;
-        const answerPhaseEnd = 0.6;
+        const answerYEnd = 38;
         
         let answerY = answerYStart;
-        if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
-          const t = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
-          answerY = answerYStart - t * (answerYStart - answerYEnd);
-        } else if (localProgress >= answerPhaseEnd) {
+        if (localProgress >= 1 && localProgress < 2) {
+          const answerProgress = localProgress - 1;
+          answerY = answerYStart - answerProgress * (answerYStart - answerYEnd);
+        } else if (localProgress >= 2) {
           answerY = answerYEnd;
         }
         
-        // Answer moves up slowly with question
-        if (localProgress > 0.75 && !isLastQuestion) {
-          const upProgress = (localProgress - 0.75) / 0.25;
-          answerY = answerYEnd - upProgress * 80;
+        // Answer moves up with question during phase 2-3
+        if (localProgress > 2 && !isLastQuestion) {
+          const exitProgress = localProgress - 2;
+          answerY = answerYEnd - exitProgress * 100;
         }
         
-        // Answer opacity - slow fade
+        // Answer opacity
         let answerOpacity = 0;
-        if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
-          answerOpacity = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
-        } else if (localProgress >= answerPhaseEnd && localProgress < 0.8) {
-          answerOpacity = 1;
-        } else if (localProgress >= 0.8 && !isLastQuestion) {
-          answerOpacity = Math.max(0, 1 - (localProgress - 0.8) / 0.2);
-        } else if (isLastQuestion && localProgress >= answerPhaseEnd) {
-          answerOpacity = 1;
+        if (localProgress >= 1 && localProgress < 1.3) {
+          answerOpacity = (localProgress - 1) / 0.3; // Fade in
+        } else if (localProgress >= 1.3 && localProgress < 2.5) {
+          answerOpacity = 1; // Fully visible
+        } else if (localProgress >= 2.5 && !isLastQuestion) {
+          answerOpacity = Math.max(0, 1 - (localProgress - 2.5) / 0.5); // Fade out
+        } else if (isLastQuestion && localProgress >= 1.3) {
+          answerOpacity = 1; // Stay visible for last question
         }
 
-        // Only render if this Q&A is active
-        const isActive = localProgress > -0.1 && localProgress < 1.15;
+        // Only render if this Q&A is in view
+        const isActive = localProgress > -0.2 && localProgress < 3.2;
         
         if (!isActive) return null;
 
         return (
           <div key={index}>
-            {/* Question - scrolls slowly from right to left, positioned LOWER */}
+            {/* Question - scrolls from right to left */}
             <motion.div
               className="absolute"
               style={{
@@ -146,7 +143,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
               </span>
             </motion.div>
 
-            {/* Answer - scrolls slowly from bottom, WHITE text, positioned LOWER */}
+            {/* Answer - pops up from bottom */}
             <motion.div
               className="absolute"
               style={{
