@@ -43,18 +43,6 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   const heroY = scrollProgress > 0.3 ? 
                 Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
 
-  const fadeOutStart = 0.6;
-  const fadeOutEnd = 0.85;
-  const heroTextFade = scrollProgress > fadeOutStart 
-    ? Math.max(1 - (scrollProgress - fadeOutStart) / (fadeOutEnd - fadeOutStart), 0) 
-    : 1;
-
-  const dotOpacity = scrollProgress > fadeOutStart 
-    ? Math.min((scrollProgress - fadeOutStart) / 0.15, 1) 
-    : 0;
-
-  const dotScale = 1 + (scrollProgress > fadeOutStart ? (scrollProgress - fadeOutStart) * 2 : 0);
-
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       <motion.div
@@ -81,7 +69,7 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
       <motion.div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
         style={{
-          opacity: heroOpacity * heroTextFade,
+          opacity: heroOpacity,
           transform: `translateY(${heroY}px)`,
         }}
       >
@@ -142,23 +130,6 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
             <span className="text-white"> designer</span>
           </div>
         </div>
-      </motion.div>
-
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{
-          opacity: dotOpacity,
-        }}
-      >
-        <div
-          style={{
-            width: `${20 * dotScale}px`,
-            height: `${20 * dotScale}px`,
-            borderRadius: "50%",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 0 30px rgba(255,255,255,0.5)",
-          }}
-        />
       </motion.div>
     </div>
   );
