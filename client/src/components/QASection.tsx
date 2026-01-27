@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 interface QASectionProps {
   visible: boolean;
@@ -20,82 +21,187 @@ const qaData = [
   }
 ];
 
+function interpolate(value: number, inputRange: [number, number], outputRange: [number, number]): number {
+  const [inputMin, inputMax] = inputRange;
+  const [outputMin, outputMax] = outputRange;
+  const clampedValue = Math.max(inputMin, Math.min(inputMax, value));
+  const ratio = (clampedValue - inputMin) / (inputMax - inputMin);
+  return outputMin + ratio * (outputMax - outputMin);
+}
+
+function QuestionText({ 
+  text, 
+  progress,
+  isActive 
+}: { 
+  text: string; 
+  progress: number;
+  isActive: boolean;
+}) {
+  const springConfig = { stiffness: 50, damping: 20, mass: 1.5 };
+  
+  const smoothProgress = useSpring(progress, springConfig);
+  
+  const y = interpolate(progress, [0, 0.5], [200, 0]);
+  const yExit = interpolate(progress, [0.5, 1], [0, -200]);
+  const finalY = progress < 0.5 ? y : yExit;
+  
+  const rotationEnter = interpolate(progress, [0, 0.5], [45, 0]);
+  const rotationExit = interpolate(progress, [0.5, 1], [0, -15]);
+  const rotation = progress < 0.5 ? rotationEnter : rotationExit;
+  
+  const scaleEnter = interpolate(progress, [0, 0.5], [0.7, 1.0]);
+  const scaleExit = interpolate(progress, [0.5, 1], [1.0, 1.3]);
+  const scale = progress < 0.5 ? scaleEnter : scaleExit;
+  
+  let opacity = 1;
+  let fontWeight = 400;
+  
+  if (progress < 0.3) {
+    opacity = interpolate(progress, [0, 0.3], [0, 1]);
+    fontWeight = 400;
+  } else if (progress < 0.7) {
+    opacity = 1;
+    fontWeight = interpolate(progress, [0.3, 0.7], [400, 900]);
+  } else {
+    opacity = interpolate(progress, [0.7, 1], [1, 0]);
+    fontWeight = 900;
+  }
+
+  if (!isActive) return null;
+
+  return (
+    <motion.div
+      className="absolute left-8 md:left-16"
+      style={{
+        top: "40%",
+        transform: `translateY(${finalY}px) rotate(${rotation}deg) scale(${scale})`,
+        transformOrigin: "left center",
+        opacity: opacity,
+        willChange: "transform, opacity",
+      }}
+    >
+      <span
+        className="whitespace-nowrap"
+        style={{
+          fontFamily: "'Times New Roman', Georgia, serif",
+          fontStyle: "italic",
+          fontSize: "clamp(3rem, 8vw, 6rem)",
+          color: "#000000",
+          fontWeight: Math.round(fontWeight),
+          textShadow: "0 0 40px rgba(0,0,0,0.2)",
+          display: "block",
+        }}
+      >
+        {text}
+      </span>
+    </motion.div>
+  );
+}
+
+function AnswerText({ 
+  text, 
+  progress,
+  isActive,
+  isLastAnswer 
+}: { 
+  text: string; 
+  progress: number;
+  isActive: boolean;
+  isLastAnswer: boolean;
+}) {
+  const y = interpolate(progress, [0, 0.5], [300, 0]);
+  const yExit = isLastAnswer ? 0 : interpolate(progress, [0.5, 1], [0, -300]);
+  const finalY = progress < 0.5 ? y : yExit;
+  
+  let opacity = 1;
+  if (progress < 0.2) {
+    opacity = interpolate(progress, [0, 0.2], [0, 1]);
+  } else if (progress < 0.8 || isLastAnswer) {
+    opacity = 1;
+  } else {
+    opacity = isLastAnswer ? 1 : interpolate(progress, [0.8, 1], [1, 0]);
+  }
+
+  if (!isActive) return null;
+
+  return (
+    <motion.div
+      className="absolute left-8 md:left-16 right-8 md:right-32"
+      style={{
+        top: "50%",
+        transform: `translateY(calc(-50% + ${finalY}px))`,
+        opacity: opacity,
+        willChange: "transform, opacity",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "'Inter', 'DM Sans', sans-serif",
+          fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
+          lineHeight: 1.9,
+          color: "#FFFFFF",
+          fontWeight: 300,
+          whiteSpace: "pre-line",
+          maxWidth: "800px",
+          letterSpacing: "0.02em",
+        }}
+      >
+        {text}
+      </p>
+    </motion.div>
+  );
+}
+
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  const qaProgress = Math.max(0, (scrollProgress - 0.6) / 0.4);
+  const qaStartScroll = 0.55;
+  const qaEndScroll = 0.98;
   
-  const sectionPerQA = 1 / qaData.length;
+  const normalizedProgress = Math.max(0, Math.min(1, 
+    (scrollProgress - qaStartScroll) / (qaEndScroll - qaStartScroll)
+  ));
+  
+  const sectionHeight = 1.75;
+  const totalSections = qaData.length * 2;
+  const sectionDuration = 1 / totalSections;
   
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {qaData.map((qa, index) => {
-        const qaStart = index * sectionPerQA;
-        const qaEnd = (index + 1) * sectionPerQA;
-        const qaMid = qaStart + sectionPerQA * 0.3;
+        const questionStart = (index * 2) * sectionDuration;
+        const questionEnd = (index * 2 + 1) * sectionDuration;
+        const answerStart = (index * 2 + 1) * sectionDuration;
+        const answerEnd = (index * 2 + 2) * sectionDuration;
         
-        const localProgress = (qaProgress - qaStart) / sectionPerQA;
+        const questionProgress = Math.max(0, Math.min(1, 
+          (normalizedProgress - questionStart) / (questionEnd - questionStart)
+        ));
         
-        const questionProgress = Math.max(0, Math.min(1, localProgress * 3));
-        const questionY = 120 + (1 - questionProgress) * 300;
-        const questionRotation = -20 + questionProgress * 20;
-        const questionOpacity = localProgress < 0.1 ? localProgress * 10 :
-                               localProgress > 0.5 ? Math.max(0, (0.7 - localProgress) * 5) : 1;
+        const answerProgress = Math.max(0, Math.min(1, 
+          (normalizedProgress - answerStart) / (answerEnd - answerStart)
+        ));
         
-        const answerProgress = Math.max(0, Math.min(1, (localProgress - 0.2) * 2));
-        const answerY = 50 - Math.max(0, localProgress - 0.6) * 300;
-        const answerOpacity = localProgress < 0.25 ? 0 :
-                             localProgress < 0.4 ? (localProgress - 0.25) * 6.67 :
-                             localProgress > 0.8 ? Math.max(0, (1 - localProgress) * 5) : 1;
-
-        const isActive = localProgress > -0.1 && localProgress < 1.1;
+        const isQuestionActive = normalizedProgress >= questionStart && normalizedProgress < questionEnd + 0.1;
+        const isAnswerActive = normalizedProgress >= answerStart - 0.05 && 
+          (index === qaData.length - 1 ? true : normalizedProgress < answerEnd + 0.1);
         
-        if (!isActive) return null;
+        const isLastAnswer = index === qaData.length - 1;
 
         return (
           <div key={index}>
-            <motion.div
-              className="absolute left-8 md:left-16"
-              style={{
-                top: questionY,
-                opacity: questionOpacity,
-                transform: `rotate(${questionRotation}deg)`,
-                transformOrigin: "left center",
-              }}
-            >
-              <span
-                className="text-white font-serif italic whitespace-nowrap"
-                style={{
-                  fontSize: "clamp(2rem, 5vw, 4rem)",
-                  textShadow: "0 0 30px rgba(255,255,255,0.3)",
-                  fontWeight: 300,
-                }}
-              >
-                {qa.question}
-              </span>
-            </motion.div>
-
-            <motion.div
-              className="absolute left-8 md:left-16 right-8 md:right-16"
-              style={{
-                top: `calc(50% + ${answerY}px)`,
-                opacity: answerOpacity,
-                transform: "translateY(-50%)",
-              }}
-            >
-              <p
-                className="text-white/90 max-w-3xl"
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
-                  lineHeight: 1.8,
-                  fontWeight: 300,
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {qa.answer}
-              </p>
-            </motion.div>
+            <QuestionText
+              text={qa.question}
+              progress={questionProgress}
+              isActive={isQuestionActive}
+            />
+            <AnswerText
+              text={qa.answer}
+              progress={answerProgress}
+              isActive={isAnswerActive}
+              isLastAnswer={isLastAnswer}
+            />
           </div>
         );
       })}
