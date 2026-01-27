@@ -36,17 +36,23 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   if (!visible) return null;
 
   const aboutMeY = 120 + scrollProgress * (window.innerHeight);
-  const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
-                         scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
+  const aboutMeFadeStart = 0.25;
+  const aboutMeFadeEnd = 0.5;
+  const aboutMeOpacity = scrollProgress < 0.1 
+    ? scrollProgress * 10 
+    : scrollProgress > aboutMeFadeStart 
+      ? Math.max(1 - (scrollProgress - aboutMeFadeStart) / (aboutMeFadeEnd - aboutMeFadeStart), 0)
+      : 1;
   
   const blackSquareStart = 0.5;
-  const blackSquareEnd = 1.0;
+  const blackSquareEnd = 0.8;
   const blackSquareProgress = scrollProgress > blackSquareStart 
     ? Math.min((scrollProgress - blackSquareStart) / (blackSquareEnd - blackSquareStart), 1) 
     : 0;
   
+  const centerY = window.innerHeight / 2 - 60;
   const blackSquareY = blackSquareProgress > 0 
-    ? window.innerHeight * (1 - blackSquareProgress) 
+    ? window.innerHeight - (window.innerHeight - centerY) * blackSquareProgress
     : window.innerHeight;
   
   const heroFadeFromSquare = blackSquareProgress > 0 
