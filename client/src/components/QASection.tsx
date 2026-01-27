@@ -7,15 +7,15 @@ interface QASectionProps {
 
 const qaData = [
   {
-    question: "Who Am I?",
+    question: "Who Am I ?",
     answer: "I'm Sundar Ram, a multidisciplinary designer with a strong foundation in both design and technology. I'm passionate about creating digital experiences that are not only visually appealing but also intuitive, functional, and user-centered. With a background in computer applications, I approach design with a problem-solving mindset—always focusing on clarity, usability, and real user needs. I believe good design should feel effortless to the user while solving meaningful problems behind the scenes."
   },
   {
-    question: "What Do I Do?",
+    question: "What Do I Do ?",
     answer: "I work as a UI/UX Designer, Product Designer, Web Designer, and Brand Designer, crafting experiences that balance user needs with business goals. My work spans from user research and wireframing to high-fidelity UI design and interaction planning.\n\nAlongside design, I have hands-on experience in frontend development using HTML, CSS, and JavaScript, which allows me to design interfaces that are technically feasible and developer-friendly. This dual perspective helps me collaborate effectively with developers and ensures that my designs translate smoothly from concept to code. I focus on building scalable, consistent, and engaging digital products across web and mobile platforms."
   },
   {
-    question: "Where Did It All Start?",
+    question: "Where Did It All Start ?",
     answer: "My journey into design began during my college days, when one of my close friends was actively freelancing as a UI/UX designer. Watching him work on real client projects sparked my curiosity about how design impacts user behavior and product success. He introduced me to the fundamentals of UI/UX, shared his experiences, and guided me through the early learning phase. That exposure inspired me to explore the field deeper, and what started as curiosity soon turned into a clear career path. Since then, I've continuously worked on improving my skills through projects, practice, and learning—shaping my identity as a designer."
   }
 ];
@@ -23,17 +23,16 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero fades (at 0.6 scroll progress)
-  // Each Q&A pair gets a larger section for slower scrolling
-  const qaStartProgress = 0.55;
+  // Q&A starts after hero completely fades (at 0.6 scroll progress)
+  const qaStartProgress = 0.6;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  // Each Q&A pair gets equal portion of the remaining scroll
+  // Each Q&A pair gets equal portion - this makes Q&A scroll slower relative to content
   const sectionPerQA = qaTotalRange / qaData.length;
   
   // Calculate local progress within Q&A section (0 to 1)
-  const qaProgress = Math.max(0, Math.min(1, (scrollProgress - qaStartProgress) / qaTotalRange));
+  const qaProgress = Math.max(0, (scrollProgress - qaStartProgress) / qaTotalRange);
   
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
@@ -42,46 +41,65 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         
         // Calculate progress for this specific Q&A pair
         const qaStart = index * sectionPerQA;
-        const qaEnd = (index + 1) * sectionPerQA;
         
-        // Local progress within this Q&A (0 to 1)
+        // Local progress within this Q&A (scaled for slower animation)
         const localProgress = (qaProgress - qaStart) / sectionPerQA;
         
-        // Phase 1: Question scrolls from right to center (0 - 0.25)
-        // Phase 2: Answer scrolls from bottom to center (0.25 - 0.5)
-        // Phase 3: Both stay in middle (0.5 - 0.65)
-        // Phase 4: Both scroll upward and disappear (0.65 - 1.0) - except last question
+        // Phase breakdown for slower Q&A animation:
+        // Phase 1: Question scrolls from right to left position (0 - 0.2)
+        // Phase 2: Answer appears from bottom (0.2 - 0.4)
+        // Phase 3: Both visible together (0.4 - 0.6)
+        // Phase 4: Both scroll upward and disappear (0.6 - 1.0) - except last question
         
-        // Question animation: right to center
-        // Starts off-screen right (100%), moves to center (50%)
-        const questionPhaseEnd = 0.25;
-        const questionX = localProgress < 0 ? 100 :
-                         localProgress < questionPhaseEnd ? 100 - (localProgress / questionPhaseEnd) * 50 : 50;
+        // Question X position: starts off-screen right, moves to left side
+        const questionXStart = 120; // Start off-screen right (percentage)
+        const questionXEnd = 5; // End at left side (percentage from left)
+        const questionPhaseEnd = 0.2;
+        
+        let questionX = questionXStart;
+        if (localProgress >= 0 && localProgress < questionPhaseEnd) {
+          questionX = questionXStart - (localProgress / questionPhaseEnd) * (questionXStart - questionXEnd);
+        } else if (localProgress >= questionPhaseEnd) {
+          questionX = questionXEnd;
+        }
+        
+        // Question Y position: starts above center, moves up when scrolling away
+        const questionYBase = 18; // Percentage from top
+        let questionY = questionYBase;
+        if (localProgress > 0.6 && !isLastQuestion) {
+          questionY = questionYBase - (localProgress - 0.6) * 80;
+        }
         
         // Question opacity
         let questionOpacity = 0;
-        if (localProgress >= 0 && localProgress < 0.2) {
-          questionOpacity = localProgress / 0.2; // Fade in
-        } else if (localProgress >= 0.2 && localProgress < 0.7) {
+        if (localProgress >= 0 && localProgress < 0.15) {
+          questionOpacity = localProgress / 0.15; // Fade in
+        } else if (localProgress >= 0.15 && localProgress < 0.7) {
           questionOpacity = 1; // Fully visible
         } else if (localProgress >= 0.7 && !isLastQuestion) {
           questionOpacity = Math.max(0, 1 - (localProgress - 0.7) / 0.3); // Fade out
-        } else if (isLastQuestion && localProgress >= 0.2) {
+        } else if (isLastQuestion && localProgress >= 0.15) {
           questionOpacity = 1; // Stay visible for last question
         }
         
-        // Question Y position (moves up in phase 4)
-        const questionY = localProgress > 0.65 && !isLastQuestion ? 
-                         50 - (localProgress - 0.65) * 150 : 50;
+        // Answer Y position: starts off-screen bottom, moves to below question
+        const answerYStart = 120; // Start off-screen bottom (percentage)
+        const answerYEnd = 32; // End below question (percentage from top)
+        const answerPhaseStart = 0.2;
+        const answerPhaseEnd = 0.4;
         
-        // Answer animation: bottom to center
-        const answerPhaseStart = 0.25;
-        const answerPhaseEnd = 0.5;
-        const answerY = localProgress < answerPhaseStart ? 100 :
-                       localProgress < answerPhaseEnd ? 
-                         100 - ((localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart)) * 50 : 
-                       localProgress > 0.65 && !isLastQuestion ?
-                         50 - (localProgress - 0.65) * 150 : 50;
+        let answerY = answerYStart;
+        if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
+          const answerProgress = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
+          answerY = answerYStart - answerProgress * (answerYStart - answerYEnd);
+        } else if (localProgress >= answerPhaseEnd) {
+          answerY = answerYEnd;
+        }
+        
+        // Answer moves up with question when scrolling away
+        if (localProgress > 0.6 && !isLastQuestion) {
+          answerY = answerYEnd - (localProgress - 0.6) * 80;
+        }
         
         // Answer opacity
         let answerOpacity = 0;
@@ -102,48 +120,46 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
 
         return (
           <div key={index}>
-            {/* Question - scrolls from right to center */}
+            {/* Question - scrolls from right to left, positioned at top-left */}
             <motion.div
-              className="absolute w-full flex justify-center"
+              className="absolute"
               style={{
-                left: `${questionX - 50}%`,
+                left: `${questionX}%`,
                 top: `${questionY}%`,
-                transform: "translate(0, -50%)",
                 opacity: questionOpacity,
               }}
             >
               <span
-                className="whitespace-nowrap"
                 style={{
-                  fontFamily: "'Times New Roman', Georgia, serif",
-                  fontStyle: "italic",
-                  fontSize: "clamp(2.5rem, 6vw, 5rem)",
+                  fontFamily: "'Anton', 'Archivo Black', sans-serif",
+                  fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
                   fontWeight: 400,
                   color: "#000000",
                   letterSpacing: "0.02em",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {qa.question}
               </span>
             </motion.div>
 
-            {/* Answer - scrolls from bottom to center */}
+            {/* Answer - scrolls from bottom to below question, left-aligned */}
             <motion.div
-              className="absolute w-full flex justify-center px-8 md:px-16"
+              className="absolute"
               style={{
+                left: "5%",
                 top: `${answerY}%`,
-                transform: "translateY(-50%)",
                 opacity: answerOpacity,
+                maxWidth: "55%",
               }}
             >
               <p
-                className="max-w-3xl text-center"
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)",
-                  lineHeight: 1.9,
-                  fontWeight: 300,
-                  color: "rgba(255, 255, 255, 0.9)",
+                  fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)",
+                  lineHeight: 1.8,
+                  fontWeight: 400,
+                  color: "#000000",
                   whiteSpace: "pre-line",
                 }}
               >
