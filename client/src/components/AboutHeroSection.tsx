@@ -39,9 +39,32 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
                          scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
   
-  const heroOpacity = scrollProgress > 0.3 ? Math.min((scrollProgress - 0.3) * 3, 1) : 0;
-  const heroY = scrollProgress > 0.3 ? 
-                Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
+  let heroOpacity = 0;
+  let heroY = 100;
+  
+  if (scrollProgress > 0.3 && scrollProgress <= 0.5) {
+    heroOpacity = Math.min((scrollProgress - 0.3) * 5, 1);
+    heroY = Math.max(100 - (scrollProgress - 0.3) * 500, 0);
+  } else if (scrollProgress > 0.5 && scrollProgress <= 0.8) {
+    const exitProgress = (scrollProgress - 0.5) / 0.3;
+    heroOpacity = 1 - exitProgress;
+    heroY = -exitProgress * window.innerHeight * 0.5;
+  } else if (scrollProgress > 0.8) {
+    heroOpacity = 0;
+    heroY = -window.innerHeight * 0.5;
+  }
+
+  let squareOpacity = 0;
+  let squareY = window.innerHeight * 0.5;
+  
+  if (scrollProgress > 0.5 && scrollProgress <= 0.8) {
+    const squareProgress = (scrollProgress - 0.5) / 0.3;
+    squareOpacity = Math.min(squareProgress * 2, 1);
+    squareY = window.innerHeight * 0.5 - squareProgress * window.innerHeight * 0.5;
+  } else if (scrollProgress > 0.8) {
+    squareOpacity = 1;
+    squareY = 0;
+  }
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
@@ -130,6 +153,23 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
             <span className="text-white"> designer</span>
           </div>
         </div>
+      </motion.div>
+
+      <motion.div
+        className="absolute left-1/2 pointer-events-none"
+        style={{
+          opacity: squareOpacity,
+          transform: `translateX(-50%) translateY(${squareY}px)`,
+          top: "50%",
+        }}
+      >
+        <div
+          className="bg-black"
+          style={{
+            width: "60px",
+            height: "60px",
+          }}
+        />
       </motion.div>
     </div>
   );
