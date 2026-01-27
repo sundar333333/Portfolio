@@ -35,17 +35,17 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  // ABOUT ME: faster scroll
-  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 4);
-  const aboutMeOpacity = scrollProgress < 0.03 ? scrollProgress * 33 : 
-                         scrollProgress > 0.25 ? Math.max(0, (0.35 - scrollProgress) * 10) : 1;
+  // ABOUT ME: even faster scroll
+  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 8);
+  const aboutMeOpacity = scrollProgress < 0.02 ? scrollProgress * 50 : 
+                         scrollProgress > 0.15 ? Math.max(0, (0.2 - scrollProgress) * 20) : 1;
   
-  // Hero: original timing
-  const heroOpacity = scrollProgress > 0.15 && scrollProgress < 0.6 ? 
-                      (scrollProgress < 0.25 ? (scrollProgress - 0.15) * 10 : 
-                       scrollProgress > 0.5 ? Math.max(0, (0.6 - scrollProgress) * 10) : 1) : 0;
-  const heroY = scrollProgress > 0.15 ? 
-                Math.max(0, 100 - (scrollProgress - 0.15) * 500) : 100;
+  // Hero: faster timing
+  const heroOpacity = scrollProgress > 0.08 && scrollProgress < 0.35 ? 
+                      (scrollProgress < 0.12 ? (scrollProgress - 0.08) * 25 : 
+                       scrollProgress > 0.28 ? Math.max(0, (0.35 - scrollProgress) * 14) : 1) : 0;
+  const heroY = scrollProgress > 0.08 ? 
+                Math.max(0, 100 - (scrollProgress - 0.08) * 800) : 100;
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">

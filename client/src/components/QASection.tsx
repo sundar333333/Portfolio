@@ -23,9 +23,8 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely disappears (at 0.6)
-  // ABOUT ME takes ~0.5 scroll progress, so each Q&A phase should too
-  const qaStartProgress = 0.6;
+  // Q&A starts after hero completely disappears (at 0.35)
+  const qaStartProgress = 0.35;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
