@@ -35,33 +35,35 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  const aboutMeY = 120 + scrollProgress * (window.innerHeight);
-  const aboutMeOpacity = scrollProgress < 0.1 ? scrollProgress * 10 : 
-                         scrollProgress > 0.8 ? (1 - scrollProgress) * 5 : 1;
+  let aboutMeOpacity = 0;
+  let aboutMeY = 120;
+  
+  if (scrollProgress <= 0.25) {
+    const phase1Progress = scrollProgress / 0.25;
+    aboutMeY = 120 + phase1Progress * (window.innerHeight * 0.4);
+    aboutMeOpacity = phase1Progress < 0.2 ? phase1Progress * 5 : 
+                     phase1Progress > 0.7 ? (1 - phase1Progress) * 3.33 : 1;
+  }
   
   let heroOpacity = 0;
   let heroY = 100;
-  
-  if (scrollProgress > 0.3 && scrollProgress <= 0.5) {
-    heroOpacity = Math.min((scrollProgress - 0.3) * 5, 1);
-    heroY = Math.max(100 - (scrollProgress - 0.3) * 500, 0);
-  } else if (scrollProgress > 0.5 && scrollProgress <= 0.8) {
-    const exitProgress = (scrollProgress - 0.5) / 0.3;
-    heroOpacity = 1 - exitProgress;
-    heroY = -exitProgress * window.innerHeight * 0.5;
-  } else if (scrollProgress > 0.8) {
-    heroOpacity = 0;
-    heroY = -window.innerHeight * 0.5;
-  }
-
   let squareOpacity = 0;
   let squareY = window.innerHeight * 0.5;
   
-  if (scrollProgress > 0.5 && scrollProgress <= 0.8) {
-    const squareProgress = (scrollProgress - 0.5) / 0.3;
-    squareOpacity = Math.min(squareProgress * 2, 1);
-    squareY = window.innerHeight * 0.5 - squareProgress * window.innerHeight * 0.5;
-  } else if (scrollProgress > 0.8) {
+  if (scrollProgress > 0.5 && scrollProgress <= 0.65) {
+    const heroEnterProgress = (scrollProgress - 0.5) / 0.15;
+    heroOpacity = Math.min(heroEnterProgress * 2, 1);
+    heroY = Math.max(100 - heroEnterProgress * 100, 0);
+  } else if (scrollProgress > 0.65 && scrollProgress <= 0.85) {
+    const exitProgress = (scrollProgress - 0.65) / 0.2;
+    heroOpacity = 1 - exitProgress;
+    heroY = -exitProgress * window.innerHeight * 0.4;
+    
+    squareOpacity = Math.min(exitProgress * 2, 1);
+    squareY = window.innerHeight * 0.5 - exitProgress * window.innerHeight * 0.5;
+  } else if (scrollProgress > 0.85) {
+    heroOpacity = 0;
+    heroY = -window.innerHeight * 0.4;
     squareOpacity = 1;
     squareY = 0;
   }
