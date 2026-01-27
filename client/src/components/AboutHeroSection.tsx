@@ -40,7 +40,9 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
                          scrollProgress > 0.8 ? Math.max(1 - (scrollProgress - 0.8) * 5, 0) : 1;
   
   const heroOpacity = scrollProgress > 0.15 
-    ? Math.min((scrollProgress - 0.15) * 3, 1)
+    ? (scrollProgress > 0.9 
+        ? Math.max(1 - (scrollProgress - 0.9) * 10, 0) 
+        : Math.min((scrollProgress - 0.15) * 3, 1))
     : 0;
   const heroY = scrollProgress > 0.3 ? 
                 Math.max(100 - (scrollProgress - 0.3) * 300, 0) : 100;
