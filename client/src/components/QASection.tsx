@@ -23,8 +23,8 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely disappears (at 0.35)
-  const qaStartProgress = 0.35;
+  // Q&A starts after hero completely disappears (at 0.25)
+  const qaStartProgress = 0.25;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
