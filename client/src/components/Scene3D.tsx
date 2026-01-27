@@ -552,7 +552,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
-  const transitionThreshold = 0.55;
+  const transitionThreshold = 0.25;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
