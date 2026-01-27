@@ -23,13 +23,12 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  // Q&A starts after hero completely fades (at 0.55 scroll progress)
-  // Extended range for MUCH slower animation
-  const qaStartProgress = 0.55;
+  // Q&A starts ONLY after hero completely fades (at 0.65 scroll progress)
+  const qaStartProgress = 0.65;
   const qaEndProgress = 1.0;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
-  // Each Q&A pair gets equal portion - extended for very slow scrolling
+  // Each Q&A pair gets equal portion for very slow scrolling
   const sectionPerQA = qaTotalRange / qaData.length;
   
   // Calculate local progress within Q&A section
@@ -43,55 +42,53 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         // Calculate progress for this specific Q&A pair
         const qaStart = index * sectionPerQA;
         
-        // Local progress within this Q&A - very granular for frame-by-frame feel
+        // Local progress within this Q&A
         const localProgress = (qaProgress - qaStart) / sectionPerQA;
         
-        // SLOW Phase breakdown:
-        // Phase 1: Question scrolls SLOWLY from right to left (0 - 0.35)
-        // Phase 2: Answer appears SLOWLY from bottom (0.35 - 0.55)
-        // Phase 3: Both visible together (0.55 - 0.7)
-        // Phase 4: Both scroll upward SLOWLY and disappear (0.7 - 1.0)
+        // VERY SLOW Phase breakdown:
+        // Phase 1: Question scrolls from right to left (0 - 0.4) - SLOW
+        // Phase 2: Answer appears from bottom (0.4 - 0.6) - SLOW
+        // Phase 3: Both visible together (0.6 - 0.75)
+        // Phase 4: Both scroll upward and disappear (0.75 - 1.0)
         
         // Question X position: very slow scroll from right to left
-        const questionXStart = 110; // Start off-screen right
+        const questionXStart = 105; // Start off-screen right
         const questionXEnd = 5; // End at left side
-        const questionPhaseEnd = 0.35; // Takes longer to complete
+        const questionPhaseEnd = 0.4; // Takes 40% of section to complete
         
         let questionX = questionXStart;
         if (localProgress >= 0 && localProgress < questionPhaseEnd) {
-          // Smooth easing for frame-by-frame feel
           const t = localProgress / questionPhaseEnd;
-          const eased = t; // Linear for consistent slow movement
-          questionX = questionXStart - eased * (questionXStart - questionXEnd);
+          questionX = questionXStart - t * (questionXStart - questionXEnd);
         } else if (localProgress >= questionPhaseEnd) {
           questionX = questionXEnd;
         }
         
-        // Question Y position
-        const questionYBase = 18;
+        // Question Y position - LOWER on screen (28% from top instead of 18%)
+        const questionYBase = 28;
         let questionY = questionYBase;
-        if (localProgress > 0.7 && !isLastQuestion) {
-          const upProgress = (localProgress - 0.7) / 0.3;
-          questionY = questionYBase - upProgress * 70;
+        if (localProgress > 0.75 && !isLastQuestion) {
+          const upProgress = (localProgress - 0.75) / 0.25;
+          questionY = questionYBase - upProgress * 80;
         }
         
         // Question opacity - slow fade in/out
         let questionOpacity = 0;
-        if (localProgress >= 0 && localProgress < 0.2) {
-          questionOpacity = localProgress / 0.2;
-        } else if (localProgress >= 0.2 && localProgress < 0.75) {
+        if (localProgress >= 0 && localProgress < 0.25) {
+          questionOpacity = localProgress / 0.25;
+        } else if (localProgress >= 0.25 && localProgress < 0.8) {
           questionOpacity = 1;
-        } else if (localProgress >= 0.75 && !isLastQuestion) {
-          questionOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
-        } else if (isLastQuestion && localProgress >= 0.2) {
+        } else if (localProgress >= 0.8 && !isLastQuestion) {
+          questionOpacity = Math.max(0, 1 - (localProgress - 0.8) / 0.2);
+        } else if (isLastQuestion && localProgress >= 0.25) {
           questionOpacity = 1;
         }
         
-        // Answer Y position: slow scroll from bottom
-        const answerYStart = 110;
-        const answerYEnd = 32;
-        const answerPhaseStart = 0.35;
-        const answerPhaseEnd = 0.55;
+        // Answer Y position: slow scroll from bottom - LOWER position (42% from top)
+        const answerYStart = 105;
+        const answerYEnd = 42;
+        const answerPhaseStart = 0.4;
+        const answerPhaseEnd = 0.6;
         
         let answerY = answerYStart;
         if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
@@ -102,19 +99,19 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         }
         
         // Answer moves up slowly with question
-        if (localProgress > 0.7 && !isLastQuestion) {
-          const upProgress = (localProgress - 0.7) / 0.3;
-          answerY = answerYEnd - upProgress * 70;
+        if (localProgress > 0.75 && !isLastQuestion) {
+          const upProgress = (localProgress - 0.75) / 0.25;
+          answerY = answerYEnd - upProgress * 80;
         }
         
         // Answer opacity - slow fade
         let answerOpacity = 0;
         if (localProgress >= answerPhaseStart && localProgress < answerPhaseEnd) {
           answerOpacity = (localProgress - answerPhaseStart) / (answerPhaseEnd - answerPhaseStart);
-        } else if (localProgress >= answerPhaseEnd && localProgress < 0.75) {
+        } else if (localProgress >= answerPhaseEnd && localProgress < 0.8) {
           answerOpacity = 1;
-        } else if (localProgress >= 0.75 && !isLastQuestion) {
-          answerOpacity = Math.max(0, 1 - (localProgress - 0.75) / 0.25);
+        } else if (localProgress >= 0.8 && !isLastQuestion) {
+          answerOpacity = Math.max(0, 1 - (localProgress - 0.8) / 0.2);
         } else if (isLastQuestion && localProgress >= answerPhaseEnd) {
           answerOpacity = 1;
         }
@@ -126,7 +123,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
 
         return (
           <div key={index}>
-            {/* Question - scrolls slowly from right to left */}
+            {/* Question - scrolls slowly from right to left, positioned LOWER */}
             <motion.div
               className="absolute"
               style={{
@@ -149,7 +146,7 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
               </span>
             </motion.div>
 
-            {/* Answer - scrolls slowly from bottom, WHITE text */}
+            {/* Answer - scrolls slowly from bottom, WHITE text, positioned LOWER */}
             <motion.div
               className="absolute"
               style={{
