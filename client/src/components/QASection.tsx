@@ -97,7 +97,7 @@ function QuestionText({
           fontWeight: Math.round(fontWeight),
           textShadow: "0 0 40px rgba(0,0,0,0.2)",
           display: "block",
-          textTransform: "capitalize",
+          textTransform: "uppercase",
         }}
       >
         {text}
