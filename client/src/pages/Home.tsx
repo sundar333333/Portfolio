@@ -73,7 +73,7 @@ export default function Home() {
           <PixelEffect visible={showWorkSection} />
           <AboutHeroSection visible={showWorkSection} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection} scrollProgress={scrollProgress} />
-          <TVZoomOut visible={showWorkSection && scrollProgress > 0.88} scrollProgress={scrollProgress} />
+          <TVZoomOut visible={showWorkSection && scrollProgress > 0.85} scrollProgress={scrollProgress} />
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
