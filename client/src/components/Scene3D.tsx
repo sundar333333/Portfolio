@@ -318,17 +318,17 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
   const cabinetMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
       map: woodTexture,
-      color: isHovered ? 0x8b5a2b : 0x7a4a1b,
-      roughness: 0.65,
+      color: isHovered ? 0x4a3520 : 0x3a2815,
+      roughness: 0.7,
       metalness: 0.02,
-      clearcoat: 0.2,
-      clearcoatRoughness: 0.5,
+      clearcoat: 0.15,
+      clearcoatRoughness: 0.6,
     });
   }, [woodTexture, isHovered]);
 
-  const controlPanelMaterial = useMemo(() => {
+  const plasticMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0x1a1815,
+      color: 0x1a1a1a,
       roughness: 0.4,
       metalness: 0.1,
       clearcoat: 0.3,
@@ -338,52 +338,26 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
 
   const bezelMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0x151515,
-      roughness: 0.3,
-      metalness: 0.1,
-      clearcoat: 0.5,
+      color: 0x2a2a2a,
+      roughness: 0.35,
+      metalness: 0.15,
+      clearcoat: 0.4,
       clearcoatRoughness: 0.15,
     });
   }, []);
 
-  const goldTrimMaterial = useMemo(() => {
+  const metalMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0xc9a227,
-      roughness: 0.25,
-      metalness: 0.9,
-      clearcoat: 0.4,
+      color: 0x888888,
+      roughness: 0.3,
+      metalness: 0.85,
+      clearcoat: 0.2,
       clearcoatRoughness: 0.1,
     });
   }, []);
 
-  const chromeMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0xcccccc,
-      roughness: 0.15,
-      metalness: 0.95,
-      clearcoat: 0.3,
-      clearcoatRoughness: 0.05,
-    });
-  }, []);
-
-  const dialMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0x2a2520,
-      roughness: 0.5,
-      metalness: 0.1,
-    });
-  }, []);
-
-  const antennaMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0x666666,
-      roughness: 0.25,
-      metalness: 0.9,
-    });
-  }, []);
-
-  const screenWidth = 0.48;
-  const screenHeight = 0.40;
+  const screenWidth = 0.52;
+  const screenHeight = 0.39;
 
   if (!visible) return null;
 
@@ -396,33 +370,28 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
-      <RoundedBox args={[0.95, 0.72, 0.48]} radius={0.025} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
+      <RoundedBox args={[0.85, 0.65, 0.55]} radius={0.03} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
         <primitive object={cabinetMaterial} attach="material" />
       </RoundedBox>
 
-      <RoundedBox args={[0.60, 0.52, 0.1]} radius={0.015} smoothness={4} position={[-0.12, 0.03, 0.21]} castShadow>
+      <RoundedBox args={[0.58, 0.46, 0.08]} radius={0.02} smoothness={4} position={[-0.08, 0.02, 0.25]} castShadow>
         <primitive object={bezelMaterial} attach="material" />
       </RoundedBox>
 
-      <mesh position={[-0.12, 0.03, 0.265]} rotation={[0, 0, 0]}>
-        <torusGeometry args={[0.28, 0.012, 8, 64]} />
-        <primitive object={goldTrimMaterial} attach="material" />
+      <mesh position={[-0.08, 0.02, 0.22]}>
+        <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.08]} />
+        <meshStandardMaterial color="#050505" />
       </mesh>
 
-      <mesh position={[-0.12, 0.03, 0.26]}>
-        <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.06]} />
-        <meshStandardMaterial color="#0a0a0a" />
-      </mesh>
-
-      <mesh position={[-0.12, 0.03, 0.29]}>
+      <mesh position={[-0.08, 0.02, 0.295]}>
         <planeGeometry args={[screenWidth, screenHeight]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
-      <mesh position={[-0.12, 0.03, 0.295]}>
+      <mesh position={[-0.08, 0.02, 0.30]}>
         <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
         <meshPhysicalMaterial
-          color="#1a2a20"
+          color="#111111"
           roughness={0.02}
           metalness={0}
           transmission={0.05}
@@ -430,118 +399,84 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
           clearcoat={1}
           clearcoatRoughness={0.03}
           transparent
-          opacity={0.12}
+          opacity={0.15}
         />
       </mesh>
 
-      <group position={[0.34, 0, 0.24]}>
-        <RoundedBox args={[0.20, 0.60, 0.06]} radius={0.01} smoothness={4}>
-          <primitive object={controlPanelMaterial} attach="material" />
+      <group position={[0.32, 0, 0.28]}>
+        <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
+          <primitive object={plasticMaterial} attach="material" />
         </RoundedBox>
 
-        <mesh position={[0, 0.24, 0.03]}>
-          <boxGeometry args={[0.16, 0.01, 0.01]} />
-          <primitive object={goldTrimMaterial} attach="material" />
-        </mesh>
+        {[-0.12, -0.05, 0.02, 0.09, 0.16].map((y, i) => (
+          <mesh key={i} position={[0, y, 0.025]}>
+            <boxGeometry args={[0.1, 0.015, 0.01]} />
+            <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+          </mesh>
+        ))}
 
-        <group position={[0, 0.15, 0.035]}>
+        <group position={[0, -0.18, 0.025]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.055, 0.055, 0.03, 32]} />
-            <primitive object={chromeMaterial} attach="material" />
+            <cylinderGeometry args={[0.035, 0.035, 0.025, 32]} />
+            <primitive object={metalMaterial} attach="material" />
           </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.045, 0.045, 0.04, 32]} />
-            <primitive object={dialMaterial} attach="material" />
+          <mesh position={[0.012, 0, 0.015]}>
+            <boxGeometry args={[0.008, 0.02, 0.005]} />
+            <meshStandardMaterial color="#333333" />
           </mesh>
-          {[...Array(12)].map((_, i) => {
-            const angle = (i / 12) * Math.PI * 2;
-            return (
-              <mesh key={i} position={[Math.cos(angle) * 0.035, Math.sin(angle) * 0.035, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
-                <boxGeometry args={[0.003, 0.015, 0.008]} />
-                <meshStandardMaterial color="#1a1a1a" />
-              </mesh>
-            );
-          })}
         </group>
 
-        <group position={[0, -0.02, 0.035]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.055, 0.055, 0.03, 32]} />
-            <primitive object={chromeMaterial} attach="material" />
-          </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.045, 0.045, 0.04, 32]} />
-            <primitive object={dialMaterial} attach="material" />
-          </mesh>
-          {[...Array(24)].map((_, i) => {
-            const angle = (i / 24) * Math.PI * 2;
-            return (
-              <mesh key={i} position={[Math.cos(angle) * 0.038, Math.sin(angle) * 0.038, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
-                <boxGeometry args={[0.002, 0.012, 0.006]} />
-                <meshStandardMaterial color="#1a1a1a" />
-              </mesh>
-            );
-          })}
-        </group>
-
-        <mesh position={[0, -0.12, 0.03]}>
-          <boxGeometry args={[0.14, 0.015, 0.01]} />
-          <primitive object={goldTrimMaterial} attach="material" />
-        </mesh>
-        <mesh position={[0, -0.14, 0.035]}>
-          <boxGeometry args={[0.12, 0.025, 0.01]} />
-          <meshStandardMaterial color="#d4c4a0" roughness={0.8} />
-        </mesh>
-
-        <group position={[0, -0.22, 0.03]}>
-          {[...Array(8)].map((_, i) => (
-            <mesh key={i} position={[0, -i * 0.015, 0]}>
-              <boxGeometry args={[0.14, 0.008, 0.02]} />
-              <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
-            </mesh>
-          ))}
-        </group>
-      </group>
-
-      <group position={[0, 0.42, 0]}>
-        <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <sphereGeometry args={[0.035, 16, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.4} />
-        </mesh>
-        
-        <mesh position={[-0.18, 0.22, 0]} rotation={[0, 0, -0.5]}>
-          <cylinderGeometry args={[0.006, 0.012, 0.5, 8]} />
-          <primitive object={antennaMaterial} attach="material" />
-        </mesh>
-        <mesh position={[0.18, 0.22, 0]} rotation={[0, 0, 0.5]}>
-          <cylinderGeometry args={[0.006, 0.012, 0.5, 8]} />
-          <primitive object={antennaMaterial} attach="material" />
-        </mesh>
-        
-        <mesh position={[-0.35, 0.42, 0]}>
-          <sphereGeometry args={[0.012, 8, 8]} />
-          <primitive object={chromeMaterial} attach="material" />
-        </mesh>
-        <mesh position={[0.35, 0.42, 0]}>
-          <sphereGeometry args={[0.012, 8, 8]} />
-          <primitive object={chromeMaterial} attach="material" />
+        <mesh position={[0.04, -0.18, 0.03]}>
+          <sphereGeometry args={[0.008, 12, 12]} />
+          <meshBasicMaterial color="#ff2200" />
         </mesh>
       </group>
 
-      <mesh position={[-0.25, -0.40, 0.18]} rotation={[0.12, 0, 0.08]}>
-        <boxGeometry args={[0.08, 0.12, 0.04]} />
+      <mesh position={[-0.2, 0.4, 0]} rotation={[0, 0, -0.35]}>
+        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
+        <primitive object={metalMaterial} attach="material" />
+      </mesh>
+      <mesh position={[0.15, 0.4, 0]} rotation={[0, 0, 0.35]}>
+        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
+        <primitive object={metalMaterial} attach="material" />
+      </mesh>
+
+      <mesh position={[-0.32, 0.55, 0]}>
+        <sphereGeometry args={[0.015, 12, 12]} />
+        <primitive object={metalMaterial} attach="material" />
+      </mesh>
+      <mesh position={[0.27, 0.55, 0]}>
+        <sphereGeometry args={[0.015, 12, 12]} />
+        <primitive object={metalMaterial} attach="material" />
+      </mesh>
+
+      <mesh position={[-0.025, 0.33, 0]}>
+        <boxGeometry args={[0.08, 0.02, 0.1]} />
+        <meshStandardMaterial color="#1a1510" roughness={0.8} />
+      </mesh>
+
+      <mesh position={[-0.3, -0.38, 0.18]} rotation={[0.08, 0, 0.05]}>
+        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
         <primitive object={cabinetMaterial} attach="material" />
       </mesh>
-      <mesh position={[0.25, -0.40, 0.18]} rotation={[0.12, 0, -0.08]}>
-        <boxGeometry args={[0.08, 0.12, 0.04]} />
+      <mesh position={[0.3, -0.38, 0.18]} rotation={[0.08, 0, -0.05]}>
+        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
+        <primitive object={cabinetMaterial} attach="material" />
+      </mesh>
+      <mesh position={[-0.3, -0.38, -0.18]} rotation={[-0.08, 0, 0.05]}>
+        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
+        <primitive object={cabinetMaterial} attach="material" />
+      </mesh>
+      <mesh position={[0.3, -0.38, -0.18]} rotation={[-0.08, 0, -0.05]}>
+        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
         <primitive object={cabinetMaterial} attach="material" />
       </mesh>
 
       <pointLight 
         ref={screenGlowRef}
-        position={[-0.12, 0.03, 0.5]} 
+        position={[-0.08, 0.02, 0.5]} 
         intensity={0.3} 
-        color="#9ab8a0" 
+        color="#aaccff" 
         distance={1.5} 
         decay={2} 
       />
@@ -570,160 +505,118 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
-function useGrassTexture() {
+function useFootballPitchTexture() {
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 512;
+    canvas.width = 1024;
+    canvas.height = 1024;
     const ctx = canvas.getContext("2d")!;
     
-    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-    gradient.addColorStop(0, "#3d6b35");
-    gradient.addColorStop(0.5, "#4a7c42");
-    gradient.addColorStop(1, "#3d6b35");
+    const gradient = ctx.createRadialGradient(512, 512, 0, 512, 512, 600);
+    gradient.addColorStop(0, "#2d5a27");
+    gradient.addColorStop(0.5, "#1e4d1a");
+    gradient.addColorStop(1, "#153d12");
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 512);
+    ctx.fillRect(0, 0, 1024, 1024);
     
-    for (let i = 0; i < 15000; i++) {
-      const x = Math.random() * 512;
-      const y = Math.random() * 512;
-      const height = 3 + Math.random() * 8;
-      const width = 1 + Math.random() * 1.5;
-      const hue = 85 + Math.random() * 30;
-      const sat = 40 + Math.random() * 30;
-      const light = 25 + Math.random() * 25;
-      
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate((Math.random() - 0.5) * 0.4);
-      ctx.fillStyle = `hsl(${hue}, ${sat}%, ${light}%)`;
-      ctx.fillRect(-width/2, 0, width, -height);
-      ctx.restore();
+    ctx.strokeStyle = "rgba(20, 60, 20, 0.3)";
+    ctx.lineWidth = 8;
+    for (let i = 0; i < 20; i++) {
+      const y = i * 52;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1024, y);
+      ctx.stroke();
     }
     
+    for (let i = 0; i < 3000; i++) {
+      const x = Math.random() * 1024;
+      const y = Math.random() * 1024;
+      const brightness = 30 + Math.random() * 40;
+      ctx.fillStyle = `rgba(${brightness}, ${brightness + 30}, ${brightness - 10}, 0.4)`;
+      ctx.fillRect(x, y, 2, 4);
+    }
+    
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.lineWidth = 4;
+    
+    ctx.beginPath();
+    ctx.arc(512, 512, 120, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(512, 512, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(512, 0);
+    ctx.lineTo(512, 1024);
+    ctx.stroke();
+    
+    ctx.strokeRect(20, 20, 984, 984);
+    
+    ctx.strokeRect(20, 312, 180, 400);
+    ctx.strokeRect(824, 312, 180, 400);
+    
+    ctx.strokeRect(20, 412, 80, 200);
+    ctx.strokeRect(924, 412, 80, 200);
+    
+    ctx.beginPath();
+    ctx.arc(20, 20, 60, 0, Math.PI / 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(1004, 20, 60, Math.PI / 2, Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(20, 1004, 60, -Math.PI / 2, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(1004, 1004, 60, Math.PI, Math.PI * 1.5);
+    ctx.stroke();
+    
     const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(20, 20);
-    tex.anisotropy = 16;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
     return tex;
   }, []);
   
   return texture;
 }
 
-function GoalPost({ position }: { position: [number, number, number] }) {
-  const postColor = "#e8e8e8";
-  const postRadius = 0.06;
-  const goalWidth = 3.5;
-  const goalHeight = 1.2;
-  const goalDepth = 0.8;
-  
-  return (
-    <group position={position}>
-      <mesh position={[-goalWidth/2, goalHeight/2, 0]}>
-        <cylinderGeometry args={[postRadius, postRadius, goalHeight, 16]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      <mesh position={[goalWidth/2, goalHeight/2, 0]}>
-        <cylinderGeometry args={[postRadius, postRadius, goalHeight, 16]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      <mesh position={[0, goalHeight, 0]} rotation={[0, 0, Math.PI/2]}>
-        <cylinderGeometry args={[postRadius, postRadius, goalWidth, 16]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      
-      <mesh position={[-goalWidth/2, goalHeight/2, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
-        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      <mesh position={[goalWidth/2, goalHeight/2, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
-        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      <mesh position={[0, goalHeight, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
-        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
-        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
-      </mesh>
-      
-      <mesh position={[0, goalHeight/2, -goalDepth]}>
-        <planeGeometry args={[goalWidth, goalHeight]} />
-        <meshStandardMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.15}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function FloodLight({ position }: { position: [number, number, number] }) {
-  const poleHeight = 8;
-  
-  return (
-    <group position={position}>
-      <mesh position={[0, poleHeight/2, 0]}>
-        <cylinderGeometry args={[0.08, 0.12, poleHeight, 8]} />
-        <meshStandardMaterial color="#888888" metalness={0.5} roughness={0.3} />
-      </mesh>
-      
-      <group position={[0, poleHeight, 0]}>
-        {[-0.3, 0, 0.3].map((xOffset, row) => (
-          [-0.25, 0, 0.25].map((yOffset, col) => (
-            <mesh key={`${row}-${col}`} position={[xOffset, yOffset * 0.3 + 0.3, 0.1]}>
-              <boxGeometry args={[0.15, 0.15, 0.08]} />
-              <meshStandardMaterial 
-                color="#fffbe6" 
-                emissive="#fff8dc"
-                emissiveIntensity={0.8}
-              />
-            </mesh>
-          ))
-        ))}
-      </group>
-      
-      <spotLight
-        position={[0, poleHeight + 0.5, 0.5]}
-        angle={0.6}
-        penumbra={0.5}
-        intensity={15}
-        color="#fff8dc"
-        distance={30}
-        castShadow
-      />
-    </group>
-  );
-}
-
 function FootballPitch({ visible }: { visible: boolean }) {
-  const grassTexture = useGrassTexture();
+  const pitchTexture = useFootballPitchTexture();
+  const groupRef = useRef<THREE.Group>(null);
 
   if (!visible) return null;
 
   return (
-    <group>
-      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[80, 80]} />
+    <group ref={groupRef}>
+      <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[25, 25]} />
         <meshStandardMaterial 
-          map={grassTexture}
-          roughness={0.95}
+          map={pitchTexture}
+          roughness={0.9}
           metalness={0.0}
-          color="#4a7040"
         />
       </mesh>
       
-      <mesh position={[0, 0.001, 3]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.08, 6]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      <mesh position={[0, -0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[60, 60]} />
+        <meshStandardMaterial 
+          color="#0d2a0a"
+          roughness={1}
+          metalness={0}
+        />
       </mesh>
       
-      <GoalPost position={[0, 0, -4]} />
-      
-      <FloodLight position={[-8, 0, -6]} />
-      <FloodLight position={[8, 0, -6]} />
+      <ambientLight intensity={0.4} color="#87ceeb" />
+      <directionalLight
+        position={[10, 20, 5]}
+        intensity={1.5}
+        color="#fff5e6"
+        castShadow
+      />
     </group>
   );
 }
@@ -842,7 +735,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const showTV = showLandingTV || showZoomOutTV;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#b8c4a8";
+    if (showZoomOutTV) return "#4a7c59";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -852,28 +745,23 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   return (
     <>
       <color attach="background" args={[bgColor]} />
-      <fog attach="fog" args={[bgColor, 5, showZoomOutTV ? 40 : (showWorkSection ? 50 : 12)]} />
+      <fog attach="fog" args={[bgColor, 3, showZoomOutTV ? 30 : (showWorkSection ? 50 : 12)]} />
       
       {showZoomOutTV ? (
         <>
-          <ambientLight intensity={0.6} color="#ffecd2" />
+          <ambientLight intensity={0.5} color="#87ceeb" />
           <directionalLight
-            position={[-10, 8, 10]}
-            intensity={3}
-            color="#ffcc80"
+            position={[5, 15, 5]}
+            intensity={2}
+            color="#fff5e6"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
           />
-          <directionalLight
-            position={[10, 5, -5]}
-            intensity={0.5}
-            color="#87ceeb"
-          />
           <hemisphereLight
-            color="#ffecd2"
-            groundColor="#4a7040"
-            intensity={1.2}
+            color="#87ceeb"
+            groundColor="#3d6b35"
+            intensity={0.8}
           />
         </>
       ) : (
