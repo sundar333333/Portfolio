@@ -505,115 +505,41 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
-function useFootballPitchTexture() {
+function useGrassTexture() {
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 2048;
-    canvas.height = 2048;
+    canvas.width = 512;
+    canvas.height = 512;
     const ctx = canvas.getContext("2d")!;
     
-    const w = 2048;
-    const h = 2048;
-    const stripeWidth = w / 12;
+    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+    gradient.addColorStop(0, "#3d6b35");
+    gradient.addColorStop(0.5, "#4a7c42");
+    gradient.addColorStop(1, "#3d6b35");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
     
-    for (let i = 0; i < 12; i++) {
-      const isLight = i % 2 === 0;
-      const baseGreen = isLight ? [58, 130, 52] : [42, 105, 38];
+    for (let i = 0; i < 15000; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const height = 3 + Math.random() * 8;
+      const width = 1 + Math.random() * 1.5;
+      const hue = 85 + Math.random() * 30;
+      const sat = 40 + Math.random() * 30;
+      const light = 25 + Math.random() * 25;
       
-      const gradient = ctx.createLinearGradient(i * stripeWidth, 0, (i + 1) * stripeWidth, 0);
-      gradient.addColorStop(0, `rgb(${baseGreen[0] - 5}, ${baseGreen[1] - 5}, ${baseGreen[2] - 5})`);
-      gradient.addColorStop(0.5, `rgb(${baseGreen[0]}, ${baseGreen[1]}, ${baseGreen[2]})`);
-      gradient.addColorStop(1, `rgb(${baseGreen[0] - 5}, ${baseGreen[1] - 5}, ${baseGreen[2] - 5})`);
-      ctx.fillStyle = gradient;
-      ctx.fillRect(i * stripeWidth, 0, stripeWidth, h);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((Math.random() - 0.5) * 0.4);
+      ctx.fillStyle = `hsl(${hue}, ${sat}%, ${light}%)`;
+      ctx.fillRect(-width/2, 0, width, -height);
+      ctx.restore();
     }
-    
-    for (let i = 0; i < 8000; i++) {
-      const x = Math.random() * w;
-      const y = Math.random() * h;
-      const len = 2 + Math.random() * 4;
-      const brightness = Math.random() * 30;
-      ctx.fillStyle = `rgba(${20 + brightness}, ${60 + brightness}, ${15 + brightness}, 0.3)`;
-      ctx.fillRect(x, y, 1, len);
-    }
-    
-    const margin = 60;
-    const pitchX = margin;
-    const pitchY = margin;
-    const pitchW = w - margin * 2;
-    const pitchH = h - margin * 2;
-    const centerX = w / 2;
-    const centerY = h / 2;
-    
-    ctx.strokeStyle = "#ffffff";
-    ctx.fillStyle = "#ffffff";
-    ctx.lineWidth = 8;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    
-    ctx.strokeRect(pitchX, pitchY, pitchW, pitchH);
-    
-    ctx.beginPath();
-    ctx.moveTo(centerX, pitchY);
-    ctx.lineTo(centerX, pitchY + pitchH);
-    ctx.stroke();
-    
-    const centerCircleRadius = pitchW * 0.095;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, centerCircleRadius, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const penaltyAreaW = pitchW * 0.17;
-    const penaltyAreaH = pitchH * 0.44;
-    const penaltyAreaY = centerY - penaltyAreaH / 2;
-    
-    ctx.strokeRect(pitchX, penaltyAreaY, penaltyAreaW, penaltyAreaH);
-    ctx.strokeRect(pitchX + pitchW - penaltyAreaW, penaltyAreaY, penaltyAreaW, penaltyAreaH);
-    
-    const goalAreaW = pitchW * 0.055;
-    const goalAreaH = pitchH * 0.19;
-    const goalAreaY = centerY - goalAreaH / 2;
-    
-    ctx.strokeRect(pitchX, goalAreaY, goalAreaW, goalAreaH);
-    ctx.strokeRect(pitchX + pitchW - goalAreaW, goalAreaY, goalAreaW, goalAreaH);
-    
-    const penaltySpotDist = pitchW * 0.11;
-    ctx.beginPath();
-    ctx.arc(pitchX + penaltySpotDist, centerY, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(pitchX + pitchW - penaltySpotDist, centerY, 6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const arcRadius = pitchW * 0.095;
-    ctx.beginPath();
-    ctx.arc(pitchX + penaltySpotDist, centerY, arcRadius, -0.93, 0.93);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(pitchX + pitchW - penaltySpotDist, centerY, arcRadius, Math.PI - 0.93, Math.PI + 0.93);
-    ctx.stroke();
-    
-    const cornerRadius = 20;
-    ctx.beginPath();
-    ctx.arc(pitchX, pitchY, cornerRadius, 0, Math.PI / 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(pitchX + pitchW, pitchY, cornerRadius, Math.PI / 2, Math.PI);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(pitchX, pitchY + pitchH, cornerRadius, -Math.PI / 2, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(pitchX + pitchW, pitchY + pitchH, cornerRadius, Math.PI, Math.PI * 1.5);
-    ctx.stroke();
     
     const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(20, 20);
     tex.anisotropy = 16;
     return tex;
   }, []);
@@ -621,39 +547,118 @@ function useFootballPitchTexture() {
   return texture;
 }
 
+function GoalPost({ position }: { position: [number, number, number] }) {
+  const postColor = "#e8e8e8";
+  const postRadius = 0.06;
+  const goalWidth = 3.5;
+  const goalHeight = 1.2;
+  const goalDepth = 0.8;
+  
+  return (
+    <group position={position}>
+      <mesh position={[-goalWidth/2, goalHeight/2, 0]}>
+        <cylinderGeometry args={[postRadius, postRadius, goalHeight, 16]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      <mesh position={[goalWidth/2, goalHeight/2, 0]}>
+        <cylinderGeometry args={[postRadius, postRadius, goalHeight, 16]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      <mesh position={[0, goalHeight, 0]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[postRadius, postRadius, goalWidth, 16]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      
+      <mesh position={[-goalWidth/2, goalHeight/2, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      <mesh position={[goalWidth/2, goalHeight/2, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      <mesh position={[0, goalHeight, -goalDepth/2]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[postRadius * 0.7, postRadius * 0.7, goalDepth, 8]} />
+        <meshStandardMaterial color={postColor} metalness={0.3} roughness={0.4} />
+      </mesh>
+      
+      <mesh position={[0, goalHeight/2, -goalDepth]}>
+        <planeGeometry args={[goalWidth, goalHeight]} />
+        <meshStandardMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.15}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function FloodLight({ position }: { position: [number, number, number] }) {
+  const poleHeight = 8;
+  
+  return (
+    <group position={position}>
+      <mesh position={[0, poleHeight/2, 0]}>
+        <cylinderGeometry args={[0.08, 0.12, poleHeight, 8]} />
+        <meshStandardMaterial color="#888888" metalness={0.5} roughness={0.3} />
+      </mesh>
+      
+      <group position={[0, poleHeight, 0]}>
+        {[-0.3, 0, 0.3].map((xOffset, row) => (
+          [-0.25, 0, 0.25].map((yOffset, col) => (
+            <mesh key={`${row}-${col}`} position={[xOffset, yOffset * 0.3 + 0.3, 0.1]}>
+              <boxGeometry args={[0.15, 0.15, 0.08]} />
+              <meshStandardMaterial 
+                color="#fffbe6" 
+                emissive="#fff8dc"
+                emissiveIntensity={0.8}
+              />
+            </mesh>
+          ))
+        ))}
+      </group>
+      
+      <spotLight
+        position={[0, poleHeight + 0.5, 0.5]}
+        angle={0.6}
+        penumbra={0.5}
+        intensity={15}
+        color="#fff8dc"
+        distance={30}
+        castShadow
+      />
+    </group>
+  );
+}
+
 function FootballPitch({ visible }: { visible: boolean }) {
-  const pitchTexture = useFootballPitchTexture();
-  const groupRef = useRef<THREE.Group>(null);
+  const grassTexture = useGrassTexture();
 
   if (!visible) return null;
 
   return (
-    <group ref={groupRef}>
-      <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[25, 25]} />
+    <group>
+      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[80, 80]} />
         <meshStandardMaterial 
-          map={pitchTexture}
-          roughness={0.9}
+          map={grassTexture}
+          roughness={0.95}
           metalness={0.0}
+          color="#4a7040"
         />
       </mesh>
       
-      <mesh position={[0, -0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial 
-          color="#0d2a0a"
-          roughness={1}
-          metalness={0}
-        />
+      <mesh position={[0, 0.001, 3]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.08, 6]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </mesh>
       
-      <ambientLight intensity={0.4} color="#87ceeb" />
-      <directionalLight
-        position={[10, 20, 5]}
-        intensity={1.5}
-        color="#fff5e6"
-        castShadow
-      />
+      <GoalPost position={[0, 0, -4]} />
+      
+      <FloodLight position={[-8, 0, -6]} />
+      <FloodLight position={[8, 0, -6]} />
     </group>
   );
 }
@@ -772,7 +777,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const showTV = showLandingTV || showZoomOutTV;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#4a7c59";
+    if (showZoomOutTV) return "#b8c4a8";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -782,23 +787,28 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   return (
     <>
       <color attach="background" args={[bgColor]} />
-      <fog attach="fog" args={[bgColor, 3, showZoomOutTV ? 30 : (showWorkSection ? 50 : 12)]} />
+      <fog attach="fog" args={[bgColor, 5, showZoomOutTV ? 40 : (showWorkSection ? 50 : 12)]} />
       
       {showZoomOutTV ? (
         <>
-          <ambientLight intensity={0.5} color="#87ceeb" />
+          <ambientLight intensity={0.6} color="#ffecd2" />
           <directionalLight
-            position={[5, 15, 5]}
-            intensity={2}
-            color="#fff5e6"
+            position={[-10, 8, 10]}
+            intensity={3}
+            color="#ffcc80"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
           />
-          <hemisphereLight
+          <directionalLight
+            position={[10, 5, -5]}
+            intensity={0.5}
             color="#87ceeb"
-            groundColor="#3d6b35"
-            intensity={0.8}
+          />
+          <hemisphereLight
+            color="#ffecd2"
+            groundColor="#4a7040"
+            intensity={1.2}
           />
         </>
       ) : (
