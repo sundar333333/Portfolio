@@ -550,6 +550,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
+  const [showZoomOutTV, setShowZoomOutTV] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
@@ -569,23 +570,27 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     
     const startZ = 1.8;
     const screenZ = 0.3;
-    const endZ = -15;
     
     const tvScreenY = 0.22;
+    const zoomOutThreshold = 0.92;
     
     let targetZ: number;
     let targetY: number;
+    let targetX = -0.05;
     
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
+      targetY = tvScreenY;
+    } else if (offset > zoomOutThreshold) {
+      const zoomOutProgress = (offset - zoomOutThreshold) / (1 - zoomOutThreshold);
+      targetZ = screenZ + zoomOutProgress * (startZ - screenZ);
       targetY = tvScreenY;
     } else {
       targetZ = screenZ;
       targetY = tvScreenY;
     }
     
-    const targetX = -0.05;
     camera.position.x += (targetX - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
@@ -595,11 +600,14 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
     
-    const isWorkVisible = offset > transitionThreshold;
-    setShowWorkSection(isWorkVisible);
-    onWorkSectionChange?.(isWorkVisible);
+    const isWorkVisible = offset > transitionThreshold && offset < zoomOutThreshold;
+    const isZoomOutVisible = offset > zoomOutThreshold;
     
-    if (isWorkVisible) {
+    setShowWorkSection(isWorkVisible);
+    setShowZoomOutTV(isZoomOutVisible);
+    onWorkSectionChange?.(isWorkVisible || isZoomOutVisible);
+    
+    if (isWorkVisible || isZoomOutVisible) {
       const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       onScrollProgress?.(workProgress);
     } else {
@@ -607,18 +615,20 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     }
   });
 
+  const showDarkRoom = !showWorkSection || showZoomOutTV;
+
   return (
     <>
-      <color attach="background" args={[showWorkSection ? "#0066FF" : "#050403"]} />
-      <fog attach="fog" args={[showWorkSection ? "#0066FF" : "#050403", 3, showWorkSection ? 50 : 12]} />
+      <color attach="background" args={[showWorkSection && !showZoomOutTV ? "#0066FF" : "#050403"]} />
+      <fog attach="fog" args={[showWorkSection && !showZoomOutTV ? "#0066FF" : "#050403", 3, showWorkSection && !showZoomOutTV ? 50 : 12]} />
       
-      <ambientLight intensity={showWorkSection ? 0.05 : 0.08} color={showWorkSection ? "#1a1a40" : "#1a1820"} />
+      <ambientLight intensity={showDarkRoom ? 0.08 : 0.05} color={showDarkRoom ? "#1a1820" : "#1a1a40"} />
 
       <spotLight
         position={[0, 3.5, 1.5]}
         angle={0.35}
         penumbra={0.7}
-        intensity={showWorkSection ? 5 : 15}
+        intensity={showDarkRoom ? 15 : 5}
         color="#fff8f0"
         castShadow
         shadow-mapSize-width={2048}
@@ -630,15 +640,15 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         position={[-1.5, 2, 2]}
         angle={0.5}
         penumbra={0.9}
-        intensity={showWorkSection ? 1 : 3}
+        intensity={showDarkRoom ? 3 : 1}
         color="#aab8cc"
       />
 
       <Environment preset="night" background={false} />
       
-      <TiledFloor visible={!showWorkSection} />
+      <TiledFloor visible={showDarkRoom} />
 
-      {!showWorkSection && (
+      {showDarkRoom && (
         <ContactShadows
           position={[0, 0, 0]}
           opacity={0.6}
@@ -650,16 +660,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       )}
       
       <VintageTV
-        hoveredText={hoveredText}
+        hoveredText={showZoomOutTV ? null : hoveredText}
         onClick={onTVClick}
-        isVideoPlaying={isVideoPlaying}
-        visible={!showWorkSection}
-        glitchIntensity={glitchIntensity}
+        isVideoPlaying={showZoomOutTV ? false : isVideoPlaying}
+        visible={showDarkRoom}
+        glitchIntensity={showZoomOutTV ? 0 : glitchIntensity}
       />
 
-      <GlitchOverlay intensity={glitchIntensity} />
+      <GlitchOverlay intensity={showZoomOutTV ? 0 : glitchIntensity} />
 
-      <WorkSection visible={showWorkSection} />
+      <WorkSection visible={showWorkSection && !showZoomOutTV} />
     </>
   );
 }

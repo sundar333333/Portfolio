@@ -334,6 +334,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
           toneMappingExposure: 0.9,
         }}
         dpr={[1, 2]}
+        style={{ pointerEvents: "none" }}
       >
         <Suspense fallback={null}>
           <color attach="background" args={["#050403"]} />
