@@ -508,76 +508,113 @@ function TiledFloor({ visible }: { visible: boolean }) {
 function useFootballPitchTexture() {
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 1024;
+    canvas.width = 2048;
+    canvas.height = 2048;
     const ctx = canvas.getContext("2d")!;
     
-    const gradient = ctx.createRadialGradient(512, 512, 0, 512, 512, 600);
-    gradient.addColorStop(0, "#2d5a27");
-    gradient.addColorStop(0.5, "#1e4d1a");
-    gradient.addColorStop(1, "#153d12");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 1024);
+    const w = 2048;
+    const h = 2048;
+    const stripeWidth = w / 12;
     
-    ctx.strokeStyle = "rgba(20, 60, 20, 0.3)";
+    for (let i = 0; i < 12; i++) {
+      const isLight = i % 2 === 0;
+      const baseGreen = isLight ? [58, 130, 52] : [42, 105, 38];
+      
+      const gradient = ctx.createLinearGradient(i * stripeWidth, 0, (i + 1) * stripeWidth, 0);
+      gradient.addColorStop(0, `rgb(${baseGreen[0] - 5}, ${baseGreen[1] - 5}, ${baseGreen[2] - 5})`);
+      gradient.addColorStop(0.5, `rgb(${baseGreen[0]}, ${baseGreen[1]}, ${baseGreen[2]})`);
+      gradient.addColorStop(1, `rgb(${baseGreen[0] - 5}, ${baseGreen[1] - 5}, ${baseGreen[2] - 5})`);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(i * stripeWidth, 0, stripeWidth, h);
+    }
+    
+    for (let i = 0; i < 8000; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const len = 2 + Math.random() * 4;
+      const brightness = Math.random() * 30;
+      ctx.fillStyle = `rgba(${20 + brightness}, ${60 + brightness}, ${15 + brightness}, 0.3)`;
+      ctx.fillRect(x, y, 1, len);
+    }
+    
+    const margin = 60;
+    const pitchX = margin;
+    const pitchY = margin;
+    const pitchW = w - margin * 2;
+    const pitchH = h - margin * 2;
+    const centerX = w / 2;
+    const centerY = h / 2;
+    
+    ctx.strokeStyle = "#ffffff";
+    ctx.fillStyle = "#ffffff";
     ctx.lineWidth = 8;
-    for (let i = 0; i < 20; i++) {
-      const y = i * 52;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(1024, y);
-      ctx.stroke();
-    }
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     
-    for (let i = 0; i < 3000; i++) {
-      const x = Math.random() * 1024;
-      const y = Math.random() * 1024;
-      const brightness = 30 + Math.random() * 40;
-      ctx.fillStyle = `rgba(${brightness}, ${brightness + 30}, ${brightness - 10}, 0.4)`;
-      ctx.fillRect(x, y, 2, 4);
-    }
-    
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.lineWidth = 4;
+    ctx.strokeRect(pitchX, pitchY, pitchW, pitchH);
     
     ctx.beginPath();
-    ctx.arc(512, 512, 120, 0, Math.PI * 2);
+    ctx.moveTo(centerX, pitchY);
+    ctx.lineTo(centerX, pitchY + pitchH);
+    ctx.stroke();
+    
+    const centerCircleRadius = pitchW * 0.095;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, centerCircleRadius, 0, Math.PI * 2);
     ctx.stroke();
     
     ctx.beginPath();
-    ctx.arc(512, 512, 8, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
     ctx.fill();
     
+    const penaltyAreaW = pitchW * 0.17;
+    const penaltyAreaH = pitchH * 0.44;
+    const penaltyAreaY = centerY - penaltyAreaH / 2;
+    
+    ctx.strokeRect(pitchX, penaltyAreaY, penaltyAreaW, penaltyAreaH);
+    ctx.strokeRect(pitchX + pitchW - penaltyAreaW, penaltyAreaY, penaltyAreaW, penaltyAreaH);
+    
+    const goalAreaW = pitchW * 0.055;
+    const goalAreaH = pitchH * 0.19;
+    const goalAreaY = centerY - goalAreaH / 2;
+    
+    ctx.strokeRect(pitchX, goalAreaY, goalAreaW, goalAreaH);
+    ctx.strokeRect(pitchX + pitchW - goalAreaW, goalAreaY, goalAreaW, goalAreaH);
+    
+    const penaltySpotDist = pitchW * 0.11;
     ctx.beginPath();
-    ctx.moveTo(512, 0);
-    ctx.lineTo(512, 1024);
+    ctx.arc(pitchX + penaltySpotDist, centerY, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(pitchX + pitchW - penaltySpotDist, centerY, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    const arcRadius = pitchW * 0.095;
+    ctx.beginPath();
+    ctx.arc(pitchX + penaltySpotDist, centerY, arcRadius, -0.93, 0.93);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(pitchX + pitchW - penaltySpotDist, centerY, arcRadius, Math.PI - 0.93, Math.PI + 0.93);
     ctx.stroke();
     
-    ctx.strokeRect(20, 20, 984, 984);
-    
-    ctx.strokeRect(20, 312, 180, 400);
-    ctx.strokeRect(824, 312, 180, 400);
-    
-    ctx.strokeRect(20, 412, 80, 200);
-    ctx.strokeRect(924, 412, 80, 200);
-    
+    const cornerRadius = 20;
     ctx.beginPath();
-    ctx.arc(20, 20, 60, 0, Math.PI / 2);
+    ctx.arc(pitchX, pitchY, cornerRadius, 0, Math.PI / 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(1004, 20, 60, Math.PI / 2, Math.PI);
+    ctx.arc(pitchX + pitchW, pitchY, cornerRadius, Math.PI / 2, Math.PI);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(20, 1004, 60, -Math.PI / 2, 0);
+    ctx.arc(pitchX, pitchY + pitchH, cornerRadius, -Math.PI / 2, 0);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(1004, 1004, 60, Math.PI, Math.PI * 1.5);
+    ctx.arc(pitchX + pitchW, pitchY + pitchH, cornerRadius, Math.PI, Math.PI * 1.5);
     ctx.stroke();
     
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.anisotropy = 16;
     return tex;
   }, []);
   
