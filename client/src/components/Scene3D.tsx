@@ -505,6 +505,122 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
+function useFootballPitchTexture() {
+  const texture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext("2d")!;
+    
+    const gradient = ctx.createRadialGradient(512, 512, 0, 512, 512, 600);
+    gradient.addColorStop(0, "#2d5a27");
+    gradient.addColorStop(0.5, "#1e4d1a");
+    gradient.addColorStop(1, "#153d12");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1024, 1024);
+    
+    ctx.strokeStyle = "rgba(20, 60, 20, 0.3)";
+    ctx.lineWidth = 8;
+    for (let i = 0; i < 20; i++) {
+      const y = i * 52;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1024, y);
+      ctx.stroke();
+    }
+    
+    for (let i = 0; i < 3000; i++) {
+      const x = Math.random() * 1024;
+      const y = Math.random() * 1024;
+      const brightness = 30 + Math.random() * 40;
+      ctx.fillStyle = `rgba(${brightness}, ${brightness + 30}, ${brightness - 10}, 0.4)`;
+      ctx.fillRect(x, y, 2, 4);
+    }
+    
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.lineWidth = 4;
+    
+    ctx.beginPath();
+    ctx.arc(512, 512, 120, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(512, 512, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(512, 0);
+    ctx.lineTo(512, 1024);
+    ctx.stroke();
+    
+    ctx.strokeRect(20, 20, 984, 984);
+    
+    ctx.strokeRect(20, 312, 180, 400);
+    ctx.strokeRect(824, 312, 180, 400);
+    
+    ctx.strokeRect(20, 412, 80, 200);
+    ctx.strokeRect(924, 412, 80, 200);
+    
+    ctx.beginPath();
+    ctx.arc(20, 20, 60, 0, Math.PI / 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(1004, 20, 60, Math.PI / 2, Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(20, 1004, 60, -Math.PI / 2, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(1004, 1004, 60, Math.PI, Math.PI * 1.5);
+    ctx.stroke();
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }, []);
+  
+  return texture;
+}
+
+function FootballPitch({ visible }: { visible: boolean }) {
+  const pitchTexture = useFootballPitchTexture();
+  const groupRef = useRef<THREE.Group>(null);
+
+  if (!visible) return null;
+
+  return (
+    <group ref={groupRef}>
+      <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[25, 25]} />
+        <meshStandardMaterial 
+          map={pitchTexture}
+          roughness={0.9}
+          metalness={0.0}
+        />
+      </mesh>
+      
+      <mesh position={[0, -0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[60, 60]} />
+        <meshStandardMaterial 
+          color="#0d2a0a"
+          roughness={1}
+          metalness={0}
+        />
+      </mesh>
+      
+      <ambientLight intensity={0.4} color="#87ceeb" />
+      <directionalLight
+        position={[10, 20, 5]}
+        intensity={1.5}
+        color="#fff5e6"
+        castShadow
+      />
+    </group>
+  );
+}
+
 function GlitchOverlay({ intensity }: { intensity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -615,40 +731,69 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     }
   });
 
-  const showDarkRoom = !showWorkSection || showZoomOutTV;
+  const showLandingTV = !showWorkSection && !showZoomOutTV;
+  const showTV = showLandingTV || showZoomOutTV;
+
+  const getBackgroundColor = () => {
+    if (showZoomOutTV) return "#4a7c59";
+    if (showWorkSection) return "#0066FF";
+    return "#050403";
+  };
+
+  const bgColor = getBackgroundColor();
 
   return (
     <>
-      <color attach="background" args={[showWorkSection && !showZoomOutTV ? "#0066FF" : "#050403"]} />
-      <fog attach="fog" args={[showWorkSection && !showZoomOutTV ? "#0066FF" : "#050403", 3, showWorkSection && !showZoomOutTV ? 50 : 12]} />
+      <color attach="background" args={[bgColor]} />
+      <fog attach="fog" args={[bgColor, 3, showZoomOutTV ? 30 : (showWorkSection ? 50 : 12)]} />
       
-      <ambientLight intensity={showDarkRoom ? 0.08 : 0.05} color={showDarkRoom ? "#1a1820" : "#1a1a40"} />
+      {showZoomOutTV ? (
+        <>
+          <ambientLight intensity={0.5} color="#87ceeb" />
+          <directionalLight
+            position={[5, 15, 5]}
+            intensity={2}
+            color="#fff5e6"
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+          />
+          <hemisphereLight
+            color="#87ceeb"
+            groundColor="#3d6b35"
+            intensity={0.8}
+          />
+        </>
+      ) : (
+        <>
+          <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
+          <spotLight
+            position={[0, 3.5, 1.5]}
+            angle={0.35}
+            penumbra={0.7}
+            intensity={showLandingTV ? 15 : 5}
+            color="#fff8f0"
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0001}
+          />
+          <spotLight
+            position={[-1.5, 2, 2]}
+            angle={0.5}
+            penumbra={0.9}
+            intensity={showLandingTV ? 3 : 1}
+            color="#aab8cc"
+          />
+        </>
+      )}
 
-      <spotLight
-        position={[0, 3.5, 1.5]}
-        angle={0.35}
-        penumbra={0.7}
-        intensity={showDarkRoom ? 15 : 5}
-        color="#fff8f0"
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-bias={-0.0001}
-      />
-
-      <spotLight
-        position={[-1.5, 2, 2]}
-        angle={0.5}
-        penumbra={0.9}
-        intensity={showDarkRoom ? 3 : 1}
-        color="#aab8cc"
-      />
-
-      <Environment preset="night" background={false} />
+      <Environment preset={showZoomOutTV ? "sunset" : "night"} background={false} />
       
-      <TiledFloor visible={showDarkRoom} />
+      <TiledFloor visible={showLandingTV} />
+      <FootballPitch visible={showZoomOutTV} />
 
-      {showDarkRoom && (
+      {showLandingTV && (
         <ContactShadows
           position={[0, 0, 0]}
           opacity={0.6}
@@ -661,9 +806,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       
       <VintageTV
         hoveredText={showZoomOutTV ? null : hoveredText}
-        onClick={onTVClick}
+        onClick={showZoomOutTV ? () => {} : onTVClick}
         isVideoPlaying={showZoomOutTV ? false : isVideoPlaying}
-        visible={showDarkRoom}
+        visible={showTV}
         glitchIntensity={showZoomOutTV ? 0 : glitchIntensity}
       />
 
