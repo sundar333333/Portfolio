@@ -1,6 +1,6 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, Environment, ContactShadows } from "@react-three/drei";
-import { useRef, useEffect, useMemo, useCallback, Suspense } from "react";
+import { useRef, useEffect, useMemo, Suspense } from "react";
 import * as THREE from "three";
 import { motion } from "framer-motion";
 
@@ -57,6 +57,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const textureRef = useRef<THREE.DataTexture | null>(null);
   const woodTexture = useWoodTexture();
   const screenGlowRef = useRef<THREE.PointLight>(null);
+  const { camera } = useThree();
 
   useEffect(() => {
     const size = 256;
@@ -100,11 +101,16 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
     if (screenGlowRef.current) {
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05;
     }
-  });
 
-  const screenMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({ color: 0x333333 });
-  }, []);
+    const startZ = 0.35;
+    const endZ = 1.8;
+    const targetZ = startZ + zoomProgress * (endZ - startZ);
+    
+    camera.position.z += (targetZ - camera.position.z) * 0.15;
+    camera.position.x += (-0.05 - camera.position.x) * 0.15;
+    camera.position.y += (0.22 - camera.position.y) * 0.15;
+    camera.lookAt(-0.05, 0.22, 0);
+  });
 
   const cabinetMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
@@ -150,11 +156,9 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const screenWidth = 0.52;
   const screenHeight = 0.39;
 
-  const cameraZ = 0.15 + zoomProgress * 1.65;
-
   return (
     <>
-      <group ref={groupRef} position={[0, 0.22, -cameraZ]} scale={0.85}>
+      <group ref={groupRef} position={[0, 0.22, 0]} scale={0.85}>
         <RoundedBox args={[0.85, 0.65, 0.55]} radius={0.03} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
           <primitive object={cabinetMaterial} attach="material" />
         </RoundedBox>
@@ -170,9 +174,11 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
 
         <mesh position={[-0.08, 0.02, 0.295]}>
           <planeGeometry args={[screenWidth, screenHeight]} />
-          <meshBasicMaterial color="#222222">
-            {textureRef.current && <primitive object={textureRef.current} attach="map" />}
-          </meshBasicMaterial>
+          {textureRef.current ? (
+            <meshBasicMaterial map={textureRef.current} />
+          ) : (
+            <meshBasicMaterial color="#333333" />
+          )}
         </mesh>
 
         <mesh position={[-0.08, 0.02, 0.30]}>
@@ -241,7 +247,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
       </group>
 
       <ContactShadows
-        position={[0, -0.1, -cameraZ]}
+        position={[0, -0.1, 0]}
         opacity={0.5}
         scale={8}
         blur={2}
@@ -249,6 +255,50 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
         color="#000000"
       />
     </>
+  );
+}
+
+function TiledFloor() {
+  const floorTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    
+    ctx.fillStyle = "#0a0908";
+    ctx.fillRect(0, 0, 512, 512);
+    
+    const tileSize = 64;
+    ctx.strokeStyle = "#1a1815";
+    ctx.lineWidth = 2;
+    
+    for (let x = 0; x <= 512; x += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8);
+    return tex;
+  }, []);
+
+  if (!floorTexture) return null;
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      <planeGeometry args={[20, 20]} />
+      <meshStandardMaterial map={floorTexture} roughness={0.85} metalness={0.05} />
+    </mesh>
   );
 }
 
@@ -266,14 +316,17 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-30 overflow-hidden pointer-events-none"
+      className="fixed inset-0 overflow-hidden"
       style={{
         opacity,
+        pointerEvents: "none",
+        zIndex: 35,
       }}
       data-testid="tv-zoom-out"
     >
       <Canvas
-        camera={{ position: [0, 0.22, 0.5], fov: 50 }}
+        camera={{ position: [-0.05, 0.22, 0.35], fov: 50 }}
+        shadows
         gl={{ 
           antialias: true, 
           alpha: true,
@@ -295,6 +348,8 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
             intensity={15}
             color="#fff8f0"
             castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
           />
           
           <spotLight
@@ -307,6 +362,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
           
           <Environment preset="night" background={false} />
           
+          <TiledFloor />
           <ZoomOutTV zoomProgress={zoomProgress} />
         </Suspense>
       </Canvas>
