@@ -318,17 +318,17 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
   const cabinetMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
       map: woodTexture,
-      color: isHovered ? 0x4a3520 : 0x3a2815,
-      roughness: 0.7,
+      color: isHovered ? 0x8b5a2b : 0x7a4a1b,
+      roughness: 0.65,
       metalness: 0.02,
-      clearcoat: 0.15,
-      clearcoatRoughness: 0.6,
+      clearcoat: 0.2,
+      clearcoatRoughness: 0.5,
     });
   }, [woodTexture, isHovered]);
 
-  const plasticMaterial = useMemo(() => {
+  const controlPanelMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0x1a1a1a,
+      color: 0x1a1815,
       roughness: 0.4,
       metalness: 0.1,
       clearcoat: 0.3,
@@ -338,26 +338,52 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
 
   const bezelMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0x2a2a2a,
-      roughness: 0.35,
-      metalness: 0.15,
-      clearcoat: 0.4,
+      color: 0x151515,
+      roughness: 0.3,
+      metalness: 0.1,
+      clearcoat: 0.5,
       clearcoatRoughness: 0.15,
     });
   }, []);
 
-  const metalMaterial = useMemo(() => {
+  const goldTrimMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: 0x888888,
-      roughness: 0.3,
-      metalness: 0.85,
-      clearcoat: 0.2,
+      color: 0xc9a227,
+      roughness: 0.25,
+      metalness: 0.9,
+      clearcoat: 0.4,
       clearcoatRoughness: 0.1,
     });
   }, []);
 
-  const screenWidth = 0.52;
-  const screenHeight = 0.39;
+  const chromeMaterial = useMemo(() => {
+    return new THREE.MeshPhysicalMaterial({
+      color: 0xcccccc,
+      roughness: 0.15,
+      metalness: 0.95,
+      clearcoat: 0.3,
+      clearcoatRoughness: 0.05,
+    });
+  }, []);
+
+  const dialMaterial = useMemo(() => {
+    return new THREE.MeshPhysicalMaterial({
+      color: 0x2a2520,
+      roughness: 0.5,
+      metalness: 0.1,
+    });
+  }, []);
+
+  const antennaMaterial = useMemo(() => {
+    return new THREE.MeshPhysicalMaterial({
+      color: 0x666666,
+      roughness: 0.25,
+      metalness: 0.9,
+    });
+  }, []);
+
+  const screenWidth = 0.48;
+  const screenHeight = 0.40;
 
   if (!visible) return null;
 
@@ -370,28 +396,33 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
-      <RoundedBox args={[0.85, 0.65, 0.55]} radius={0.03} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
+      <RoundedBox args={[0.95, 0.72, 0.48]} radius={0.025} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
         <primitive object={cabinetMaterial} attach="material" />
       </RoundedBox>
 
-      <RoundedBox args={[0.58, 0.46, 0.08]} radius={0.02} smoothness={4} position={[-0.08, 0.02, 0.25]} castShadow>
+      <RoundedBox args={[0.60, 0.52, 0.1]} radius={0.015} smoothness={4} position={[-0.12, 0.03, 0.21]} castShadow>
         <primitive object={bezelMaterial} attach="material" />
       </RoundedBox>
 
-      <mesh position={[-0.08, 0.02, 0.22]}>
-        <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.08]} />
-        <meshStandardMaterial color="#050505" />
+      <mesh position={[-0.12, 0.03, 0.265]} rotation={[0, 0, 0]}>
+        <torusGeometry args={[0.28, 0.012, 8, 64]} />
+        <primitive object={goldTrimMaterial} attach="material" />
       </mesh>
 
-      <mesh position={[-0.08, 0.02, 0.295]}>
+      <mesh position={[-0.12, 0.03, 0.26]}>
+        <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.06]} />
+        <meshStandardMaterial color="#0a0a0a" />
+      </mesh>
+
+      <mesh position={[-0.12, 0.03, 0.29]}>
         <planeGeometry args={[screenWidth, screenHeight]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
-      <mesh position={[-0.08, 0.02, 0.30]}>
+      <mesh position={[-0.12, 0.03, 0.295]}>
         <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
         <meshPhysicalMaterial
-          color="#111111"
+          color="#1a2a20"
           roughness={0.02}
           metalness={0}
           transmission={0.05}
@@ -399,84 +430,118 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
           clearcoat={1}
           clearcoatRoughness={0.03}
           transparent
-          opacity={0.15}
+          opacity={0.12}
         />
       </mesh>
 
-      <group position={[0.32, 0, 0.28]}>
-        <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
-          <primitive object={plasticMaterial} attach="material" />
+      <group position={[0.34, 0, 0.24]}>
+        <RoundedBox args={[0.20, 0.60, 0.06]} radius={0.01} smoothness={4}>
+          <primitive object={controlPanelMaterial} attach="material" />
         </RoundedBox>
 
-        {[-0.12, -0.05, 0.02, 0.09, 0.16].map((y, i) => (
-          <mesh key={i} position={[0, y, 0.025]}>
-            <boxGeometry args={[0.1, 0.015, 0.01]} />
-            <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
-          </mesh>
-        ))}
+        <mesh position={[0, 0.24, 0.03]}>
+          <boxGeometry args={[0.16, 0.01, 0.01]} />
+          <primitive object={goldTrimMaterial} attach="material" />
+        </mesh>
 
-        <group position={[0, -0.18, 0.025]}>
+        <group position={[0, 0.15, 0.035]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.035, 0.035, 0.025, 32]} />
-            <primitive object={metalMaterial} attach="material" />
+            <cylinderGeometry args={[0.055, 0.055, 0.03, 32]} />
+            <primitive object={chromeMaterial} attach="material" />
           </mesh>
-          <mesh position={[0.012, 0, 0.015]}>
-            <boxGeometry args={[0.008, 0.02, 0.005]} />
-            <meshStandardMaterial color="#333333" />
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.045, 0.045, 0.04, 32]} />
+            <primitive object={dialMaterial} attach="material" />
           </mesh>
+          {[...Array(12)].map((_, i) => {
+            const angle = (i / 12) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.cos(angle) * 0.035, Math.sin(angle) * 0.035, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+                <boxGeometry args={[0.003, 0.015, 0.008]} />
+                <meshStandardMaterial color="#1a1a1a" />
+              </mesh>
+            );
+          })}
         </group>
 
-        <mesh position={[0.04, -0.18, 0.03]}>
-          <sphereGeometry args={[0.008, 12, 12]} />
-          <meshBasicMaterial color="#ff2200" />
+        <group position={[0, -0.02, 0.035]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.055, 0.055, 0.03, 32]} />
+            <primitive object={chromeMaterial} attach="material" />
+          </mesh>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.045, 0.045, 0.04, 32]} />
+            <primitive object={dialMaterial} attach="material" />
+          </mesh>
+          {[...Array(24)].map((_, i) => {
+            const angle = (i / 24) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.cos(angle) * 0.038, Math.sin(angle) * 0.038, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+                <boxGeometry args={[0.002, 0.012, 0.006]} />
+                <meshStandardMaterial color="#1a1a1a" />
+              </mesh>
+            );
+          })}
+        </group>
+
+        <mesh position={[0, -0.12, 0.03]}>
+          <boxGeometry args={[0.14, 0.015, 0.01]} />
+          <primitive object={goldTrimMaterial} attach="material" />
+        </mesh>
+        <mesh position={[0, -0.14, 0.035]}>
+          <boxGeometry args={[0.12, 0.025, 0.01]} />
+          <meshStandardMaterial color="#d4c4a0" roughness={0.8} />
+        </mesh>
+
+        <group position={[0, -0.22, 0.03]}>
+          {[...Array(8)].map((_, i) => (
+            <mesh key={i} position={[0, -i * 0.015, 0]}>
+              <boxGeometry args={[0.14, 0.008, 0.02]} />
+              <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+            </mesh>
+          ))}
+        </group>
+      </group>
+
+      <group position={[0, 0.42, 0]}>
+        <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <sphereGeometry args={[0.035, 16, 16]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.4} />
+        </mesh>
+        
+        <mesh position={[-0.18, 0.22, 0]} rotation={[0, 0, -0.5]}>
+          <cylinderGeometry args={[0.006, 0.012, 0.5, 8]} />
+          <primitive object={antennaMaterial} attach="material" />
+        </mesh>
+        <mesh position={[0.18, 0.22, 0]} rotation={[0, 0, 0.5]}>
+          <cylinderGeometry args={[0.006, 0.012, 0.5, 8]} />
+          <primitive object={antennaMaterial} attach="material" />
+        </mesh>
+        
+        <mesh position={[-0.35, 0.42, 0]}>
+          <sphereGeometry args={[0.012, 8, 8]} />
+          <primitive object={chromeMaterial} attach="material" />
+        </mesh>
+        <mesh position={[0.35, 0.42, 0]}>
+          <sphereGeometry args={[0.012, 8, 8]} />
+          <primitive object={chromeMaterial} attach="material" />
         </mesh>
       </group>
 
-      <mesh position={[-0.2, 0.4, 0]} rotation={[0, 0, -0.35]}>
-        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.15, 0.4, 0]} rotation={[0, 0, 0.35]}>
-        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-
-      <mesh position={[-0.32, 0.55, 0]}>
-        <sphereGeometry args={[0.015, 12, 12]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.27, 0.55, 0]}>
-        <sphereGeometry args={[0.015, 12, 12]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-
-      <mesh position={[-0.025, 0.33, 0]}>
-        <boxGeometry args={[0.08, 0.02, 0.1]} />
-        <meshStandardMaterial color="#1a1510" roughness={0.8} />
-      </mesh>
-
-      <mesh position={[-0.3, -0.38, 0.18]} rotation={[0.08, 0, 0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
+      <mesh position={[-0.25, -0.40, 0.18]} rotation={[0.12, 0, 0.08]}>
+        <boxGeometry args={[0.08, 0.12, 0.04]} />
         <primitive object={cabinetMaterial} attach="material" />
       </mesh>
-      <mesh position={[0.3, -0.38, 0.18]} rotation={[0.08, 0, -0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-      <mesh position={[-0.3, -0.38, -0.18]} rotation={[-0.08, 0, 0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.3, -0.38, -0.18]} rotation={[-0.08, 0, -0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
+      <mesh position={[0.25, -0.40, 0.18]} rotation={[0.12, 0, -0.08]}>
+        <boxGeometry args={[0.08, 0.12, 0.04]} />
         <primitive object={cabinetMaterial} attach="material" />
       </mesh>
 
       <pointLight 
         ref={screenGlowRef}
-        position={[-0.08, 0.02, 0.5]} 
+        position={[-0.12, 0.03, 0.5]} 
         intensity={0.3} 
-        color="#aaccff" 
+        color="#9ab8a0" 
         distance={1.5} 
         decay={2} 
       />
