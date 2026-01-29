@@ -24,8 +24,9 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
   // Q&A starts after hero completely disappears (at 0.25)
+  // Q&A ends at 0.88 to leave room for TV zoom-out (0.88-1.0)
   const qaStartProgress = 0.25;
-  const qaEndProgress = 1.0;
+  const qaEndProgress = 0.88;
   const qaTotalRange = qaEndProgress - qaStartProgress;
   
   // 3 Q&A pairs × 3 phases each = 9 total phases
@@ -74,42 +75,38 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         // Question X: right to left during phase 1
         const questionX = 105 - phase1Progress * 100;
         
-        // Question Y: stays at 25%, moves up during phase 3
+        // Question Y: stays at 25%, moves up during phase 3 (all questions now)
         let questionY = 25;
-        if (phase3Progress > 0 && !isLastQuestion) {
+        if (phase3Progress > 0) {
           questionY = 25 - phase3Progress * 80;
         }
         
-        // Question opacity
+        // Question opacity - now ALL questions fade out including last one
         let questionOpacity = 0;
         if (phase1Progress > 0 && phase1Progress < 0.3) {
           questionOpacity = phase1Progress / 0.3;
         } else if (phase1Progress >= 0.3 && phase3Progress < 0.7) {
           questionOpacity = 1;
-        } else if (phase3Progress >= 0.7 && !isLastQuestion) {
+        } else if (phase3Progress >= 0.7) {
           questionOpacity = Math.max(0, 1 - (phase3Progress - 0.7) / 0.3);
-        } else if (isLastQuestion && phase1Progress >= 0.3) {
-          questionOpacity = 1;
         }
         
         // Answer Y: bottom to position during phase 2
         let answerY = 105 - phase2Progress * 67;
         
-        // Answer moves up during phase 3
-        if (phase3Progress > 0 && !isLastQuestion) {
+        // Answer moves up during phase 3 (all answers now)
+        if (phase3Progress > 0) {
           answerY = 38 - phase3Progress * 80;
         }
         
-        // Answer opacity
+        // Answer opacity - now ALL answers fade out including last one
         let answerOpacity = 0;
         if (phase2Progress > 0 && phase2Progress < 0.3) {
           answerOpacity = phase2Progress / 0.3;
         } else if (phase2Progress >= 0.3 && phase3Progress < 0.7) {
           answerOpacity = 1;
-        } else if (phase3Progress >= 0.7 && !isLastQuestion) {
+        } else if (phase3Progress >= 0.7) {
           answerOpacity = Math.max(0, 1 - (phase3Progress - 0.7) / 0.3);
-        } else if (isLastQuestion && phase2Progress >= 0.3) {
-          answerOpacity = 1;
         }
 
         return (

@@ -8,6 +8,7 @@ import { ProjectInfoOverlay } from "@/components/WorkSection";
 import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
+import { TVZoomOut } from "@/components/TVZoomOut";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -72,6 +73,7 @@ export default function Home() {
           <PixelEffect visible={showWorkSection} />
           <AboutHeroSection visible={showWorkSection} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection} scrollProgress={scrollProgress} />
+          <TVZoomOut visible={showWorkSection && scrollProgress > 0.88} scrollProgress={scrollProgress} />
 
           <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} />
