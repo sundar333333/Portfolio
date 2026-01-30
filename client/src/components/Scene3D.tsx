@@ -1,8 +1,6 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
-import { EffectComposer, Bloom, ChromaticAberration, Noise, Vignette } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -507,267 +505,6 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
-function ArcadeMachine({ visible }: { visible: boolean }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const screenTextureRef = useRef<THREE.CanvasTexture | null>(null);
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 384;
-    screenCanvasRef.current = canvas;
-    const tex = new THREE.CanvasTexture(canvas);
-    screenTextureRef.current = tex;
-    forceUpdate(n => n + 1);
-
-    return () => {
-      tex.dispose();
-    };
-  }, []);
-
-  useFrame((state) => {
-    if (!visible) return;
-    
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.08;
-    }
-
-    if (screenCanvasRef.current && screenTextureRef.current) {
-      const canvas = screenCanvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const gradient = ctx.createRadialGradient(
-          canvas.width / 2, canvas.height / 2, 0,
-          canvas.width / 2, canvas.height / 2, canvas.width * 0.7
-        );
-        gradient.addColorStop(0, "#ff44ff");
-        gradient.addColorStop(0.5, "#cc22cc");
-        gradient.addColorStop(1, "#880088");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        for (let y = 0; y < canvas.height; y += 2) {
-          const scanAlpha = 0.15 + Math.sin(y * 0.3 + state.clock.elapsedTime * 3) * 0.05;
-          ctx.fillStyle = `rgba(0, 0, 0, ${scanAlpha})`;
-          ctx.fillRect(0, y, canvas.width, 1);
-        }
-
-        for (let i = 0; i < 50; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * canvas.height;
-          ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.08})`;
-          ctx.fillRect(x, y, 2, 2);
-        }
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 48px 'Arial Black', Arial, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        
-        ctx.shadowColor = "rgba(255, 0, 255, 0.8)";
-        ctx.shadowBlur = 20;
-        
-        const lines = ["SELECT", "PROJECT"];
-        const lineHeight = 60;
-        const startY = canvas.height / 2 - lineHeight * 0.5;
-        
-        lines.forEach((line, i) => {
-          ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
-        });
-        
-        ctx.shadowBlur = 0;
-
-        const flicker = 0.95 + Math.random() * 0.05;
-        ctx.fillStyle = `rgba(255, 0, 255, ${0.03 * flicker})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        screenTextureRef.current.needsUpdate = true;
-      }
-    }
-  });
-
-  if (!visible) return null;
-
-  const bodyColor = "#0a0a0a";
-  const bodyColorDark = "#050505";
-  const metallic = "#2a2a2a";
-
-  return (
-    <group ref={groupRef} position={[0, 0.8, 0]}>
-      <RoundedBox
-        args={[1.5, 2.2, 1.0]}
-        radius={0.08}
-        smoothness={4}
-        position={[0, 0.1, 0]}
-        castShadow
-        receiveShadow
-      >
-        <meshStandardMaterial color={bodyColor} roughness={0.5} metalness={0.2} />
-      </RoundedBox>
-
-      <RoundedBox
-        args={[1.55, 0.45, 1.02]}
-        radius={0.06}
-        smoothness={4}
-        position={[0, 1.25, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color={bodyColorDark} roughness={0.6} metalness={0.15} />
-      </RoundedBox>
-
-      {[-0.5, 0.5].map((xPos, i) => (
-        <group key={i} position={[xPos, 1.25, 0.48]}>
-          <mesh castShadow>
-            <cylinderGeometry args={[0.14, 0.14, 0.12, 32]} />
-            <meshStandardMaterial color={metallic} roughness={0.4} metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 0.06, 0]}>
-            <cylinderGeometry args={[0.11, 0.11, 0.02, 32]} />
-            <meshStandardMaterial color="#151515" roughness={0.8} metalness={0.3} />
-          </mesh>
-          {[...Array(16)].map((_, j) => {
-            const angle = (j / 16) * Math.PI * 2;
-            const radius = 0.07;
-            return (
-              <mesh key={j} position={[Math.cos(angle) * radius, 0.07, Math.sin(angle) * radius]}>
-                <cylinderGeometry args={[0.008, 0.008, 0.02, 6]} />
-                <meshStandardMaterial color="#000000" roughness={0.95} />
-              </mesh>
-            );
-          })}
-        </group>
-      ))}
-
-      <RoundedBox
-        args={[1.2, 0.95, 0.18]}
-        radius={0.06}
-        smoothness={4}
-        position={[0, 0.4, 0.42]}
-        castShadow
-      >
-        <meshStandardMaterial color="#050505" roughness={0.4} metalness={0.3} />
-      </RoundedBox>
-
-      <mesh position={[0, 0.4, 0.52]}>
-        <planeGeometry args={[1.0, 0.75]} />
-        <meshBasicMaterial map={screenTextureRef.current} toneMapped={false} />
-      </mesh>
-
-      <mesh position={[0, 0.4, 0.525]}>
-        <planeGeometry args={[1.0, 0.75]} />
-        <meshStandardMaterial 
-          color="#ff00ff" 
-          emissive="#ff00ff"
-          emissiveIntensity={2.5}
-          transparent 
-          opacity={0.15}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <RoundedBox
-        args={[1.45, 0.6, 0.75]}
-        radius={0.05}
-        smoothness={4}
-        position={[0, -0.4, 0.12]}
-        castShadow
-      >
-        <meshStandardMaterial color={metallic} roughness={0.45} metalness={0.5} />
-      </RoundedBox>
-
-      {[-0.45, 0.45].map((xPos, i) => (
-        <group key={i} position={[xPos, -0.28, 0.52]}>
-          <mesh position={[0, -0.06, 0]} castShadow>
-            <cylinderGeometry args={[0.09, 0.11, 0.1, 24]} />
-            <meshStandardMaterial color={metallic} roughness={0.3} metalness={0.7} />
-          </mesh>
-          <mesh position={[0, 0.12, 0]} castShadow>
-            <cylinderGeometry args={[0.025, 0.025, 0.28, 16]} />
-            <meshStandardMaterial color="#888888" roughness={0.15} metalness={0.9} />
-          </mesh>
-          <mesh position={[0, 0.28, 0]} castShadow>
-            <sphereGeometry args={[0.06, 24, 24]} />
-            <meshStandardMaterial 
-              color="#111111" 
-              roughness={0.1} 
-              metalness={0.95}
-            />
-          </mesh>
-        </group>
-      ))}
-
-      {[
-        { x: -0.15, color: "#ff2222", emissive: "#ff0000" },
-        { x: 0, color: "#ffcc00", emissive: "#ffaa00" },
-        { x: 0.15, color: "#ff2222", emissive: "#ff0000" },
-      ].map((btn, i) => (
-        <mesh key={i} position={[btn.x, -0.45, 0.52]} castShadow>
-          <cylinderGeometry args={[0.045, 0.045, 0.06, 20]} />
-          <meshStandardMaterial 
-            color={btn.color} 
-            roughness={0.2} 
-            metalness={0.3}
-            emissive={btn.emissive}
-            emissiveIntensity={0.4}
-            transparent
-            opacity={0.9}
-          />
-        </mesh>
-      ))}
-
-      <RoundedBox
-        args={[1.55, 0.3, 1.05]}
-        radius={0.04}
-        smoothness={4}
-        position={[0, -0.85, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color={bodyColor} roughness={0.5} metalness={0.2} />
-      </RoundedBox>
-
-      <pointLight position={[0, 0.4, 1.0]} intensity={8} color="#ff00ff" distance={4} decay={2} />
-      <pointLight position={[0, 0.4, 1.5]} intensity={4} color="#cc00cc" distance={6} decay={2} />
-      
-      <rectAreaLight
-        position={[0, 0.8, -0.8]}
-        width={2}
-        height={2}
-        intensity={15}
-        color="#8800ff"
-        rotation={[0, Math.PI, 0]}
-      />
-      
-      <spotLight
-        position={[0, 3, 1.5]}
-        angle={0.6}
-        penumbra={0.8}
-        intensity={3}
-        color="#ffffff"
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-      
-      <spotLight
-        position={[-1.5, 2, 1]}
-        angle={0.5}
-        penumbra={0.7}
-        intensity={2}
-        color="#ff00ff"
-      />
-      <spotLight
-        position={[1.5, 2, 1]}
-        angle={0.5}
-        penumbra={0.7}
-        intensity={2}
-        color="#ff00ff"
-      />
-    </group>
-  );
-}
-
 function GlitchOverlay({ intensity }: { intensity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -813,7 +550,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
-  const [showZoomOutTV, setShowZoomOutTV] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
@@ -833,10 +569,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     
     const startZ = 1.8;
     const screenZ = 0.3;
-    
     const tvScreenY = 0.22;
-    const arcadeScreenY = 1.2;
-    const zoomOutThreshold = 0.92;
     
     let targetZ: number;
     let targetY: number;
@@ -848,11 +581,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
       lookAtY = tvScreenY;
-    } else if (offset > zoomOutThreshold) {
-      const zoomOutProgress = (offset - zoomOutThreshold) / (1 - zoomOutThreshold);
-      targetZ = screenZ + zoomOutProgress * (startZ - screenZ) * 1.8;
-      targetY = arcadeScreenY;
-      lookAtY = arcadeScreenY;
     } else {
       targetZ = screenZ;
       targetY = tvScreenY;
@@ -868,14 +596,12 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
     
-    const isWorkVisible = offset > transitionThreshold && offset < zoomOutThreshold;
-    const isZoomOutVisible = offset > zoomOutThreshold;
+    const isWorkVisible = offset > transitionThreshold;
     
     setShowWorkSection(isWorkVisible);
-    setShowZoomOutTV(isZoomOutVisible);
-    onWorkSectionChange?.(isWorkVisible || isZoomOutVisible);
+    onWorkSectionChange?.(isWorkVisible);
     
-    if (isWorkVisible || isZoomOutVisible) {
+    if (isWorkVisible) {
       const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       onScrollProgress?.(workProgress);
     } else {
@@ -883,11 +609,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     }
   });
 
-  const showLandingTV = !showWorkSection && !showZoomOutTV;
-  const showTV = showLandingTV || showZoomOutTV;
+  const showLandingTV = !showWorkSection;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#000000";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -897,46 +621,31 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   return (
     <>
       <color attach="background" args={[bgColor]} />
-      <fog attach="fog" args={[bgColor, 3, showZoomOutTV ? 30 : (showWorkSection ? 50 : 12)]} />
+      <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : 12]} />
       
-      {showZoomOutTV ? (
-        <>
-          <ambientLight intensity={0.05} color="#1a0020" />
-        </>
-      ) : (
-        <>
-          <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
-          <spotLight
-            position={[0, 3.5, 1.5]}
-            angle={0.35}
-            penumbra={0.7}
-            intensity={showLandingTV ? 15 : 5}
-            color="#fff8f0"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0001}
-          />
-          <spotLight
-            position={[-1.5, 2, 2]}
-            angle={0.5}
-            penumbra={0.9}
-            intensity={showLandingTV ? 3 : 1}
-            color="#aab8cc"
-          />
-        </>
-      )}
+      <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
+      <spotLight
+        position={[0, 3.5, 1.5]}
+        angle={0.35}
+        penumbra={0.7}
+        intensity={showLandingTV ? 15 : 5}
+        color="#fff8f0"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-bias={-0.0001}
+      />
+      <spotLight
+        position={[-1.5, 2, 2]}
+        angle={0.5}
+        penumbra={0.9}
+        intensity={showLandingTV ? 3 : 1}
+        color="#aab8cc"
+      />
 
       <Environment preset="night" background={false} />
       
       <TiledFloor visible={showLandingTV} />
-
-      {showZoomOutTV && (
-        <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[30, 30]} />
-          <meshStandardMaterial color="#0a0a12" roughness={0.9} metalness={0.1} />
-        </mesh>
-      )}
 
       {showLandingTV && (
         <ContactShadows
@@ -948,17 +657,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
           color="#000000"
         />
       )}
-
-      {showZoomOutTV && (
-        <ContactShadows
-          position={[0, 0, 0]}
-          opacity={0.6}
-          scale={15}
-          blur={3}
-          far={6}
-          color="#1a0030"
-        />
-      )}
       
       <VintageTV
         hoveredText={hoveredText}
@@ -968,37 +666,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         glitchIntensity={glitchIntensity}
       />
 
-      <ArcadeMachine visible={showZoomOutTV} />
+      <GlitchOverlay intensity={glitchIntensity} />
 
-      <GlitchOverlay intensity={showZoomOutTV ? 0 : glitchIntensity} />
-
-      <WorkSection visible={showWorkSection && !showZoomOutTV} />
-
-      {showZoomOutTV && (
-        <EffectComposer>
-          <Bloom 
-            intensity={1.5}
-            luminanceThreshold={0.2}
-            luminanceSmoothing={0.9}
-            mipmapBlur
-          />
-          <ChromaticAberration 
-            offset={new THREE.Vector2(0.002, 0.002)}
-            blendFunction={BlendFunction.NORMAL}
-            radialModulation={false}
-            modulationOffset={0.5}
-          />
-          <Noise 
-            opacity={0.08}
-            blendFunction={BlendFunction.OVERLAY}
-          />
-          <Vignette
-            offset={0.3}
-            darkness={0.6}
-            blendFunction={BlendFunction.NORMAL}
-          />
-        </EffectComposer>
-      )}
+      <WorkSection visible={showWorkSection} />
     </>
   );
 }
@@ -1018,7 +688,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={25} damping={0.2}>
+          <ScrollControls pages={22} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}
