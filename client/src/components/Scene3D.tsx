@@ -589,48 +589,53 @@ function ArcadeMachine({ visible }: { visible: boolean }) {
 
   if (!visible) return null;
 
-  const cabinetDarkGreen = "#1a2e1a";
-  const cabinetGreen = "#2d4a2d";
-  const cabinetLightGreen = "#3d5a3d";
-  const screenBezelGreen = "#1a3a1a";
-  const screenGlowColor = "#a8e063";
+  const cabinetBody = "#2a3328";
+  const cabinetDark = "#1e2620";
+  const controlPanelGreen = "#3a4a38";
+  const screenBezelGreen = "#2a3a2a";
+  const screenGlowColor = "#b8f060";
+  const neonGreen = "#66ff44";
 
   return (
     <group ref={groupRef} position={[0, 0.8, 0]}>
       <RoundedBox
-        args={[1.3, 1.8, 0.8]}
-        radius={0.08}
+        args={[1.4, 2.0, 0.9]}
+        radius={0.1}
         smoothness={4}
         position={[0, 0.1, 0]}
         castShadow
         receiveShadow
       >
-        <meshStandardMaterial color={cabinetDarkGreen} roughness={0.7} metalness={0.1} />
+        <meshStandardMaterial color={cabinetBody} roughness={0.85} metalness={0.05} />
       </RoundedBox>
 
       <RoundedBox
-        args={[1.35, 0.35, 0.82]}
-        radius={0.06}
+        args={[1.45, 0.4, 0.92]}
+        radius={0.08}
         smoothness={4}
-        position={[0, 1.05, 0]}
+        position={[0, 1.15, 0]}
         castShadow
       >
-        <meshStandardMaterial color={cabinetGreen} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={cabinetDark} roughness={0.8} metalness={0.08} />
       </RoundedBox>
 
-      {[-0.4, 0.4].map((xPos, i) => (
-        <group key={i} position={[xPos, 1.05, 0.38]}>
+      {[-0.45, 0.45].map((xPos, i) => (
+        <group key={i} position={[xPos, 1.15, 0.42]}>
           <mesh castShadow>
-            <cylinderGeometry args={[0.1, 0.1, 0.08, 32]} />
-            <meshStandardMaterial color={cabinetLightGreen} roughness={0.5} metalness={0.2} />
+            <cylinderGeometry args={[0.12, 0.12, 0.1, 32]} />
+            <meshStandardMaterial color={controlPanelGreen} roughness={0.6} metalness={0.15} />
           </mesh>
-          {[...Array(8)].map((_, j) => {
-            const angle = (j / 8) * Math.PI * 2;
-            const radius = 0.06;
+          <mesh position={[0, 0.05, 0]}>
+            <cylinderGeometry args={[0.09, 0.09, 0.02, 32]} />
+            <meshStandardMaterial color="#1a2018" roughness={0.9} metalness={0.1} />
+          </mesh>
+          {[...Array(12)].map((_, j) => {
+            const angle = (j / 12) * Math.PI * 2;
+            const radius = 0.055;
             return (
-              <mesh key={j} position={[Math.cos(angle) * radius, 0.04, Math.sin(angle) * radius]}>
-                <cylinderGeometry args={[0.012, 0.012, 0.02, 8]} />
-                <meshStandardMaterial color="#0a150a" roughness={0.9} />
+              <mesh key={j} position={[Math.cos(angle) * radius, 0.06, Math.sin(angle) * radius]}>
+                <cylinderGeometry args={[0.008, 0.008, 0.02, 6]} />
+                <meshStandardMaterial color="#0a0f0a" roughness={0.95} />
               </mesh>
             );
           })}
@@ -638,104 +643,117 @@ function ArcadeMachine({ visible }: { visible: boolean }) {
       ))}
 
       <RoundedBox
-        args={[1.0, 0.75, 0.12]}
-        radius={0.04}
+        args={[1.1, 0.85, 0.15]}
+        radius={0.05}
         smoothness={4}
-        position={[0, 0.4, 0.35]}
+        position={[0, 0.4, 0.38]}
         castShadow
       >
-        <meshStandardMaterial color={screenBezelGreen} roughness={0.5} metalness={0.2} />
+        <meshStandardMaterial color={screenBezelGreen} roughness={0.6} metalness={0.15} />
       </RoundedBox>
 
-      <mesh position={[0, 0.4, 0.42]}>
-        <planeGeometry args={[0.85, 0.6]} />
+      <RoundedBox
+        args={[1.0, 0.75, 0.02]}
+        radius={0.04}
+        smoothness={4}
+        position={[0, 0.4, 0.455]}
+      >
+        <meshStandardMaterial color={neonGreen} emissive={neonGreen} emissiveIntensity={0.8} transparent opacity={0.3} />
+      </RoundedBox>
+
+      <mesh position={[0, 0.4, 0.47]}>
+        <planeGeometry args={[0.92, 0.67]} />
         <meshBasicMaterial map={screenTextureRef.current} />
       </mesh>
 
-      <mesh position={[0, 0.4, 0.425]}>
-        <planeGeometry args={[0.85, 0.6]} />
+      <mesh position={[0, 0.4, 0.475]} rotation={[0, 0, -0.15]}>
+        <planeGeometry args={[0.95, 0.7]} />
         <meshPhysicalMaterial 
           color="#ffffff" 
           transparent 
-          opacity={0.15} 
-          roughness={0.1}
-          metalness={0.9}
-          envMapIntensity={0.5}
+          opacity={0.12} 
+          roughness={0.05}
+          metalness={0.95}
+          envMapIntensity={0.8}
         />
       </mesh>
 
       <RoundedBox
-        args={[0.92, 0.68, 0.02]}
-        radius={0.03}
+        args={[1.35, 0.55, 0.7]}
+        radius={0.06}
         smoothness={4}
-        position={[0, 0.4, 0.41]}
-      >
-        <meshStandardMaterial color={screenGlowColor} emissive={screenGlowColor} emissiveIntensity={0.3} transparent opacity={0.1} />
-      </RoundedBox>
-
-      <RoundedBox
-        args={[1.25, 0.45, 0.65]}
-        radius={0.05}
-        smoothness={4}
-        position={[0, -0.35, 0.08]}
+        position={[0, -0.35, 0.1]}
         castShadow
       >
-        <meshStandardMaterial color={cabinetGreen} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={controlPanelGreen} roughness={0.7} metalness={0.1} />
       </RoundedBox>
 
-      {[-0.4, 0.4].map((xPos, i) => (
-        <group key={i} position={[xPos, -0.25, 0.42]}>
-          <mesh position={[0, -0.02, 0]} castShadow>
-            <cylinderGeometry args={[0.07, 0.09, 0.06, 24]} />
-            <meshStandardMaterial color={cabinetLightGreen} roughness={0.5} metalness={0.3} />
+      {[-0.42, 0.42].map((xPos, i) => (
+        <group key={i} position={[xPos, -0.22, 0.46]}>
+          <mesh position={[0, -0.04, 0]} castShadow>
+            <cylinderGeometry args={[0.08, 0.1, 0.08, 24]} />
+            <meshStandardMaterial color={controlPanelGreen} roughness={0.6} metalness={0.2} />
           </mesh>
-          <mesh position={[0, 0.08, 0]} castShadow>
-            <cylinderGeometry args={[0.018, 0.018, 0.16, 12]} />
-            <meshStandardMaterial color="#4a6a4a" roughness={0.3} metalness={0.5} />
+          <mesh position={[0, 0.1, 0]} castShadow>
+            <cylinderGeometry args={[0.02, 0.02, 0.22, 16]} />
+            <meshStandardMaterial color="#888888" roughness={0.2} metalness={0.8} />
           </mesh>
-          <mesh position={[0, 0.18, 0]} castShadow>
-            <sphereGeometry args={[0.045, 16, 16]} />
+          <mesh position={[0, 0.24, 0]} castShadow>
+            <sphereGeometry args={[0.055, 20, 20]} />
             <meshStandardMaterial 
-              color="#cc44cc" 
-              roughness={0.2} 
-              metalness={0.4}
-              emissive="#aa22aa"
-              emissiveIntensity={0.2}
+              color="#dd55dd" 
+              roughness={0.15} 
+              metalness={0.5}
+              emissive="#aa33aa"
+              emissiveIntensity={0.15}
             />
           </mesh>
         </group>
       ))}
 
       {[
-        { x: -0.15, color: "#3d6a3d" },
-        { x: -0.05, color: "#3d6a3d" },
-        { x: 0.05, color: "#3d6a3d" },
-        { x: 0.15, color: "#3d6a3d" },
+        { x: -0.18, color: "#3a4838" },
+        { x: -0.06, color: "#3a4838" },
+        { x: 0.06, color: "#3a4838" },
+        { x: 0.18, color: "#3a4838" },
       ].map((btn, i) => (
-        <mesh key={i} position={[btn.x, -0.4, 0.42]} castShadow>
-          <cylinderGeometry args={[0.03, 0.03, 0.04, 16]} />
-          <meshStandardMaterial color={btn.color} roughness={0.4} metalness={0.3} />
+        <mesh key={i} position={[btn.x, -0.42, 0.46]} castShadow>
+          <cylinderGeometry args={[0.035, 0.035, 0.05, 18]} />
+          <meshStandardMaterial color={btn.color} roughness={0.5} metalness={0.25} />
         </mesh>
       ))}
 
       <RoundedBox
-        args={[1.35, 0.2, 0.85]}
-        radius={0.04}
+        args={[1.45, 0.25, 0.95]}
+        radius={0.05}
         smoothness={4}
-        position={[0, -0.7, 0]}
+        position={[0, -0.75, 0]}
         castShadow
       >
-        <meshStandardMaterial color={cabinetDarkGreen} roughness={0.7} metalness={0.1} />
+        <meshStandardMaterial color={cabinetBody} roughness={0.85} metalness={0.05} />
       </RoundedBox>
 
-      <pointLight position={[0, 0.4, 0.8]} intensity={3} color={screenGlowColor} distance={2.5} />
-      <pointLight position={[0, 0.4, 1.2]} intensity={1.5} color="#88cc44" distance={4} />
+      {[-0.68, 0.68].map((xPos, i) => (
+        <RoundedBox
+          key={i}
+          args={[0.08, 0.6, 0.4]}
+          radius={0.02}
+          smoothness={4}
+          position={[xPos, -0.55, 0.25]}
+          castShadow
+        >
+          <meshStandardMaterial color={cabinetDark} roughness={0.9} metalness={0.05} />
+        </RoundedBox>
+      ))}
+
+      <pointLight position={[0, 0.4, 0.9]} intensity={4} color={screenGlowColor} distance={3} />
+      <pointLight position={[0, 0.4, 1.5]} intensity={2} color="#88dd44" distance={5} />
       <spotLight
-        position={[0, 2.5, 1.5]}
+        position={[0, 3, 2]}
         angle={0.5}
         penumbra={0.6}
-        intensity={1.5}
-        color="#66aa33"
+        intensity={2}
+        color="#55aa22"
         target-position={[0, 0.4, 0.4]}
       />
     </group>
