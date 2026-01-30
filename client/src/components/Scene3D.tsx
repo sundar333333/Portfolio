@@ -627,7 +627,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = screenZ;
       targetY = tvScreenY;
       lookAtY = tvScreenY;
+      const wipeProgress = (offset - blackTransitionStart) / (cubeThreshold - blackTransitionStart);
+      setBlackWipeProgress(wipeProgress);
     } else if (offset >= cubeThreshold) {
+      setBlackWipeProgress(1);
       const zoomOutProgress = (offset - cubeThreshold) / (1 - cubeThreshold);
       targetZ = screenZ + zoomOutProgress * (cubeViewZ - screenZ);
       targetY = cubeViewY;
@@ -680,7 +683,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       const brightness = Math.round(blackToWhiteProgress * 255);
       return `rgb(${brightness}, ${brightness}, ${brightness})`;
     }
-    if (showBlackTransition) return "#000000";
+    if (showBlackTransition) {
+      const g = Math.round(20 + blackWipeProgress * 10);
+      return `rgb(0, ${g}, 0)`;
+    }
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -690,11 +696,30 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const headerOpacity = showCubeSection && blackToWhiteProgress > 0.4 
     ? Math.min(1, (blackToWhiteProgress - 0.4) / 0.6) 
     : 0;
+    
+  const blackWipeY = showBlackTransition ? (1 - blackWipeProgress) * 100 : (showCubeSection ? 0 : 100);
 
   return (
     <>
-      <color attach="background" args={[bgColor]} />
+      <color attach="background" args={[showBlackTransition ? "#0066FF" : bgColor]} />
       <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : 12]} />
+      
+      {/* Black wipe overlay with green tint - comes from bottom to top */}
+      {(showBlackTransition || (showCubeSection && blackToWhiteProgress < 1)) && (
+        <Scroll html>
+          <div 
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(to top, rgb(0, 35, 15) 0%, rgb(0, 25, 10) 50%, rgb(0, 15, 5) 100%)`,
+              transform: `translateY(${blackWipeY}%)`,
+              opacity: showCubeSection ? 1 - blackToWhiteProgress : 1,
+              transition: 'transform 0.1s ease-out',
+              zIndex: 10
+            }}
+            data-testid="black-wipe-overlay"
+          />
+        </Scroll>
+      )}
       
       <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
       <spotLight
@@ -755,13 +780,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         {showCubeSection && headerOpacity > 0 && (
           <div 
             className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none"
-            style={{ opacity: headerOpacity }}
+            style={{ opacity: headerOpacity, zIndex: 20 }}
           >
             <h1 
               className="text-6xl md:text-8xl font-black tracking-tight mb-4"
               style={{ 
                 fontFamily: "'Anton', 'Archivo Black', sans-serif",
-                color: '#000000'
+                color: blackToWhiteProgress > 0.6 ? '#000000' : `rgba(0, 0, 0, ${blackToWhiteProgress})`
               }}
               data-testid="text-cube-header"
             >
@@ -769,7 +794,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
             </h1>
             <p 
               className="text-xl md:text-2xl font-medium tracking-widest uppercase"
-              style={{ color: '#333333' }}
+              style={{ color: blackToWhiteProgress > 0.6 ? '#333333' : `rgba(51, 51, 51, ${blackToWhiteProgress})` }}
               data-testid="text-cube-subheader"
             >
               Creative Developer
