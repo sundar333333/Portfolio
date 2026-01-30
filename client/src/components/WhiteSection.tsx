@@ -40,15 +40,15 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
         const newY = prev.y + dy * easing;
         
         frameCount++;
-        if (frameCount % 3 === 0 && isFullyExpanded) {
+        if (frameCount % 2 === 0 && isFullyExpanded) {
           const distMoved = Math.sqrt(
             Math.pow(newX - lastTrailPos.current.x, 2) + 
             Math.pow(newY - lastTrailPos.current.y, 2)
           );
           
-          if (distMoved > 2) {
+          if (distMoved > 0.5) {
             trailId++;
-            setTrail(t => [...t, { x: newX, y: newY, id: trailId }].slice(-12));
+            setTrail(t => [...t, { x: newX, y: newY, id: trailId }].slice(-20));
             lastTrailPos.current = { x: newX, y: newY };
           }
         }
@@ -68,7 +68,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
     
     const timer = setInterval(() => {
       setTrail(t => t.slice(1));
-    }, 80);
+    }, 50);
     
     return () => clearInterval(timer);
   }, [trail.length]);
@@ -138,11 +138,11 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       >
         <defs>
           <filter id="goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
             <feColorMatrix 
               in="blur" 
               mode="matrix" 
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10" 
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 35 -15" 
               result="goo" 
             />
             <feComposite in="SourceGraphic" in2="goo" operator="atop" />
