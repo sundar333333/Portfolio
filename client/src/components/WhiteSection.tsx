@@ -135,29 +135,29 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {progress >= 1 && (
         <>
           <div 
-            className="absolute top-[28%] left-[15%] text-black font-medium text-2xl md:text-3xl"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className="absolute top-[28%] left-4 md:left-12 text-black font-bold text-3xl md:text-4xl"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-top-left"
           >
             Current
           </div>
           <div 
-            className="absolute top-[28%] right-[15%] text-black font-medium text-2xl md:text-3xl text-right"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className="absolute top-[28%] right-4 md:right-12 text-black font-bold text-3xl md:text-4xl text-right"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-top-right"
           >
             Space Jump
           </div>
           <div 
-            className="absolute bottom-[28%] left-[15%] text-black font-medium text-2xl md:text-3xl"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className="absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-3xl md:text-4xl"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-bottom-left"
           >
             Eventify
           </div>
           <div 
-            className="absolute bottom-[28%] right-[15%] text-black font-medium text-2xl md:text-3xl text-right"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className="absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-3xl md:text-4xl text-right"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-bottom-right"
           >
             Ticking
