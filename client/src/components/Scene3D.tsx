@@ -546,13 +546,52 @@ interface ScrollSceneProps {
   onScrollProgress?: (progress: number) => void;
 }
 
+function BlackCube({ visible, zoomProgress }: { visible: boolean; zoomProgress: number }) {
+  const cubeRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (cubeRef.current && visible) {
+      cubeRef.current.rotation.x = state.clock.elapsedTime * 0.3;
+      cubeRef.current.rotation.y = state.clock.elapsedTime * 0.5;
+    }
+  });
+
+  if (!visible) return null;
+
+  const cubeScale = 0.8 + zoomProgress * 0.2;
+
+  return (
+    <group>
+      <mesh ref={cubeRef} scale={[cubeScale, cubeScale, cubeScale]} castShadow>
+        <boxGeometry args={[1.2, 1.2, 1.2]} />
+        <meshStandardMaterial 
+          color="#0a0a0a" 
+          roughness={0.3} 
+          metalness={0.8}
+        />
+      </mesh>
+      
+      <pointLight position={[3, 3, 3]} intensity={15} color="#ffffff" />
+      <pointLight position={[-3, -3, 3]} intensity={10} color="#ffffff" />
+      <pointLight position={[0, 0, 5]} intensity={8} color="#ffffff" />
+    </group>
+  );
+}
+
 function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
+  const [showBlackTransition, setShowBlackTransition] = useState(false);
+  const [showCubeSection, setShowCubeSection] = useState(false);
+  const [cubeZoomProgress, setCubeZoomProgress] = useState(0);
+  const [blackToWhiteProgress, setBlackToWhiteProgress] = useState(0);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
+  const blackTransitionStart = 0.88;
+  const cubeThreshold = 0.92;
+  const whiteTransitionStart = 0.96;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -570,6 +609,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const startZ = 1.8;
     const screenZ = 0.3;
     const tvScreenY = 0.22;
+    const cubeViewZ = 5;
+    const cubeViewY = 0;
     
     let targetZ: number;
     let targetY: number;
@@ -581,6 +622,24 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       targetZ = startZ - (startZ - screenZ) * progress;
       targetY = tvScreenY;
       lookAtY = tvScreenY;
+    } else if (offset >= blackTransitionStart && offset < cubeThreshold) {
+      targetZ = screenZ;
+      targetY = tvScreenY;
+      lookAtY = tvScreenY;
+    } else if (offset >= cubeThreshold) {
+      const zoomOutProgress = (offset - cubeThreshold) / (1 - cubeThreshold);
+      targetZ = screenZ + zoomOutProgress * (cubeViewZ - screenZ);
+      targetY = cubeViewY;
+      lookAtY = cubeViewY;
+      targetX = 0;
+      setCubeZoomProgress(zoomOutProgress);
+      
+      if (offset >= whiteTransitionStart) {
+        const whiteProgress = (offset - whiteTransitionStart) / (1 - whiteTransitionStart);
+        setBlackToWhiteProgress(whiteProgress);
+      } else {
+        setBlackToWhiteProgress(0);
+      }
     } else {
       targetZ = screenZ;
       targetY = tvScreenY;
@@ -596,12 +655,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
     
-    const isWorkVisible = offset > transitionThreshold;
+    const isWorkVisible = offset > transitionThreshold && offset < blackTransitionStart;
+    const isBlackTransition = offset >= blackTransitionStart && offset < cubeThreshold;
+    const isCubeVisible = offset >= cubeThreshold;
     
     setShowWorkSection(isWorkVisible);
-    onWorkSectionChange?.(isWorkVisible);
+    setShowBlackTransition(isBlackTransition);
+    setShowCubeSection(isCubeVisible);
+    onWorkSectionChange?.(isWorkVisible || isBlackTransition || isCubeVisible);
     
-    if (isWorkVisible) {
+    if (isWorkVisible || isBlackTransition || isCubeVisible) {
       const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       onScrollProgress?.(workProgress);
     } else {
@@ -609,14 +672,23 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     }
   });
 
-  const showLandingTV = !showWorkSection;
+  const showLandingTV = !showWorkSection && !showBlackTransition && !showCubeSection;
 
   const getBackgroundColor = () => {
+    if (showCubeSection) {
+      const brightness = Math.round(blackToWhiteProgress * 255);
+      return `rgb(${brightness}, ${brightness}, ${brightness})`;
+    }
+    if (showBlackTransition) return "#000000";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
 
   const bgColor = getBackgroundColor();
+  
+  const headerOpacity = showCubeSection && blackToWhiteProgress > 0.4 
+    ? Math.min(1, (blackToWhiteProgress - 0.4) / 0.6) 
+    : 0;
 
   return (
     <>
@@ -669,6 +741,41 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       <GlitchOverlay intensity={glitchIntensity} />
 
       <WorkSection visible={showWorkSection} />
+
+      <BlackCube visible={showCubeSection} zoomProgress={cubeZoomProgress} />
+
+      {showCubeSection && (
+        <>
+          <ambientLight intensity={0.8} color="#ffffff" />
+        </>
+      )}
+
+      <Scroll html>
+        {showCubeSection && headerOpacity > 0 && (
+          <div 
+            className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none"
+            style={{ opacity: headerOpacity }}
+          >
+            <h1 
+              className="text-6xl md:text-8xl font-black tracking-tight mb-4"
+              style={{ 
+                fontFamily: "'Anton', 'Archivo Black', sans-serif",
+                color: '#000000'
+              }}
+              data-testid="text-cube-header"
+            >
+              SUNDAR RAM
+            </h1>
+            <p 
+              className="text-xl md:text-2xl font-medium tracking-widest uppercase"
+              style={{ color: '#333333' }}
+              data-testid="text-cube-subheader"
+            >
+              Creative Developer
+            </p>
+          </div>
+        )}
+      </Scroll>
     </>
   );
 }
@@ -688,7 +795,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={22} damping={0.2}>
+          <ScrollControls pages={25} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}
