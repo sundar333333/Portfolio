@@ -296,3 +296,14 @@
 *::-webkit-scrollbar {
   display: none;
 }
+
+/* Project name outline hover effect */
+.project-name-hover {
+  transition: all 0.3s ease;
+  -webkit-text-stroke: 0px black;
+}
+
+.project-name-hover:hover {
+  color: transparent !important;
+  -webkit-text-stroke: 2px black;
+}
