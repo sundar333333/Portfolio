@@ -1,6 +1,8 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
+import { EffectComposer, Bloom, ChromaticAberration, Noise, Vignette } from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -529,58 +531,57 @@ function ArcadeMachine({ visible }: { visible: boolean }) {
     if (!visible) return;
     
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.02;
+      groupRef.current.rotation.y = state.clock.elapsedTime * 0.08;
     }
 
     if (screenCanvasRef.current && screenTextureRef.current) {
       const canvas = screenCanvasRef.current;
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, "#a8e063");
-        gradient.addColorStop(0.5, "#c4f576");
-        gradient.addColorStop(1, "#8bc34a");
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2, canvas.height / 2, 0,
+          canvas.width / 2, canvas.height / 2, canvas.width * 0.7
+        );
+        gradient.addColorStop(0, "#ff44ff");
+        gradient.addColorStop(0.5, "#cc22cc");
+        gradient.addColorStop(1, "#880088");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (let y = 0; y < canvas.height; y += 4) {
-          ctx.fillStyle = `rgba(0, 0, 0, ${0.03 + Math.sin(y * 0.05 + state.clock.elapsedTime * 1.5) * 0.02})`;
-          ctx.fillRect(0, y, canvas.width, 2);
+        for (let y = 0; y < canvas.height; y += 2) {
+          const scanAlpha = 0.15 + Math.sin(y * 0.3 + state.clock.elapsedTime * 3) * 0.05;
+          ctx.fillStyle = `rgba(0, 0, 0, ${scanAlpha})`;
+          ctx.fillRect(0, y, canvas.width, 1);
         }
 
-        ctx.fillStyle = "#1a3a1a";
-        ctx.font = "bold 58px 'Arial Black', Arial, sans-serif";
-        ctx.textAlign = "left";
+        for (let i = 0; i < 50; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.08})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 48px 'Arial Black', Arial, sans-serif";
+        ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         
-        ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
+        ctx.shadowColor = "rgba(255, 0, 255, 0.8)";
+        ctx.shadowBlur = 20;
         
-        const lines = ["LET'S", "PLAY A", "GAME."];
-        const lineHeight = 65;
-        const startY = canvas.height / 2 - lineHeight * 0.8;
-        const leftMargin = 40;
+        const lines = ["SELECT", "PROJECT"];
+        const lineHeight = 60;
+        const startY = canvas.height / 2 - lineHeight * 0.5;
         
         lines.forEach((line, i) => {
-          ctx.fillText(line, leftMargin, startY + i * lineHeight);
+          ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
         });
-
-        ctx.beginPath();
-        ctx.moveTo(380, canvas.height / 2);
-        ctx.lineTo(420, canvas.height / 2 - 25);
-        ctx.lineTo(420, canvas.height / 2 - 10);
-        ctx.lineTo(460, canvas.height / 2 - 10);
-        ctx.lineTo(460, canvas.height / 2 + 10);
-        ctx.lineTo(420, canvas.height / 2 + 10);
-        ctx.lineTo(420, canvas.height / 2 + 25);
-        ctx.closePath();
-        ctx.fill();
         
         ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+
+        const flicker = 0.95 + Math.random() * 0.05;
+        ctx.fillStyle = `rgba(255, 0, 255, ${0.03 * flicker})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         screenTextureRef.current.needsUpdate = true;
       }
@@ -589,53 +590,50 @@ function ArcadeMachine({ visible }: { visible: boolean }) {
 
   if (!visible) return null;
 
-  const cabinetBody = "#2a3328";
-  const cabinetDark = "#1e2620";
-  const controlPanelGreen = "#3a4a38";
-  const screenBezelGreen = "#2a3a2a";
-  const screenGlowColor = "#b8f060";
-  const neonGreen = "#66ff44";
+  const bodyColor = "#0a0a0a";
+  const bodyColorDark = "#050505";
+  const metallic = "#2a2a2a";
 
   return (
     <group ref={groupRef} position={[0, 0.8, 0]}>
       <RoundedBox
-        args={[1.4, 2.0, 0.9]}
-        radius={0.1}
+        args={[1.5, 2.2, 1.0]}
+        radius={0.08}
         smoothness={4}
         position={[0, 0.1, 0]}
         castShadow
         receiveShadow
       >
-        <meshStandardMaterial color={cabinetBody} roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color={bodyColor} roughness={0.5} metalness={0.2} />
       </RoundedBox>
 
       <RoundedBox
-        args={[1.45, 0.4, 0.92]}
-        radius={0.08}
+        args={[1.55, 0.45, 1.02]}
+        radius={0.06}
         smoothness={4}
-        position={[0, 1.15, 0]}
+        position={[0, 1.25, 0]}
         castShadow
       >
-        <meshStandardMaterial color={cabinetDark} roughness={0.8} metalness={0.08} />
+        <meshStandardMaterial color={bodyColorDark} roughness={0.6} metalness={0.15} />
       </RoundedBox>
 
-      {[-0.45, 0.45].map((xPos, i) => (
-        <group key={i} position={[xPos, 1.15, 0.42]}>
+      {[-0.5, 0.5].map((xPos, i) => (
+        <group key={i} position={[xPos, 1.25, 0.48]}>
           <mesh castShadow>
-            <cylinderGeometry args={[0.12, 0.12, 0.1, 32]} />
-            <meshStandardMaterial color={controlPanelGreen} roughness={0.6} metalness={0.15} />
+            <cylinderGeometry args={[0.14, 0.14, 0.12, 32]} />
+            <meshStandardMaterial color={metallic} roughness={0.4} metalness={0.6} />
           </mesh>
-          <mesh position={[0, 0.05, 0]}>
-            <cylinderGeometry args={[0.09, 0.09, 0.02, 32]} />
-            <meshStandardMaterial color="#1a2018" roughness={0.9} metalness={0.1} />
+          <mesh position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[0.11, 0.11, 0.02, 32]} />
+            <meshStandardMaterial color="#151515" roughness={0.8} metalness={0.3} />
           </mesh>
-          {[...Array(12)].map((_, j) => {
-            const angle = (j / 12) * Math.PI * 2;
-            const radius = 0.055;
+          {[...Array(16)].map((_, j) => {
+            const angle = (j / 16) * Math.PI * 2;
+            const radius = 0.07;
             return (
-              <mesh key={j} position={[Math.cos(angle) * radius, 0.06, Math.sin(angle) * radius]}>
+              <mesh key={j} position={[Math.cos(angle) * radius, 0.07, Math.sin(angle) * radius]}>
                 <cylinderGeometry args={[0.008, 0.008, 0.02, 6]} />
-                <meshStandardMaterial color="#0a0f0a" roughness={0.95} />
+                <meshStandardMaterial color="#000000" roughness={0.95} />
               </mesh>
             );
           })}
@@ -643,118 +641,128 @@ function ArcadeMachine({ visible }: { visible: boolean }) {
       ))}
 
       <RoundedBox
-        args={[1.1, 0.85, 0.15]}
-        radius={0.05}
+        args={[1.2, 0.95, 0.18]}
+        radius={0.06}
         smoothness={4}
-        position={[0, 0.4, 0.38]}
+        position={[0, 0.4, 0.42]}
         castShadow
       >
-        <meshStandardMaterial color={screenBezelGreen} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color="#050505" roughness={0.4} metalness={0.3} />
       </RoundedBox>
 
-      <RoundedBox
-        args={[1.0, 0.75, 0.02]}
-        radius={0.04}
-        smoothness={4}
-        position={[0, 0.4, 0.455]}
-      >
-        <meshStandardMaterial color={neonGreen} emissive={neonGreen} emissiveIntensity={0.8} transparent opacity={0.3} />
-      </RoundedBox>
-
-      <mesh position={[0, 0.4, 0.47]}>
-        <planeGeometry args={[0.92, 0.67]} />
-        <meshBasicMaterial map={screenTextureRef.current} />
+      <mesh position={[0, 0.4, 0.52]}>
+        <planeGeometry args={[1.0, 0.75]} />
+        <meshBasicMaterial map={screenTextureRef.current} toneMapped={false} />
       </mesh>
 
-      <mesh position={[0, 0.4, 0.475]} rotation={[0, 0, -0.15]}>
-        <planeGeometry args={[0.95, 0.7]} />
-        <meshPhysicalMaterial 
-          color="#ffffff" 
+      <mesh position={[0, 0.4, 0.525]}>
+        <planeGeometry args={[1.0, 0.75]} />
+        <meshStandardMaterial 
+          color="#ff00ff" 
+          emissive="#ff00ff"
+          emissiveIntensity={2.5}
           transparent 
-          opacity={0.12} 
-          roughness={0.05}
-          metalness={0.95}
-          envMapIntensity={0.8}
+          opacity={0.15}
+          toneMapped={false}
         />
       </mesh>
 
       <RoundedBox
-        args={[1.35, 0.55, 0.7]}
-        radius={0.06}
+        args={[1.45, 0.6, 0.75]}
+        radius={0.05}
         smoothness={4}
-        position={[0, -0.35, 0.1]}
+        position={[0, -0.4, 0.12]}
         castShadow
       >
-        <meshStandardMaterial color={controlPanelGreen} roughness={0.7} metalness={0.1} />
+        <meshStandardMaterial color={metallic} roughness={0.45} metalness={0.5} />
       </RoundedBox>
 
-      {[-0.42, 0.42].map((xPos, i) => (
-        <group key={i} position={[xPos, -0.22, 0.46]}>
-          <mesh position={[0, -0.04, 0]} castShadow>
-            <cylinderGeometry args={[0.08, 0.1, 0.08, 24]} />
-            <meshStandardMaterial color={controlPanelGreen} roughness={0.6} metalness={0.2} />
+      {[-0.45, 0.45].map((xPos, i) => (
+        <group key={i} position={[xPos, -0.28, 0.52]}>
+          <mesh position={[0, -0.06, 0]} castShadow>
+            <cylinderGeometry args={[0.09, 0.11, 0.1, 24]} />
+            <meshStandardMaterial color={metallic} roughness={0.3} metalness={0.7} />
           </mesh>
-          <mesh position={[0, 0.1, 0]} castShadow>
-            <cylinderGeometry args={[0.02, 0.02, 0.22, 16]} />
-            <meshStandardMaterial color="#888888" roughness={0.2} metalness={0.8} />
+          <mesh position={[0, 0.12, 0]} castShadow>
+            <cylinderGeometry args={[0.025, 0.025, 0.28, 16]} />
+            <meshStandardMaterial color="#888888" roughness={0.15} metalness={0.9} />
           </mesh>
-          <mesh position={[0, 0.24, 0]} castShadow>
-            <sphereGeometry args={[0.055, 20, 20]} />
+          <mesh position={[0, 0.28, 0]} castShadow>
+            <sphereGeometry args={[0.06, 24, 24]} />
             <meshStandardMaterial 
-              color="#dd55dd" 
-              roughness={0.15} 
-              metalness={0.5}
-              emissive="#aa33aa"
-              emissiveIntensity={0.15}
+              color="#111111" 
+              roughness={0.1} 
+              metalness={0.95}
             />
           </mesh>
         </group>
       ))}
 
       {[
-        { x: -0.18, color: "#3a4838" },
-        { x: -0.06, color: "#3a4838" },
-        { x: 0.06, color: "#3a4838" },
-        { x: 0.18, color: "#3a4838" },
+        { x: -0.15, color: "#ff2222", emissive: "#ff0000" },
+        { x: 0, color: "#ffcc00", emissive: "#ffaa00" },
+        { x: 0.15, color: "#ff2222", emissive: "#ff0000" },
       ].map((btn, i) => (
-        <mesh key={i} position={[btn.x, -0.42, 0.46]} castShadow>
-          <cylinderGeometry args={[0.035, 0.035, 0.05, 18]} />
-          <meshStandardMaterial color={btn.color} roughness={0.5} metalness={0.25} />
+        <mesh key={i} position={[btn.x, -0.45, 0.52]} castShadow>
+          <cylinderGeometry args={[0.045, 0.045, 0.06, 20]} />
+          <meshStandardMaterial 
+            color={btn.color} 
+            roughness={0.2} 
+            metalness={0.3}
+            emissive={btn.emissive}
+            emissiveIntensity={0.4}
+            transparent
+            opacity={0.9}
+          />
         </mesh>
       ))}
 
       <RoundedBox
-        args={[1.45, 0.25, 0.95]}
-        radius={0.05}
+        args={[1.55, 0.3, 1.05]}
+        radius={0.04}
         smoothness={4}
-        position={[0, -0.75, 0]}
+        position={[0, -0.85, 0]}
         castShadow
       >
-        <meshStandardMaterial color={cabinetBody} roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color={bodyColor} roughness={0.5} metalness={0.2} />
       </RoundedBox>
 
-      {[-0.68, 0.68].map((xPos, i) => (
-        <RoundedBox
-          key={i}
-          args={[0.08, 0.6, 0.4]}
-          radius={0.02}
-          smoothness={4}
-          position={[xPos, -0.55, 0.25]}
-          castShadow
-        >
-          <meshStandardMaterial color={cabinetDark} roughness={0.9} metalness={0.05} />
-        </RoundedBox>
-      ))}
-
-      <pointLight position={[0, 0.4, 0.9]} intensity={4} color={screenGlowColor} distance={3} />
-      <pointLight position={[0, 0.4, 1.5]} intensity={2} color="#88dd44" distance={5} />
+      <pointLight position={[0, 0.4, 1.0]} intensity={8} color="#ff00ff" distance={4} decay={2} />
+      <pointLight position={[0, 0.4, 1.5]} intensity={4} color="#cc00cc" distance={6} decay={2} />
+      
+      <rectAreaLight
+        position={[0, 0.8, -0.8]}
+        width={2}
+        height={2}
+        intensity={15}
+        color="#8800ff"
+        rotation={[0, Math.PI, 0]}
+      />
+      
       <spotLight
-        position={[0, 3, 2]}
+        position={[0, 3, 1.5]}
+        angle={0.6}
+        penumbra={0.8}
+        intensity={3}
+        color="#ffffff"
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      
+      <spotLight
+        position={[-1.5, 2, 1]}
         angle={0.5}
-        penumbra={0.6}
+        penumbra={0.7}
         intensity={2}
-        color="#55aa22"
-        target-position={[0, 0.4, 0.4]}
+        color="#ff00ff"
+      />
+      <spotLight
+        position={[1.5, 2, 1]}
+        angle={0.5}
+        penumbra={0.7}
+        intensity={2}
+        color="#ff00ff"
       />
     </group>
   );
@@ -879,7 +887,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const showTV = showLandingTV || showZoomOutTV;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#0a0a10";
+    if (showZoomOutTV) return "#000000";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -893,10 +901,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       
       {showZoomOutTV ? (
         <>
-          <ambientLight intensity={0.2} color="#1a2e1a" />
-          <pointLight position={[0, 3, 2]} intensity={0.6} color="#66aa33" />
-          <pointLight position={[-2, 2, 1]} intensity={0.4} color="#88cc44" />
-          <pointLight position={[2, 2, 1]} intensity={0.4} color="#77bb33" />
+          <ambientLight intensity={0.05} color="#1a0020" />
         </>
       ) : (
         <>
@@ -947,11 +952,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       {showZoomOutTV && (
         <ContactShadows
           position={[0, 0, 0]}
-          opacity={0.5}
-          scale={12}
-          blur={2.5}
-          far={5}
-          color="#0a1a0a"
+          opacity={0.6}
+          scale={15}
+          blur={3}
+          far={6}
+          color="#1a0030"
         />
       )}
       
@@ -968,6 +973,32 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       <GlitchOverlay intensity={showZoomOutTV ? 0 : glitchIntensity} />
 
       <WorkSection visible={showWorkSection && !showZoomOutTV} />
+
+      {showZoomOutTV && (
+        <EffectComposer>
+          <Bloom 
+            intensity={1.5}
+            luminanceThreshold={0.2}
+            luminanceSmoothing={0.9}
+            mipmapBlur
+          />
+          <ChromaticAberration 
+            offset={new THREE.Vector2(0.002, 0.002)}
+            blendFunction={BlendFunction.NORMAL}
+            radialModulation={false}
+            modulationOffset={0.5}
+          />
+          <Noise 
+            opacity={0.08}
+            blendFunction={BlendFunction.OVERLAY}
+          />
+          <Vignette
+            offset={0.3}
+            darkness={0.6}
+            blendFunction={BlendFunction.NORMAL}
+          />
+        </EffectComposer>
+      )}
     </>
   );
 }
