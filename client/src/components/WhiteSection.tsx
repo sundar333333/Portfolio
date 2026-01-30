@@ -135,29 +135,69 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {progress >= 1 && (
         <>
           <div 
-            className="absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+            className="absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer transition-all duration-300 hover:text-transparent"
+            style={{ 
+              fontFamily: "'Orbitron', sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.webkitTextStroke = '2px black';
+              e.currentTarget.style.color = 'transparent';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.webkitTextStroke = '0px';
+              e.currentTarget.style.color = 'black';
+            }}
             data-testid="project-top-left"
           >
             Current
           </div>
           <div 
-            className="absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+            className="absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer transition-all duration-300"
+            style={{ 
+              fontFamily: "'Orbitron', sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.webkitTextStroke = '2px black';
+              e.currentTarget.style.color = 'transparent';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.webkitTextStroke = '0px';
+              e.currentTarget.style.color = 'black';
+            }}
             data-testid="project-top-right"
           >
             Space Jump
           </div>
           <div 
-            className="absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+            className="absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer transition-all duration-300"
+            style={{ 
+              fontFamily: "'Orbitron', sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.webkitTextStroke = '2px black';
+              e.currentTarget.style.color = 'transparent';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.webkitTextStroke = '0px';
+              e.currentTarget.style.color = 'black';
+            }}
             data-testid="project-bottom-left"
           >
             Eventify
           </div>
           <div 
-            className="absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+            className="absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer transition-all duration-300"
+            style={{ 
+              fontFamily: "'Orbitron', sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.webkitTextStroke = '2px black';
+              e.currentTarget.style.color = 'transparent';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.webkitTextStroke = '0px';
+              e.currentTarget.style.color = 'black';
+            }}
             data-testid="project-bottom-right"
           >
             Ticking
