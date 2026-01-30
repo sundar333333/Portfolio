@@ -505,118 +505,118 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
-function useFootballPitchTexture() {
-  const texture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext("2d")!;
-    
-    const gradient = ctx.createRadialGradient(512, 512, 0, 512, 512, 600);
-    gradient.addColorStop(0, "#2d5a27");
-    gradient.addColorStop(0.5, "#1e4d1a");
-    gradient.addColorStop(1, "#153d12");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 1024);
-    
-    ctx.strokeStyle = "rgba(20, 60, 20, 0.3)";
-    ctx.lineWidth = 8;
-    for (let i = 0; i < 20; i++) {
-      const y = i * 52;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(1024, y);
-      ctx.stroke();
-    }
-    
-    for (let i = 0; i < 3000; i++) {
-      const x = Math.random() * 1024;
-      const y = Math.random() * 1024;
-      const brightness = 30 + Math.random() * 40;
-      ctx.fillStyle = `rgba(${brightness}, ${brightness + 30}, ${brightness - 10}, 0.4)`;
-      ctx.fillRect(x, y, 2, 4);
-    }
-    
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.lineWidth = 4;
-    
-    ctx.beginPath();
-    ctx.arc(512, 512, 120, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.arc(512, 512, 8, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.moveTo(512, 0);
-    ctx.lineTo(512, 1024);
-    ctx.stroke();
-    
-    ctx.strokeRect(20, 20, 984, 984);
-    
-    ctx.strokeRect(20, 312, 180, 400);
-    ctx.strokeRect(824, 312, 180, 400);
-    
-    ctx.strokeRect(20, 412, 80, 200);
-    ctx.strokeRect(924, 412, 80, 200);
-    
-    ctx.beginPath();
-    ctx.arc(20, 20, 60, 0, Math.PI / 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(1004, 20, 60, Math.PI / 2, Math.PI);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(20, 1004, 60, -Math.PI / 2, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(1004, 1004, 60, Math.PI, Math.PI * 1.5);
-    ctx.stroke();
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    return tex;
-  }, []);
-  
-  return texture;
-}
-
-function FootballPitch({ visible }: { visible: boolean }) {
-  const pitchTexture = useFootballPitchTexture();
-  const groupRef = useRef<THREE.Group>(null);
-
+function WhiteRoom({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
   return (
-    <group ref={groupRef}>
-      <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[25, 25]} />
+    <group>
+      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[30, 30]} />
         <meshStandardMaterial 
-          map={pitchTexture}
-          roughness={0.9}
+          color="#f5e6e0"
+          roughness={0.4}
           metalness={0.0}
         />
       </mesh>
       
-      <mesh position={[0, -0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[60, 60]} />
+      <mesh position={[0, 5, -8]} receiveShadow>
+        <planeGeometry args={[30, 12]} />
         <meshStandardMaterial 
-          color="#0d2a0a"
-          roughness={1}
-          metalness={0}
+          color="#f0e8e4"
+          roughness={0.5}
+          metalness={0.0}
         />
       </mesh>
-      
-      <ambientLight intensity={0.4} color="#87ceeb" />
-      <directionalLight
-        position={[10, 20, 5]}
-        intensity={1.5}
-        color="#fff5e6"
+    </group>
+  );
+}
+
+function PinkRetroTV({ visible }: { visible: boolean }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const { texture: staticTexture, updateTexture } = useStaticTexture();
+
+  useFrame(() => {
+    if (!visible) return;
+    updateTexture();
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(Date.now() * 0.0005) * 0.02;
+    }
+  });
+
+  if (!visible) return null;
+
+  const tvColor = "#e8a0a0";
+  const darkPink = "#c08080";
+
+  return (
+    <group ref={groupRef} position={[0, 0.35, 0]}>
+      <RoundedBox
+        args={[0.9, 0.75, 0.45]}
+        radius={0.08}
+        smoothness={4}
+        position={[0, 0, 0]}
         castShadow
-      />
+        receiveShadow
+      >
+        <meshStandardMaterial color={tvColor} roughness={0.7} metalness={0.1} />
+      </RoundedBox>
+
+      <mesh position={[0, 0.05, 0.21]}>
+        <planeGeometry args={[0.65, 0.48]} />
+        <meshBasicMaterial color="#1a1a1a" />
+      </mesh>
+      
+      <mesh position={[0, 0.05, 0.215]}>
+        <planeGeometry args={[0.6, 0.43]} />
+        <meshBasicMaterial map={staticTexture} />
+      </mesh>
+
+      <mesh position={[0, 0.05, 0.22]}>
+        <planeGeometry args={[0.6, 0.43]} />
+        <meshBasicMaterial color="#87ceeb" transparent opacity={0.15} />
+      </mesh>
+
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <sphereGeometry args={[0.06, 16, 16]} />
+        <meshStandardMaterial color={darkPink} roughness={0.5} metalness={0.3} />
+      </mesh>
+
+      <mesh position={[0, 0.55, 0]} rotation={[0, 0, -0.4]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.35, 8]} />
+        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
+      </mesh>
+      <mesh position={[-0.12, 0.72, 0]}>
+        <sphereGeometry args={[0.015, 8, 8]} />
+        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
+      </mesh>
+
+      <mesh position={[0, 0.55, 0]} rotation={[0, 0, 0.4]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.35, 8]} />
+        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
+      </mesh>
+      <mesh position={[0.12, 0.72, 0]}>
+        <sphereGeometry args={[0.015, 8, 8]} />
+        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
+      </mesh>
+
+      {[-0.28, -0.1, 0.1, 0.28].map((x, i) => (
+        <mesh key={i} position={[x, -0.28, 0.2]} castShadow>
+          <cylinderGeometry args={[0.045, 0.045, 0.04, 24]} />
+          <meshStandardMaterial color={tvColor} roughness={0.6} metalness={0.15} />
+        </mesh>
+      ))}
+
+      <RoundedBox
+        args={[0.95, 0.06, 0.48]}
+        radius={0.02}
+        smoothness={4}
+        position={[0, -0.38, 0]}
+        castShadow
+      >
+        <meshStandardMaterial color={darkPink} roughness={0.8} metalness={0.05} />
+      </RoundedBox>
+
+      <pointLight position={[0, 0.05, 0.4]} intensity={0.3} color="#87ceeb" distance={1.5} />
     </group>
   );
 }
@@ -735,7 +735,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const showTV = showLandingTV || showZoomOutTV;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#4a7c59";
+    if (showZoomOutTV) return "#f0e8e4";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -749,20 +749,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       
       {showZoomOutTV ? (
         <>
-          <ambientLight intensity={0.5} color="#87ceeb" />
+          <ambientLight intensity={0.8} color="#ffffff" />
           <directionalLight
-            position={[5, 15, 5]}
-            intensity={2}
-            color="#fff5e6"
+            position={[3, 8, 5]}
+            intensity={1.5}
+            color="#fff8f5"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
           />
-          <hemisphereLight
-            color="#87ceeb"
-            groundColor="#3d6b35"
-            intensity={0.8}
-          />
+          <pointLight position={[-2, 3, 2]} intensity={0.5} color="#ffeedd" />
         </>
       ) : (
         <>
@@ -788,10 +784,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         </>
       )}
 
-      <Environment preset={showZoomOutTV ? "sunset" : "night"} background={false} />
+      <Environment preset={showZoomOutTV ? "apartment" : "night"} background={false} />
       
       <TiledFloor visible={showLandingTV} />
-      <FootballPitch visible={showZoomOutTV} />
+      <WhiteRoom visible={showZoomOutTV} />
 
       {showLandingTV && (
         <ContactShadows
@@ -803,14 +799,27 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
           color="#000000"
         />
       )}
+
+      {showZoomOutTV && (
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.3}
+          scale={10}
+          blur={3}
+          far={4}
+          color="#d0c0c0"
+        />
+      )}
       
       <VintageTV
-        hoveredText={showZoomOutTV ? null : hoveredText}
-        onClick={showZoomOutTV ? () => {} : onTVClick}
-        isVideoPlaying={showZoomOutTV ? false : isVideoPlaying}
-        visible={showTV}
-        glitchIntensity={showZoomOutTV ? 0 : glitchIntensity}
+        hoveredText={hoveredText}
+        onClick={onTVClick}
+        isVideoPlaying={isVideoPlaying}
+        visible={showLandingTV}
+        glitchIntensity={glitchIntensity}
       />
+
+      <PinkRetroTV visible={showZoomOutTV} />
 
       <GlitchOverlay intensity={showZoomOutTV ? 0 : glitchIntensity} />
 
