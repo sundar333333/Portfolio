@@ -132,34 +132,50 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       }}
       data-testid="white-section"
     >
-      {trail.map((point, index) => {
-        const opacity = (index + 1) / trail.length * 0.6;
-        return (
-          <div
-            key={point.id}
-            className="absolute top-1/2 left-1/2 rounded-full border-2 border-black pointer-events-none"
-            style={{
-              width: circleSize,
-              height: circleSize,
-              transform: `translate(-50%, -50%) translate(${point.x}px, ${point.y}px)`,
-              opacity: opacity,
-              backgroundColor: 'transparent',
-            }}
+      <svg 
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ filter: 'url(#goo)' }}
+      >
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feColorMatrix 
+              in="blur" 
+              mode="matrix" 
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10" 
+              result="goo" 
+            />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+        </defs>
+        
+        {trail.map((point, index) => {
+          const opacity = (index + 1) / trail.length * 0.7;
+          const scale = 0.85 + (index / trail.length) * 0.15;
+          const centerX = window.innerWidth / 2 + point.x;
+          const centerY = window.innerHeight / 2 + point.y;
+          
+          return (
+            <circle
+              key={point.id}
+              cx={centerX}
+              cy={centerY}
+              r={(circleSize * scale) / 2}
+              fill="black"
+              opacity={opacity}
+            />
+          );
+        })}
+        
+        {circleProgress > 0 && (
+          <circle
+            cx={window.innerWidth / 2 + smoothOffset.x}
+            cy={window.innerHeight / 2 + smoothOffset.y}
+            r={circleSize / 2}
+            fill="black"
           />
-        );
-      })}
-      
-      {circleProgress > 0 && (
-        <div
-          className="absolute top-1/2 left-1/2 rounded-full bg-black"
-          style={{
-            width: circleSize,
-            height: circleSize,
-            transform: `translate(-50%, -50%) translate(${smoothOffset.x}px, ${smoothOffset.y}px)`,
-          }}
-          data-testid="expanding-circle"
-        />
-      )}
+        )}
+      </svg>
     </div>
   );
 }
