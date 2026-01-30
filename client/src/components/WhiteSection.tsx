@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
+import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
+import eventifyLogo from "@assets/lk_1769812445813.png";
+import tickingLogo from "@assets/Group_27_1769812471632.png";
 
 interface TrailPoint {
   x: number;
@@ -11,6 +15,13 @@ interface WhiteSectionProps {
   circleProgress: number;
 }
 
+const projectLogos: Record<string, string> = {
+  current: currentLogo,
+  spacejump: spaceJumpLogo,
+  eventify: eventifyLogo,
+  ticking: tickingLogo,
+};
+
 let trailId = 0;
 
 export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
@@ -21,7 +32,9 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
+  const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
+  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
@@ -55,6 +68,18 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
         
         return { x: newX, y: newY };
       });
+      
+      // Logo follows with less sensitivity (40% of circle movement)
+      setLogoOffset(prev => {
+        const logoSensitivity = 0.4;
+        const targetX = targetOffset.current.x * logoSensitivity;
+        const targetY = targetOffset.current.y * logoSensitivity;
+        const dx = targetX - prev.x;
+        const dy = targetY - prev.y;
+        const easing = 0.06;
+        return { x: prev.x + dx * easing, y: prev.y + dy * easing };
+      });
+      
       animationId = requestAnimationFrame(smoothFollow);
     };
     
@@ -137,6 +162,8 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           <div 
             className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
+            onMouseEnter={() => setHoveredProject('current')}
+            onMouseLeave={() => setHoveredProject(null)}
             data-testid="project-top-left"
           >
             Current
@@ -144,6 +171,8 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           <div 
             className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
+            onMouseEnter={() => setHoveredProject('spacejump')}
+            onMouseLeave={() => setHoveredProject(null)}
             data-testid="project-top-right"
           >
             Space Jump
@@ -151,6 +180,8 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           <div 
             className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
+            onMouseEnter={() => setHoveredProject('eventify')}
+            onMouseLeave={() => setHoveredProject(null)}
             data-testid="project-bottom-left"
           >
             Eventify
@@ -158,6 +189,8 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           <div 
             className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
+            onMouseEnter={() => setHoveredProject('ticking')}
+            onMouseLeave={() => setHoveredProject(null)}
             data-testid="project-bottom-right"
           >
             Ticking
@@ -209,6 +242,36 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           />
         )}
       </svg>
+
+      {/* Logo display inside circle - no mercury effect */}
+      {hoveredProject && circleProgress >= 1 && (
+        <div
+          className="absolute pointer-events-none flex flex-col items-center justify-center transition-opacity duration-300"
+          style={{
+            left: `calc(50% + ${smoothOffset.x}px)`,
+            top: `calc(50% + ${smoothOffset.y}px)`,
+            width: circleSize * 0.8,
+            height: circleSize * 0.8,
+            transform: `translate(-50%, -50%) translate(${logoOffset.x}px, ${logoOffset.y}px)`,
+          }}
+          data-testid="project-logo"
+        >
+          <img
+            src={projectLogos[hoveredProject]}
+            alt={hoveredProject}
+            className="max-w-full max-h-[70%] object-contain"
+            style={{
+              filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
+            }}
+          />
+          <span
+            className="text-white text-lg md:text-xl mt-2 capitalize"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            {hoveredProject === 'spacejump' ? 'Space Jump' : hoveredProject}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
