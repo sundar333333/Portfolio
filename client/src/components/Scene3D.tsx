@@ -505,118 +505,223 @@ function TiledFloor({ visible }: { visible: boolean }) {
   );
 }
 
-function WhiteRoom({ visible }: { visible: boolean }) {
-  if (!visible) return null;
-
-  return (
-    <group>
-      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial 
-          color="#f5e6e0"
-          roughness={0.4}
-          metalness={0.0}
-        />
-      </mesh>
-      
-      <mesh position={[0, 5, -8]} receiveShadow>
-        <planeGeometry args={[30, 12]} />
-        <meshStandardMaterial 
-          color="#f0e8e4"
-          roughness={0.5}
-          metalness={0.0}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function PinkRetroTV({ visible }: { visible: boolean }) {
+function ArcadeMachine({ visible }: { visible: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
-  const { texture: staticTexture, updateTexture } = useStaticTexture();
+  const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const screenTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const [, forceUpdate] = useState(0);
 
-  useFrame(() => {
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 384;
+    screenCanvasRef.current = canvas;
+    const tex = new THREE.CanvasTexture(canvas);
+    screenTextureRef.current = tex;
+    forceUpdate(n => n + 1);
+
+    return () => {
+      tex.dispose();
+    };
+  }, []);
+
+  useFrame((state) => {
     if (!visible) return;
-    updateTexture();
+    
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(Date.now() * 0.0005) * 0.02;
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.03;
+    }
+
+    if (screenCanvasRef.current && screenTextureRef.current) {
+      const canvas = screenCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, "#ff00ff");
+        gradient.addColorStop(0.5, "#cc44cc");
+        gradient.addColorStop(1, "#aa00aa");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < 100; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const alpha = Math.random() * 0.1;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+
+        for (let y = 0; y < canvas.height; y += 3) {
+          ctx.fillStyle = `rgba(0, 0, 0, ${0.1 + Math.sin(y * 0.1 + state.clock.elapsedTime * 2) * 0.05})`;
+          ctx.fillRect(0, y, canvas.width, 1);
+        }
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "bold 42px 'Arial Black', Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        
+        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
+        
+        const lines = ["SELECT", "YOUR", "PROJECT"];
+        const lineHeight = 55;
+        const startY = canvas.height / 2 - lineHeight;
+        
+        lines.forEach((line, i) => {
+          ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
+        });
+        
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        screenTextureRef.current.needsUpdate = true;
+      }
     }
   });
 
   if (!visible) return null;
 
-  const tvColor = "#e8a0a0";
-  const darkPink = "#c08080";
+  const cabinetColor = "#1a1a22";
+  const cabinetEdge = "#2a2a35";
+  const screenBezel = "#0f0f15";
 
   return (
-    <group ref={groupRef} position={[0, 0.35, 0]}>
+    <group ref={groupRef} position={[0, 0.8, 0]}>
       <RoundedBox
-        args={[0.9, 0.75, 0.45]}
-        radius={0.08}
+        args={[1.1, 1.6, 0.7]}
+        radius={0.05}
         smoothness={4}
         position={[0, 0, 0]}
         castShadow
         receiveShadow
       >
-        <meshStandardMaterial color={tvColor} roughness={0.7} metalness={0.1} />
+        <meshStandardMaterial color={cabinetColor} roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
-      <mesh position={[0, 0.05, 0.21]}>
-        <planeGeometry args={[0.65, 0.48]} />
-        <meshBasicMaterial color="#1a1a1a" />
+      <RoundedBox
+        args={[1.15, 0.25, 0.72]}
+        radius={0.03}
+        smoothness={4}
+        position={[0, 0.92, 0]}
+        castShadow
+      >
+        <meshStandardMaterial color={cabinetEdge} roughness={0.4} metalness={0.3} />
+      </RoundedBox>
+
+      <mesh position={[-0.35, 0.92, 0.34]} castShadow>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshStandardMaterial color="#0a0a0f" roughness={0.8} metalness={0.2} />
       </mesh>
-      
-      <mesh position={[0, 0.05, 0.215]}>
-        <planeGeometry args={[0.6, 0.43]} />
-        <meshBasicMaterial map={staticTexture} />
+      <mesh position={[0.35, 0.92, 0.34]} castShadow>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshStandardMaterial color="#0a0a0f" roughness={0.8} metalness={0.2} />
       </mesh>
 
-      <mesh position={[0, 0.05, 0.22]}>
-        <planeGeometry args={[0.6, 0.43]} />
-        <meshBasicMaterial color="#87ceeb" transparent opacity={0.15} />
+      <RoundedBox
+        args={[0.85, 0.7, 0.08]}
+        radius={0.03}
+        smoothness={4}
+        position={[0, 0.35, 0.32]}
+        castShadow
+      >
+        <meshStandardMaterial color={screenBezel} roughness={0.5} metalness={0.3} />
+      </RoundedBox>
+
+      <mesh position={[0, 0.35, 0.37]}>
+        <planeGeometry args={[0.7, 0.55]} />
+        <meshBasicMaterial map={screenTextureRef.current} />
       </mesh>
 
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <sphereGeometry args={[0.06, 16, 16]} />
-        <meshStandardMaterial color={darkPink} roughness={0.5} metalness={0.3} />
+      <mesh position={[0, 0.35, 0.375]}>
+        <planeGeometry args={[0.7, 0.55]} />
+        <meshBasicMaterial color="#ff00ff" transparent opacity={0.1} />
       </mesh>
 
-      <mesh position={[0, 0.55, 0]} rotation={[0, 0, -0.4]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.35, 8]} />
-        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[-0.12, 0.72, 0]}>
-        <sphereGeometry args={[0.015, 8, 8]} />
-        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
-      </mesh>
+      <RoundedBox
+        args={[1.1, 0.35, 0.55]}
+        radius={0.04}
+        smoothness={4}
+        position={[0, -0.35, 0.1]}
+        castShadow
+      >
+        <meshStandardMaterial color={cabinetEdge} roughness={0.4} metalness={0.3} />
+      </RoundedBox>
 
-      <mesh position={[0, 0.55, 0]} rotation={[0, 0, 0.4]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.35, 8]} />
-        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[0.12, 0.72, 0]}>
-        <sphereGeometry args={[0.015, 8, 8]} />
-        <meshStandardMaterial color="#c4a86c" roughness={0.3} metalness={0.7} />
-      </mesh>
+      <group position={[-0.35, -0.28, 0.38]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.06, 0.08, 0.04, 24]} />
+          <meshStandardMaterial color="#1a1a20" roughness={0.5} metalness={0.4} />
+        </mesh>
+        <mesh position={[0, 0.08, 0]} castShadow>
+          <cylinderGeometry args={[0.015, 0.015, 0.12, 12]} />
+          <meshStandardMaterial color="#2a2a30" roughness={0.3} metalness={0.6} />
+        </mesh>
+        <mesh position={[0, 0.16, 0]} castShadow>
+          <sphereGeometry args={[0.035, 16, 16]} />
+          <meshStandardMaterial color="#1a1a25" roughness={0.4} metalness={0.5} />
+        </mesh>
+      </group>
 
-      {[-0.28, -0.1, 0.1, 0.28].map((x, i) => (
-        <mesh key={i} position={[x, -0.28, 0.2]} castShadow>
-          <cylinderGeometry args={[0.045, 0.045, 0.04, 24]} />
-          <meshStandardMaterial color={tvColor} roughness={0.6} metalness={0.15} />
+      <group position={[0.35, -0.28, 0.38]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.06, 0.08, 0.04, 24]} />
+          <meshStandardMaterial color="#1a1a20" roughness={0.5} metalness={0.4} />
+        </mesh>
+        <mesh position={[0, 0.08, 0]} castShadow>
+          <cylinderGeometry args={[0.015, 0.015, 0.12, 12]} />
+          <meshStandardMaterial color="#2a2a30" roughness={0.3} metalness={0.6} />
+        </mesh>
+        <mesh position={[0, 0.16, 0]} castShadow>
+          <sphereGeometry args={[0.035, 16, 16]} />
+          <meshStandardMaterial color="#1a1a25" roughness={0.4} metalness={0.5} />
+        </mesh>
+      </group>
+
+      {[
+        { x: -0.08, color: "#ff4444" },
+        { x: 0.08, color: "#ff8844" },
+      ].map((btn, i) => (
+        <mesh key={i} position={[btn.x, -0.25, 0.4]} castShadow>
+          <cylinderGeometry args={[0.04, 0.04, 0.03, 20]} />
+          <meshStandardMaterial color={btn.color} roughness={0.4} metalness={0.3} emissive={btn.color} emissiveIntensity={0.3} />
+        </mesh>
+      ))}
+
+      {[
+        { x: -0.12, y: -0.38, color: "#44ff44" },
+        { x: 0, y: -0.38, color: "#4444ff" },
+        { x: 0.12, y: -0.38, color: "#ffff44" },
+      ].map((btn, i) => (
+        <mesh key={i} position={[btn.x, btn.y, 0.38]} castShadow>
+          <cylinderGeometry args={[0.035, 0.035, 0.025, 20]} />
+          <meshStandardMaterial color={btn.color} roughness={0.4} metalness={0.3} emissive={btn.color} emissiveIntensity={0.2} />
         </mesh>
       ))}
 
       <RoundedBox
-        args={[0.95, 0.06, 0.48]}
-        radius={0.02}
+        args={[1.15, 0.15, 0.75]}
+        radius={0.03}
         smoothness={4}
-        position={[0, -0.38, 0]}
+        position={[0, -0.6, 0]}
         castShadow
       >
-        <meshStandardMaterial color={darkPink} roughness={0.8} metalness={0.05} />
+        <meshStandardMaterial color={cabinetColor} roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
-      <pointLight position={[0, 0.05, 0.4]} intensity={0.3} color="#87ceeb" distance={1.5} />
+      <pointLight position={[0, 0.35, 0.6]} intensity={2} color="#ff00ff" distance={2} />
+      <pointLight position={[0, 0.35, 0.8]} intensity={0.8} color="#cc44cc" distance={3} />
+      <spotLight
+        position={[0, 2, 1]}
+        angle={0.4}
+        penumbra={0.5}
+        intensity={1}
+        color="#aa44aa"
+        target-position={[0, 0.35, 0.35]}
+      />
     </group>
   );
 }
@@ -735,7 +840,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const showTV = showLandingTV || showZoomOutTV;
 
   const getBackgroundColor = () => {
-    if (showZoomOutTV) return "#f0e8e4";
+    if (showZoomOutTV) return "#0a0a10";
     if (showWorkSection) return "#0066FF";
     return "#050403";
   };
@@ -749,16 +854,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       
       {showZoomOutTV ? (
         <>
-          <ambientLight intensity={0.8} color="#ffffff" />
-          <directionalLight
-            position={[3, 8, 5]}
-            intensity={1.5}
-            color="#fff8f5"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-          />
-          <pointLight position={[-2, 3, 2]} intensity={0.5} color="#ffeedd" />
+          <ambientLight intensity={0.15} color="#2a1a40" />
+          <pointLight position={[0, 3, 2]} intensity={0.5} color="#aa44aa" />
+          <pointLight position={[-2, 2, 1]} intensity={0.3} color="#ff00ff" />
+          <pointLight position={[2, 2, 1]} intensity={0.3} color="#cc44cc" />
         </>
       ) : (
         <>
@@ -784,10 +883,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         </>
       )}
 
-      <Environment preset={showZoomOutTV ? "apartment" : "night"} background={false} />
+      <Environment preset="night" background={false} />
       
       <TiledFloor visible={showLandingTV} />
-      <WhiteRoom visible={showZoomOutTV} />
+
+      {showZoomOutTV && (
+        <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[30, 30]} />
+          <meshStandardMaterial color="#0a0a12" roughness={0.9} metalness={0.1} />
+        </mesh>
+      )}
 
       {showLandingTV && (
         <ContactShadows
@@ -803,11 +908,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       {showZoomOutTV && (
         <ContactShadows
           position={[0, 0, 0]}
-          opacity={0.3}
-          scale={10}
-          blur={3}
-          far={4}
-          color="#d0c0c0"
+          opacity={0.5}
+          scale={12}
+          blur={2.5}
+          far={5}
+          color="#1a0a2a"
         />
       )}
       
@@ -819,7 +924,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         glitchIntensity={glitchIntensity}
       />
 
-      <PinkRetroTV visible={showZoomOutTV} />
+      <ArcadeMachine visible={showZoomOutTV} />
 
       <GlitchOverlay intensity={showZoomOutTV ? 0 : glitchIntensity} />
 
