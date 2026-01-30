@@ -1,9 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 
+interface TrailPoint {
+  x: number;
+  y: number;
+  id: number;
+}
+
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
 }
+
+let trailId = 0;
 
 export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
@@ -12,13 +20,15 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const maxSize = 460;
   const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
-  const [gyroOffset, setGyroOffset] = useState({ x: 0, y: 0 });
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
+  const [trail, setTrail] = useState<TrailPoint[]>([]);
   const targetOffset = useRef({ x: 0, y: 0 });
+  const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
 
   useEffect(() => {
     let animationId: number;
+    let frameCount = 0;
     
     const smoothFollow = () => {
       setSmoothOffset(prev => {
@@ -26,10 +36,24 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
         const dy = targetOffset.current.y - prev.y;
         const easing = 0.08;
         
-        return {
-          x: prev.x + dx * easing,
-          y: prev.y + dy * easing
-        };
+        const newX = prev.x + dx * easing;
+        const newY = prev.y + dy * easing;
+        
+        frameCount++;
+        if (frameCount % 3 === 0 && isFullyExpanded) {
+          const distMoved = Math.sqrt(
+            Math.pow(newX - lastTrailPos.current.x, 2) + 
+            Math.pow(newY - lastTrailPos.current.y, 2)
+          );
+          
+          if (distMoved > 2) {
+            trailId++;
+            setTrail(t => [...t, { x: newX, y: newY, id: trailId }].slice(-12));
+            lastTrailPos.current = { x: newX, y: newY };
+          }
+        }
+        
+        return { x: newX, y: newY };
       });
       animationId = requestAnimationFrame(smoothFollow);
     };
@@ -37,7 +61,17 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
     animationId = requestAnimationFrame(smoothFollow);
     
     return () => cancelAnimationFrame(animationId);
-  }, []);
+  }, [isFullyExpanded]);
+
+  useEffect(() => {
+    if (trail.length === 0) return;
+    
+    const timer = setInterval(() => {
+      setTrail(t => t.slice(1));
+    }, 80);
+    
+    return () => clearInterval(timer);
+  }, [trail.length]);
 
   useEffect(() => {
     if (!isFullyExpanded) {
@@ -98,6 +132,23 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       }}
       data-testid="white-section"
     >
+      {trail.map((point, index) => {
+        const opacity = (index + 1) / trail.length * 0.6;
+        return (
+          <div
+            key={point.id}
+            className="absolute top-1/2 left-1/2 rounded-full border-2 border-black pointer-events-none"
+            style={{
+              width: circleSize,
+              height: circleSize,
+              transform: `translate(-50%, -50%) translate(${point.x}px, ${point.y}px)`,
+              opacity: opacity,
+              backgroundColor: 'transparent',
+            }}
+          />
+        );
+      })}
+      
       {circleProgress > 0 && (
         <div
           className="absolute top-1/2 left-1/2 rounded-full bg-black"
