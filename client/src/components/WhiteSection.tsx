@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 interface WhiteSectionProps {
   progress: number;
@@ -12,12 +13,24 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const maxSize = 460;
   const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
-  const [gyroOffset, setGyroOffset] = useState({ x: 0, y: 0 });
+  const [targetOffset, setTargetOffset] = useState({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
+
+  // Liquid spring config - low stiffness, moderate damping for fluid motion
+  const springConfig = { stiffness: 50, damping: 15, mass: 1.5 };
+  
+  const springX = useSpring(0, springConfig);
+  const springY = useSpring(0, springConfig);
+
+  // Update spring targets when offset changes
+  useEffect(() => {
+    springX.set(targetOffset.x);
+    springY.set(targetOffset.y);
+  }, [targetOffset.x, targetOffset.y, springX, springY]);
 
   useEffect(() => {
     if (!isFullyExpanded) {
-      setGyroOffset({ x: 0, y: 0 });
+      setTargetOffset({ x: 0, y: 0 });
       return;
     }
 
@@ -29,7 +42,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       const x = Math.max(-maxOffset, Math.min(maxOffset, gamma * 3.5));
       const y = Math.max(-maxOffset, Math.min(maxOffset, (beta - 45) * 2.5));
       
-      setGyroOffset({ x, y });
+      setTargetOffset({ x, y });
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -40,7 +53,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       const x = ((e.clientX - centerX) / centerX) * maxOffset;
       const y = ((e.clientY - centerY) / centerY) * maxOffset;
       
-      setGyroOffset({ x, y });
+      setTargetOffset({ x, y });
     };
 
     if (typeof DeviceOrientationEvent !== 'undefined' && 
@@ -75,12 +88,15 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       data-testid="white-section"
     >
       {circleProgress > 0 && (
-        <div
-          className="absolute top-1/2 left-1/2 rounded-full bg-black transition-transform duration-100 ease-out"
+        <motion.div
+          className="absolute top-1/2 left-1/2 rounded-full bg-black"
           style={{
             width: circleSize,
             height: circleSize,
-            transform: `translate(-50%, -50%) translate(${gyroOffset.x}px, ${gyroOffset.y}px)`,
+            x: springX,
+            y: springY,
+            translateX: "-50%",
+            translateY: "-50%",
           }}
           data-testid="expanding-circle"
         />
