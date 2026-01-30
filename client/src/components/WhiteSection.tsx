@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
@@ -13,7 +13,6 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
-  logoSequenceProgress: number;
 }
 
 const projectLogos: Record<string, string> = {
@@ -23,16 +22,14 @@ const projectLogos: Record<string, string> = {
   ticking: tickingLogo,
 };
 
-const logoSequence = ['empty', 'current', 'spacejump', 'eventify', 'ticking', 'empty'] as const;
-
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, logoSequenceProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
   const maxSize = 460;
-  const circleSize = minSize + (maxSize - minSize) * Math.min(1, circleProgress);
+  const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
@@ -41,48 +38,6 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
-
-  // Calculate current logo stage based on logoSequenceProgress
-  // 6 stages: empty -> current -> spacejump -> eventify -> ticking -> empty (final)
-  const currentStage = useMemo(() => {
-    if (logoSequenceProgress <= 0) return 0;
-    if (logoSequenceProgress >= 1) return 5;
-    // Each stage takes 1/5 of the progress (5 transitions)
-    return Math.min(5, Math.floor(logoSequenceProgress * 5));
-  }, [logoSequenceProgress]);
-
-  // Calculate position within current stage (0-1)
-  const stageProgress = useMemo(() => {
-    if (logoSequenceProgress <= 0) return 0;
-    if (logoSequenceProgress >= 1) return 1;
-    const stageSize = 0.2; // 1/5
-    return (logoSequenceProgress % stageSize) / stageSize;
-  }, [logoSequenceProgress]);
-
-  // Current and next logo in sequence
-  const currentLogo = logoSequence[currentStage];
-  const nextLogo = logoSequence[Math.min(currentStage + 1, 5)];
-
-  // Calculate Y positions for outgoing and incoming circles
-  // Outgoing circle moves from center (0) to top (-100vh) and fades
-  // Incoming circle moves from bottom (100vh) to center (0)
-  const outgoingY = stageProgress * -window.innerHeight;
-  const incomingY = (1 - stageProgress) * window.innerHeight;
-  const outgoingOpacity = 1 - stageProgress;
-  const incomingOpacity = stageProgress;
-
-  // Determine which project name should have the active (hover) state based on current displayed logo
-  const activeProjectFromSequence = useMemo(() => {
-    if (logoSequenceProgress <= 0) return null;
-    if (logoSequenceProgress >= 1) return null;
-    
-    // When a logo is transitioning in (stageProgress > 0.5), show hover for the incoming logo
-    // When a logo is centered (stageProgress around 0), show hover for current logo
-    const effectiveLogo = stageProgress > 0.5 ? nextLogo : currentLogo;
-    
-    if (effectiveLogo === 'empty') return null;
-    return effectiveLogo;
-  }, [logoSequenceProgress, stageProgress, currentLogo, nextLogo]);
 
   useEffect(() => {
     let animationId: number;
@@ -97,9 +52,8 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
         const newX = prev.x + dx * easing;
         const newY = prev.y + dy * easing;
         
-        // Only add trail when fully expanded and not in logo sequence
         frameCount++;
-        if (frameCount % 2 === 0 && isFullyExpanded && logoSequenceProgress <= 0) {
+        if (frameCount % 2 === 0 && isFullyExpanded) {
           const distMoved = Math.sqrt(
             Math.pow(newX - lastTrailPos.current.x, 2) + 
             Math.pow(newY - lastTrailPos.current.y, 2)
@@ -132,7 +86,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
     animationId = requestAnimationFrame(smoothFollow);
     
     return () => cancelAnimationFrame(animationId);
-  }, [isFullyExpanded, logoSequenceProgress]);
+  }, [isFullyExpanded]);
 
   useEffect(() => {
     if (trail.length === 0) return;
@@ -195,60 +149,6 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
     };
   }, [isFullyExpanded]);
 
-  // Render a single circle with optional logo
-  const renderCircle = (logoKey: string | null, yOffset: number, opacity: number, key: string) => {
-    const centerX = window.innerWidth / 2 + smoothOffset.x;
-    const centerY = window.innerHeight / 2 + smoothOffset.y + yOffset;
-    
-    return (
-      <g key={key} style={{ opacity }}>
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={maxSize / 2}
-          fill="black"
-        />
-      </g>
-    );
-  };
-
-  // Render logo for a circle
-  const renderLogo = (logoKey: string, yOffset: number, opacity: number) => {
-    if (logoKey === 'empty' || !projectLogos[logoKey]) return null;
-    
-    const logoSizePercent = (logoKey === 'current' || logoKey === 'ticking') ? 0.9 : 0.7;
-    
-    return (
-      <div
-        className="absolute pointer-events-none flex items-center justify-center"
-        style={{
-          left: `calc(50% + ${smoothOffset.x}px)`,
-          top: `calc(50% + ${smoothOffset.y + yOffset}px)`,
-          width: maxSize * 0.8,
-          height: maxSize * 0.8,
-          transform: `translate(-50%, -50%) translate(${logoOffset.x}px, ${logoOffset.y}px)`,
-          opacity,
-        }}
-      >
-        <img
-          src={projectLogos[logoKey]}
-          alt={logoKey}
-          className="object-contain"
-          style={{
-            filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
-            maxWidth: `${logoSizePercent * 100}%`,
-            maxHeight: `${logoSizePercent * 100}%`,
-          }}
-        />
-      </div>
-    );
-  };
-
-  // Determine if project name should have active styling
-  const isProjectActive = (project: string) => {
-    return activeProjectFromSequence === project || hoveredProject === project;
-  };
-
   return (
     <div
       className="fixed inset-0 z-20 bg-white pointer-events-none"
@@ -260,9 +160,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
       {progress >= 1 && (
         <>
           <div 
-            className={`absolute top-[28%] left-4 md:left-12 font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto transition-all duration-200 ${
-              isProjectActive('current') ? 'bg-black text-white px-3 py-2 rounded-lg' : 'text-black'
-            }`}
+            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -271,9 +169,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
             Current
           </div>
           <div 
-            className={`absolute top-[28%] right-4 md:right-12 font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto transition-all duration-200 ${
-              isProjectActive('spacejump') ? 'bg-black text-white px-3 py-2 rounded-lg' : 'text-black'
-            }`}
+            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('spacejump')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -282,9 +178,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
             Space Jump
           </div>
           <div 
-            className={`absolute bottom-[28%] left-4 md:left-12 font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto transition-all duration-200 ${
-              isProjectActive('eventify') ? 'bg-black text-white px-3 py-2 rounded-lg' : 'text-black'
-            }`}
+            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('eventify')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -293,9 +187,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
             Eventify
           </div>
           <div 
-            className={`absolute bottom-[28%] right-4 md:right-12 font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto transition-all duration-200 ${
-              isProjectActive('ticking') ? 'bg-black text-white px-3 py-2 rounded-lg' : 'text-black'
-            }`}
+            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('ticking')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -308,7 +200,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
 
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ filter: logoSequenceProgress <= 0 ? 'url(#goo)' : 'none' }}
+        style={{ filter: 'url(#goo)' }}
       >
         <defs>
           <filter id="goo">
@@ -323,8 +215,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
           </filter>
         </defs>
         
-        {/* Mercury trail - only when not in logo sequence */}
-        {logoSequenceProgress <= 0 && trail.map((point, index) => {
+        {trail.map((point, index) => {
           const opacity = (index + 1) / trail.length * 0.7;
           const scale = 0.85 + (index / trail.length) * 0.15;
           const centerX = window.innerWidth / 2 + point.x;
@@ -342,8 +233,7 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
           );
         })}
         
-        {/* Initial circle expansion - before logo sequence */}
-        {circleProgress > 0 && logoSequenceProgress <= 0 && (
+        {circleProgress > 0 && (
           <circle
             cx={window.innerWidth / 2 + smoothOffset.x}
             cy={window.innerHeight / 2 + smoothOffset.y}
@@ -351,39 +241,10 @@ export function WhiteSection({ progress, circleProgress, logoSequenceProgress }:
             fill="black"
           />
         )}
-
-        {/* Logo sequence circles */}
-        {logoSequenceProgress > 0 && logoSequenceProgress < 1 && (
-          <>
-            {/* Outgoing circle (current logo moving up) */}
-            {renderCircle(currentLogo === 'empty' ? null : currentLogo, outgoingY, outgoingOpacity, 'outgoing')}
-            
-            {/* Incoming circle (next logo moving up from bottom) */}
-            {renderCircle(nextLogo === 'empty' ? null : nextLogo, incomingY, incomingOpacity, 'incoming')}
-          </>
-        )}
-
-        {/* Final empty circle - stays at center */}
-        {logoSequenceProgress >= 1 && (
-          <circle
-            cx={window.innerWidth / 2 + smoothOffset.x}
-            cy={window.innerHeight / 2 + smoothOffset.y}
-            r={maxSize / 2}
-            fill="black"
-          />
-        )}
       </svg>
 
-      {/* Logos for sequence circles */}
-      {logoSequenceProgress > 0 && logoSequenceProgress < 1 && (
-        <>
-          {currentLogo !== 'empty' && renderLogo(currentLogo, outgoingY, outgoingOpacity)}
-          {nextLogo !== 'empty' && renderLogo(nextLogo, incomingY, incomingOpacity)}
-        </>
-      )}
-
-      {/* Logo display on hover - only when not in logo sequence */}
-      {hoveredProject && logoSequenceProgress <= 0 && circleProgress >= 1 && (
+      {/* Logo display inside circle - no mercury effect */}
+      {hoveredProject && circleProgress >= 1 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
