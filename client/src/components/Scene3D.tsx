@@ -11,6 +11,7 @@ interface Scene3DProps {
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
+  onCircleProgress?: (progress: number) => void;
 }
 
 function useStaticTexture() {
@@ -546,9 +547,10 @@ interface ScrollSceneProps {
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
+  onCircleProgress?: (progress: number) => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
@@ -556,6 +558,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
+  const circleStart = 0.94;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -616,6 +619,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       onWhiteSectionProgress?.(Math.min(1, whiteProgress));
     } else {
       onWhiteSectionProgress?.(0);
+    }
+
+    if (offset > circleStart) {
+      const circleProgress = (offset - circleStart) / (1 - circleStart);
+      onCircleProgress?.(Math.min(1, circleProgress));
+    } else {
+      onCircleProgress?.(0);
     }
   });
 
@@ -683,7 +693,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -706,6 +716,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
               onWorkSectionChange={onWorkSectionChange}
               onScrollProgress={onScrollProgress}
               onWhiteSectionProgress={onWhiteSectionProgress}
+              onCircleProgress={onCircleProgress}
             />
           </ScrollControls>
         </Suspense>
