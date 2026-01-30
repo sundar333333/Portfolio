@@ -21,6 +21,7 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
+  const [logoScrollProgress, setLogoScrollProgress] = useState(0);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -38,6 +39,10 @@ export default function Home() {
 
   const handleCircleProgress = useCallback((progress: number) => {
     setCircleProgress(progress);
+  }, []);
+
+  const handleLogoScrollProgress = useCallback((progress: number) => {
+    setLogoScrollProgress(progress);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -80,13 +85,14 @@ export default function Home() {
             onScrollProgress={handleScrollProgress}
             onWhiteSectionProgress={handleWhiteSectionProgress}
             onCircleProgress={handleCircleProgress}
+            onLogoScrollProgress={handleLogoScrollProgress}
           />
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} logoScrollProgress={logoScrollProgress} />
 
           <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1} />
