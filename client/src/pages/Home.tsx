@@ -80,7 +80,7 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection visible={whiteSectionProgress > 0} progress={whiteSectionProgress} />
+          <WhiteSection progress={whiteSectionProgress} />
 
           <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
             <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1} />
