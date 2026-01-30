@@ -246,7 +246,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {/* Logo display inside circle - no mercury effect */}
       {hoveredProject && circleProgress >= 1 && (
         <div
-          className="absolute pointer-events-none flex flex-col items-center justify-center transition-opacity duration-300"
+          className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
             left: `calc(50% + ${smoothOffset.x}px)`,
             top: `calc(50% + ${smoothOffset.y}px)`,
@@ -264,12 +264,6 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
               filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
             }}
           />
-          <span
-            className="text-white text-lg md:text-xl mt-2 capitalize"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
-          >
-            {hoveredProject === 'spacejump' ? 'Space Jump' : hoveredProject}
-          </span>
         </div>
       )}
     </div>
