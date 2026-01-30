@@ -586,6 +586,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const [showCubeSection, setShowCubeSection] = useState(false);
   const [cubeZoomProgress, setCubeZoomProgress] = useState(0);
   const [blackToWhiteProgress, setBlackToWhiteProgress] = useState(0);
+  const [blackWipeProgress, setBlackWipeProgress] = useState(0);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
@@ -609,7 +610,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     const startZ = 1.8;
     const screenZ = 0.3;
     const tvScreenY = 0.22;
-    const cubeViewZ = 5;
+    const cubeViewZ = 12;
     const cubeViewY = 0;
     
     let targetZ: number;
