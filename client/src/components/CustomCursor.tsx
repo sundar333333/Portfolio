@@ -7,7 +7,11 @@ interface TrailPoint {
   id: string;
 }
 
-const trailColors = [
+interface CustomCursorProps {
+  isDark?: boolean;
+}
+
+const lightTrailColors = [
   "rgba(255, 100, 100, 0.8)",
   "rgba(255, 200, 100, 0.7)",
   "rgba(100, 255, 100, 0.6)",
@@ -15,9 +19,18 @@ const trailColors = [
   "rgba(200, 100, 255, 0.4)",
 ];
 
+const darkTrailColors = [
+  "rgba(100, 50, 50, 0.8)",
+  "rgba(150, 100, 50, 0.7)",
+  "rgba(50, 100, 50, 0.6)",
+  "rgba(50, 100, 150, 0.5)",
+  "rgba(100, 50, 150, 0.4)",
+];
+
 let globalTrailId = 0;
 
-export function CustomCursor() {
+export function CustomCursor({ isDark = false }: CustomCursorProps) {
+  const trailColors = isDark ? darkTrailColors : lightTrailColors;
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   
@@ -117,15 +130,19 @@ export function CustomCursor() {
         data-testid="cursor-main"
       >
         <div
-          className="w-10 h-10 rounded-full border border-white/30"
+          className={`w-10 h-10 rounded-full border transition-colors duration-300 ${isDark ? 'border-black/30' : 'border-white/30'}`}
           style={{
-            background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, transparent 70%)",
+            background: isDark 
+              ? "radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.08) 50%, transparent 70%)"
+              : "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, transparent 70%)",
             backdropFilter: "blur(2px)",
-            boxShadow: "0 0 20px rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.05)",
+            boxShadow: isDark
+              ? "0 0 20px rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.05)"
+              : "0 0 20px rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.05)",
           }}
         />
         <div
-          className="absolute top-1/2 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60"
+          className={`absolute top-1/2 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-300 ${isDark ? 'bg-black/60' : 'bg-white/60'}`}
         />
       </motion.div>
     </div>
