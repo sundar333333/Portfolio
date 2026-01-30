@@ -10,6 +10,7 @@ interface Scene3DProps {
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
+  onWhiteSectionProgress?: (progress: number) => void;
 }
 
 function useStaticTexture() {
@@ -544,15 +545,17 @@ interface ScrollSceneProps {
   isVideoPlaying: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
+  onWhiteSectionProgress?: (progress: number) => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
+  const whiteSectionStart = 0.88;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -606,6 +609,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       onScrollProgress?.(workProgress);
     } else {
       onScrollProgress?.(0);
+    }
+
+    if (offset > whiteSectionStart) {
+      const whiteProgress = (offset - whiteSectionStart) / (1 - whiteSectionStart);
+      onWhiteSectionProgress?.(Math.min(1, whiteProgress));
+    } else {
+      onWhiteSectionProgress?.(0);
     }
   });
 
@@ -673,7 +683,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -695,6 +705,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
               isVideoPlaying={isVideoPlaying}
               onWorkSectionChange={onWorkSectionChange}
               onScrollProgress={onScrollProgress}
+              onWhiteSectionProgress={onWhiteSectionProgress}
             />
           </ScrollControls>
         </Suspense>

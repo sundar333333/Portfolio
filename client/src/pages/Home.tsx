@@ -8,6 +8,7 @@ import { ProjectInfoOverlay } from "@/components/WorkSection";
 import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
+import { WhiteSection } from "@/components/WhiteSection";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,6 +19,7 @@ export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -27,6 +29,10 @@ export default function Home() {
 
   const handleScrollProgress = useCallback((progress: number) => {
     setScrollProgress(progress);
+  }, []);
+
+  const handleWhiteSectionProgress = useCallback((progress: number) => {
+    setWhiteSectionProgress(progress);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -67,14 +73,17 @@ export default function Home() {
             isVideoPlaying={isVideoPlaying}
             onWorkSectionChange={handleWorkSectionChange}
             onScrollProgress={handleScrollProgress}
+            onWhiteSectionProgress={handleWhiteSectionProgress}
           />
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
-            <Header onTextHover={handleTextHover} />
+          <WhiteSection visible={whiteSectionProgress > 0} progress={whiteSectionProgress} />
+
+          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
+            <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1} />
           </div>
 
           <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
