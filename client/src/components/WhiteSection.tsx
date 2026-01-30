@@ -25,9 +25,9 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       const gamma = e.gamma || 0;
       const beta = e.beta || 0;
       
-      const maxOffset = 80;
-      const x = Math.max(-maxOffset, Math.min(maxOffset, gamma * 2.5));
-      const y = Math.max(-maxOffset, Math.min(maxOffset, (beta - 45) * 1.8));
+      const maxOffset = 150;
+      const x = Math.max(-maxOffset, Math.min(maxOffset, gamma * 5));
+      const y = Math.max(-maxOffset, Math.min(maxOffset, (beta - 45) * 4));
       
       setGyroOffset({ x, y });
     };
@@ -36,7 +36,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       
-      const maxOffset = 60;
+      const maxOffset = 120;
       const x = ((e.clientX - centerX) / centerX) * maxOffset;
       const y = ((e.clientY - centerY) / centerY) * maxOffset;
       
