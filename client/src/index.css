@@ -304,8 +304,7 @@
   border-radius: 8px;
 }
 
-.project-name-hover:hover,
-.project-name-active {
+.project-name-hover:hover {
   background-color: black;
   color: white !important;
 }

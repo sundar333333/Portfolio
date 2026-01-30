@@ -13,7 +13,6 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
-  logoScrollProgress?: number;
 }
 
 const projectLogos: Record<string, string> = {
@@ -23,11 +22,9 @@ const projectLogos: Record<string, string> = {
   ticking: tickingLogo,
 };
 
-const logoSequence = ['empty', 'current', 'spacejump', 'eventify', 'ticking', 'empty_end'];
-
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -38,29 +35,9 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-  const [scrollActiveProject, setScrollActiveProject] = useState<string | null>(null);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
-  const isScrollingLogos = logoScrollProgress > 0 && logoScrollProgress < 1;
-
-  // Calculate which logo is showing during scroll
-  const segmentSize = 1 / logoSequence.length;
-  const currentSegment = Math.min(Math.floor(logoScrollProgress / segmentSize), logoSequence.length - 1);
-  const segmentProgress = (logoScrollProgress - currentSegment * segmentSize) / segmentSize;
-  
-  // Get current and next logo for transition
-  const currentScrollLogo = logoSequence[currentSegment];
-  const isTransitioning = logoScrollProgress > 0 && logoScrollProgress < 1;
-
-  // Update scroll active project for hover effect
-  useEffect(() => {
-    if (isTransitioning && currentScrollLogo && currentScrollLogo !== 'empty' && currentScrollLogo !== 'empty_end') {
-      setScrollActiveProject(currentScrollLogo);
-    } else {
-      setScrollActiveProject(null);
-    }
-  }, [currentScrollLogo, isTransitioning]);
 
   useEffect(() => {
     let animationId: number;
@@ -76,7 +53,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
         const newY = prev.y + dy * easing;
         
         frameCount++;
-        if (frameCount % 2 === 0 && isFullyExpanded && !isScrollingLogos) {
+        if (frameCount % 2 === 0 && isFullyExpanded) {
           const distMoved = Math.sqrt(
             Math.pow(newX - lastTrailPos.current.x, 2) + 
             Math.pow(newY - lastTrailPos.current.y, 2)
@@ -109,7 +86,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
     animationId = requestAnimationFrame(smoothFollow);
     
     return () => cancelAnimationFrame(animationId);
-  }, [isFullyExpanded, isScrollingLogos]);
+  }, [isFullyExpanded]);
 
   useEffect(() => {
     if (trail.length === 0) return;
@@ -172,39 +149,6 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
     };
   }, [isFullyExpanded]);
 
-  // Calculate circle Y position during scroll animation
-  const getScrollCircleY = (progress: number) => {
-    // 0-0.5: come from bottom to center
-    // 0.5-1: go from center to top and fade
-    if (progress < 0.5) {
-      // Coming up: from 150% to 50%
-      const p = progress / 0.5;
-      return 100 - p * 50; // 100 -> 50
-    } else {
-      // Going up: from 50% to 0%
-      const p = (progress - 0.5) / 0.5;
-      return 50 - p * 50; // 50 -> 0
-    }
-  };
-
-  const getScrollCircleOpacity = (progress: number) => {
-    // Fade in first half, fade out second half
-    if (progress < 0.3) {
-      return progress / 0.3;
-    } else if (progress > 0.7) {
-      return 1 - (progress - 0.7) / 0.3;
-    }
-    return 1;
-  };
-
-  // Determine which logo to display (hover or scroll)
-  const activeDisplayLogo = isScrollingLogos 
-    ? (currentScrollLogo !== 'empty' && currentScrollLogo !== 'empty_end' ? currentScrollLogo : null)
-    : hoveredProject;
-
-  // Combine hover and scroll active project for visual effect on names
-  const highlightedProject = scrollActiveProject || hoveredProject;
-
   return (
     <div
       className="fixed inset-0 z-20 bg-white pointer-events-none"
@@ -216,7 +160,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
       {progress >= 1 && (
         <>
           <div 
-            className={`project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto transition-all duration-300 ${highlightedProject === 'current' ? 'project-name-active' : ''}`}
+            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -225,7 +169,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
             Current
           </div>
           <div 
-            className={`project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto transition-all duration-300 ${highlightedProject === 'spacejump' ? 'project-name-active' : ''}`}
+            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('spacejump')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -234,7 +178,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
             Space Jump
           </div>
           <div 
-            className={`project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto transition-all duration-300 ${highlightedProject === 'eventify' ? 'project-name-active' : ''}`}
+            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('eventify')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -243,7 +187,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
             Eventify
           </div>
           <div 
-            className={`project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto transition-all duration-300 ${highlightedProject === 'ticking' ? 'project-name-active' : ''}`}
+            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('ticking')}
             onMouseLeave={() => setHoveredProject(null)}
@@ -271,8 +215,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
           </filter>
         </defs>
         
-        {/* Trail circles - only show when not scrolling */}
-        {!isScrollingLogos && trail.map((point, index) => {
+        {trail.map((point, index) => {
           const opacity = (index + 1) / trail.length * 0.7;
           const scale = 0.85 + (index / trail.length) * 0.15;
           const centerX = window.innerWidth / 2 + point.x;
@@ -290,8 +233,7 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
           );
         })}
         
-        {/* Main circle - when not scrolling logos */}
-        {circleProgress > 0 && !isScrollingLogos && (
+        {circleProgress > 0 && (
           <circle
             cx={window.innerWidth / 2 + smoothOffset.x}
             cy={window.innerHeight / 2 + smoothOffset.y}
@@ -299,21 +241,10 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
             fill="black"
           />
         )}
-
-        {/* Scrolling circle animation */}
-        {isScrollingLogos && (
-          <circle
-            cx={window.innerWidth / 2}
-            cy={window.innerHeight * (getScrollCircleY(segmentProgress) / 100)}
-            r={maxSize / 2}
-            fill="black"
-            opacity={getScrollCircleOpacity(segmentProgress)}
-          />
-        )}
       </svg>
 
-      {/* Logo display inside circle - when hovering and not scrolling */}
-      {!isScrollingLogos && hoveredProject && circleProgress >= 1 && (
+      {/* Logo display inside circle - no mercury effect */}
+      {hoveredProject && circleProgress >= 1 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
@@ -328,38 +259,9 @@ export function WhiteSection({ progress, circleProgress, logoScrollProgress = 0 
           <img
             src={projectLogos[hoveredProject]}
             alt={hoveredProject}
-            className="object-contain"
+            className="max-w-full max-h-[70%] object-contain"
             style={{
               filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
-              maxWidth: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
-              maxHeight: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
-            }}
-          />
-        </div>
-      )}
-
-      {/* Logo display during scroll animation */}
-      {isScrollingLogos && activeDisplayLogo && (
-        <div
-          className="absolute pointer-events-none flex items-center justify-center"
-          style={{
-            left: '50%',
-            top: `${getScrollCircleY(segmentProgress)}%`,
-            width: maxSize * 0.8,
-            height: maxSize * 0.8,
-            transform: 'translate(-50%, -50%)',
-            opacity: getScrollCircleOpacity(segmentProgress),
-          }}
-          data-testid="scroll-logo"
-        >
-          <img
-            src={projectLogos[activeDisplayLogo]}
-            alt={activeDisplayLogo}
-            className="object-contain"
-            style={{
-              filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
-              maxWidth: (activeDisplayLogo === 'current' || activeDisplayLogo === 'ticking') ? '90%' : '70%',
-              maxHeight: (activeDisplayLogo === 'current' || activeDisplayLogo === 'ticking') ? '90%' : '70%',
             }}
           />
         </div>
