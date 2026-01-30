@@ -132,6 +132,39 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       }}
       data-testid="white-section"
     >
+      {progress >= 1 && (
+        <>
+          <div 
+            className="absolute top-24 left-8 text-black font-bold text-2xl md:text-3xl"
+            style={{ fontFamily: "'Archivo Black', sans-serif" }}
+            data-testid="project-top-left"
+          >
+            Current
+          </div>
+          <div 
+            className="absolute top-24 right-8 text-black font-bold text-2xl md:text-3xl text-right"
+            style={{ fontFamily: "'Archivo Black', sans-serif" }}
+            data-testid="project-top-right"
+          >
+            Space Jump
+          </div>
+          <div 
+            className="absolute bottom-24 left-8 text-black font-bold text-2xl md:text-3xl"
+            style={{ fontFamily: "'Archivo Black', sans-serif" }}
+            data-testid="project-bottom-left"
+          >
+            Eventify
+          </div>
+          <div 
+            className="absolute bottom-24 right-8 text-black font-bold text-2xl md:text-3xl text-right"
+            style={{ fontFamily: "'Archivo Black', sans-serif" }}
+            data-testid="project-bottom-right"
+          >
+            Ticking
+          </div>
+        </>
+      )}
+
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ filter: 'url(#goo)' }}
