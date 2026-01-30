@@ -808,7 +808,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
       lookAtY = tvScreenY;
     } else if (offset > zoomOutThreshold) {
       const zoomOutProgress = (offset - zoomOutThreshold) / (1 - zoomOutThreshold);
-      targetZ = screenZ + zoomOutProgress * (startZ - screenZ) * 1.2;
+      targetZ = screenZ + zoomOutProgress * (startZ - screenZ) * 2.5;
       targetY = arcadeScreenY;
       lookAtY = arcadeScreenY;
     } else {
