@@ -135,28 +135,28 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {progress >= 1 && (
         <>
           <div 
-            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer"
+            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-top-left"
           >
             Current
           </div>
           <div 
-            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer"
+            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-top-right"
           >
             Space Jump
           </div>
           <div 
-            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer"
+            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-bottom-left"
           >
             Eventify
           </div>
           <div 
-            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer"
+            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             data-testid="project-bottom-right"
           >
