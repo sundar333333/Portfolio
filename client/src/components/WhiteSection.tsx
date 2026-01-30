@@ -259,9 +259,11 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           <img
             src={projectLogos[hoveredProject]}
             alt={hoveredProject}
-            className="max-w-full max-h-[70%] object-contain"
+            className="object-contain"
             style={{
               filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
+              maxWidth: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
+              maxHeight: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
             }}
           />
         </div>
