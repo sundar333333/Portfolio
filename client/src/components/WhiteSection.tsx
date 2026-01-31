@@ -24,10 +24,10 @@ const projectLogos: Record<string, string> = {
 };
 
 const projectCaseStudies: Record<string, string> = {
-  current: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2F6D1cHJn9cNle6SrkOGKiwb%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D7-21388%26viewport%3D-16667%252C-1615%252C0.29%26t%3DA9IM3Eqf4hN8nX3w-1%26scaling%3Dscale-down-width%26content-scaling%3Dresponsive%26hide-ui%3D1",
-  spacejump: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FlzrqO3p3AxxkgrYxlnSuVO%2FSpace-Jump-Game-UX-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3Dyfoxkj3qDi0cwGa7-1%26scaling%3Dscale-down-width%26content-scaling%3Dresponsive%26hide-ui%3D1",
-  eventify: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FvLXe2NKquLXGL0rg0BcE2E%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3DzUPLaoZt8Ni95D7f-1%26scaling%3Dscale-down-width%26content-scaling%3Dresponsive%26hide-ui%3D1",
-  ticking: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FXZ8kBuNApBlz6LXvmpZvaP%2FTicking-Application-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26starting-point-node-id%3D1%253A2%26t%3Doya6bJf77Y9QDoi5-1%26scaling%3Dscale-down-width%26content-scaling%3Dresponsive%26hide-ui%3D1",
+  current: "https://www.figma.com/proto/6D1cHJn9cNle6SrkOGKiwb/Untitled?page-id=0%3A1&node-id=7-21388&viewport=-16667%2C-1615%2C0.29&t=A9IM3Eqf4hN8nX3w-1&scaling=scale-down-width&content-scaling=responsive&hide-ui=1",
+  spacejump: "https://www.figma.com/proto/lzrqO3p3AxxkgrYxlnSuVO/Space-Jump-Game-UX-Case-study?page-id=0%3A1&node-id=1-2&t=yfoxkj3qDi0cwGa7-1&scaling=scale-down-width&content-scaling=responsive&hide-ui=1",
+  eventify: "https://www.figma.com/proto/vLXe2NKquLXGL0rg0BcE2E/Untitled?page-id=0%3A1&node-id=1-2&t=zUPLaoZt8Ni95D7f-1&scaling=scale-down-width&content-scaling=responsive&hide-ui=1",
+  ticking: "https://www.figma.com/proto/XZ8kBuNApBlz6LXvmpZvaP/Ticking-Application-Case-study?page-id=0%3A1&node-id=1-2&starting-point-node-id=1%3A2&t=oya6bJf77Y9QDoi5-1&scaling=scale-down-width&content-scaling=responsive&hide-ui=1",
 };
 
 let trailId = 0;
@@ -309,12 +309,10 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             className="border-0"
             style={{
               position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%) scale(1.3)',
+              top: 0,
+              left: 0,
               width: '100vw',
               height: '100vh',
-              maxWidth: 'none',
             }}
             allowFullScreen
             title={`${openCaseStudy} Case Study`}
