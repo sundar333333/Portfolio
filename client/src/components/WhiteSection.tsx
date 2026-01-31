@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
@@ -22,6 +23,13 @@ const projectLogos: Record<string, string> = {
   ticking: tickingLogo,
 };
 
+const projectCaseStudies: Record<string, string> = {
+  current: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2F6D1cHJn9cNle6SrkOGKiwb%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D7-21388%26viewport%3D-16667%252C-1615%252C0.29%26t%3DA9IM3Eqf4hN8nX3w-1%26scaling%3Dmin-zoom%26content-scaling%3Dfixed",
+  spacejump: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FlzrqO3p3AxxkgrYxlnSuVO%2FSpace-Jump-Game-UX-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3Dyfoxkj3qDi0cwGa7-1",
+  eventify: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FvLXe2NKquLXGL0rg0BcE2E%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3DzUPLaoZt8Ni95D7f-1",
+  ticking: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FXZ8kBuNApBlz6LXvmpZvaP%2FTicking-Application-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26starting-point-node-id%3D1%253A2%26t%3Doya6bJf77Y9QDoi5-1",
+};
+
 let trailId = 0;
 
 export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
@@ -35,6 +43,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+  const [openCaseStudy, setOpenCaseStudy] = useState<string | null>(null);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
@@ -157,13 +166,14 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       }}
       data-testid="white-section"
     >
-      {progress >= 1 && (
+      {progress >= 1 && !openCaseStudy && (
         <>
           <div 
             className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
+            onClick={() => setOpenCaseStudy('current')}
             data-testid="project-top-left"
           >
             Current
@@ -173,6 +183,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('spacejump')}
             onMouseLeave={() => setHoveredProject(null)}
+            onClick={() => setOpenCaseStudy('spacejump')}
             data-testid="project-top-right"
           >
             Space Jump
@@ -182,6 +193,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('eventify')}
             onMouseLeave={() => setHoveredProject(null)}
+            onClick={() => setOpenCaseStudy('eventify')}
             data-testid="project-bottom-left"
           >
             Eventify
@@ -191,6 +203,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('ticking')}
             onMouseLeave={() => setHoveredProject(null)}
+            onClick={() => setOpenCaseStudy('ticking')}
             data-testid="project-bottom-right"
           >
             Ticking
@@ -244,7 +257,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       </svg>
 
       {/* Logo display inside circle - no mercury effect */}
-      {hoveredProject && circleProgress >= 1 && (
+      {hoveredProject && circleProgress >= 1 && !openCaseStudy && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
@@ -265,6 +278,28 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
               maxWidth: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
               maxHeight: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
             }}
+          />
+        </div>
+      )}
+
+      {/* Case Study Viewer */}
+      {openCaseStudy && (
+        <div 
+          className="fixed inset-0 z-50 bg-white pointer-events-auto"
+          data-testid="case-study-viewer"
+        >
+          <button
+            onClick={() => setOpenCaseStudy(null)}
+            className="absolute top-6 right-6 z-50 w-12 h-12 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+            data-testid="close-case-study"
+          >
+            <X size={24} />
+          </button>
+          <iframe
+            src={projectCaseStudies[openCaseStudy]}
+            className="w-full h-full border-0"
+            allowFullScreen
+            title={`${openCaseStudy} Case Study`}
           />
         </div>
       )}
