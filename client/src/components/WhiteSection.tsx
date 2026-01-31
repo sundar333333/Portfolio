@@ -13,7 +13,6 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
-  currentTransitionProgress: number;
 }
 
 const projectLogos: Record<string, string> = {
@@ -25,7 +24,7 @@ const projectLogos: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, currentTransitionProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -36,37 +35,9 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-  const [viewport, setViewport] = useState({ width: typeof window !== 'undefined' ? window.innerWidth : 1920, height: typeof window !== 'undefined' ? window.innerHeight : 1080 });
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
-  const isCurrentTransitionActive = currentTransitionProgress > 0;
-  const isNewCircleAtCenter = currentTransitionProgress >= 0.95;
-
-  // Handle viewport resize
-  useEffect(() => {
-    const handleResize = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Original circle moves up and fades during current transition
-  const originalCircleY = isCurrentTransitionActive 
-    ? (viewport.height / 2) - (currentTransitionProgress * viewport.height * 0.6)
-    : viewport.height / 2;
-  const originalCircleOpacity = isCurrentTransitionActive 
-    ? Math.max(0, 1 - currentTransitionProgress * 1.5)
-    : 1;
-  
-  // New circle with Current logo comes from bottom
-  const newCircleY = isCurrentTransitionActive
-    ? viewport.height + 230 - (currentTransitionProgress * (viewport.height / 2 + 230))
-    : viewport.height + 230;
-  const newCircleOpacity = isCurrentTransitionActive
-    ? Math.min(1, currentTransitionProgress * 2)
-    : 0;
 
   useEffect(() => {
     let animationId: number;
@@ -145,8 +116,8 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const centerX = viewport.width / 2;
-      const centerY = viewport.height / 2;
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
       
       const maxOffset = 80;
       const x = ((e.clientX - centerX) / centerX) * maxOffset;
@@ -176,7 +147,7 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
       window.removeEventListener('deviceorientation', handleDeviceOrientation);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [isFullyExpanded, viewport]);
+  }, [isFullyExpanded]);
 
   return (
     <div
@@ -189,13 +160,8 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
       {progress >= 1 && (
         <>
           <div 
-            className={`project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto ${isNewCircleAtCenter ? 'current-active' : ''}`}
-            style={{ 
-              fontFamily: "'Orbitron', sans-serif",
-              backgroundColor: isNewCircleAtCenter ? 'black' : undefined,
-              color: isNewCircleAtCenter ? 'white' : undefined,
-              padding: isNewCircleAtCenter ? '0.25rem 0.75rem' : undefined,
-            }}
+            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
             data-testid="project-top-left"
@@ -252,53 +218,40 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
         {trail.map((point, index) => {
           const opacity = (index + 1) / trail.length * 0.7;
           const scale = 0.85 + (index / trail.length) * 0.15;
-          const centerX = viewport.width / 2 + point.x;
-          const centerY = viewport.height / 2 + point.y;
-          const trailSize = isCurrentTransitionActive ? maxSize : circleSize;
+          const centerX = window.innerWidth / 2 + point.x;
+          const centerY = window.innerHeight / 2 + point.y;
           
           return (
             <circle
               key={point.id}
               cx={centerX}
               cy={centerY}
-              r={(trailSize * scale) / 2}
+              r={(circleSize * scale) / 2}
               fill="black"
-              opacity={opacity * originalCircleOpacity}
+              opacity={opacity}
             />
           );
         })}
         
-        {circleProgress > 0 && originalCircleOpacity > 0 && (
+        {circleProgress > 0 && (
           <circle
-            cx={viewport.width / 2 + smoothOffset.x}
-            cy={originalCircleY + smoothOffset.y}
-            r={(isCurrentTransitionActive ? maxSize : circleSize) / 2}
+            cx={window.innerWidth / 2 + smoothOffset.x}
+            cy={window.innerHeight / 2 + smoothOffset.y}
+            r={circleSize / 2}
             fill="black"
-            opacity={originalCircleOpacity}
-          />
-        )}
-        
-        {/* New circle with Current logo - comes from bottom */}
-        {isCurrentTransitionActive && newCircleOpacity > 0 && (
-          <circle
-            cx={viewport.width / 2 + smoothOffset.x}
-            cy={newCircleY + smoothOffset.y}
-            r={maxSize / 2}
-            fill="black"
-            opacity={newCircleOpacity}
           />
         )}
       </svg>
 
-      {/* Logo display inside original circle - before transition */}
-      {hoveredProject && circleProgress >= 1 && !isCurrentTransitionActive && (
+      {/* Logo display inside circle - no mercury effect */}
+      {hoveredProject && circleProgress >= 1 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
             left: `calc(50% + ${smoothOffset.x}px)`,
             top: `calc(50% + ${smoothOffset.y}px)`,
-            width: maxSize * 0.8,
-            height: maxSize * 0.8,
+            width: circleSize * 0.8,
+            height: circleSize * 0.8,
             transform: `translate(-50%, -50%) translate(${logoOffset.x}px, ${logoOffset.y}px)`,
           }}
           data-testid="project-logo"
@@ -311,33 +264,6 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
               filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
               maxWidth: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
               maxHeight: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
-            }}
-          />
-        </div>
-      )}
-
-      {/* Logo display inside the new circle during transition - shows Current by default, or hovered project */}
-      {isCurrentTransitionActive && newCircleOpacity > 0.3 && (
-        <div
-          className="absolute pointer-events-none flex items-center justify-center"
-          style={{
-            left: `calc(50% + ${smoothOffset.x}px)`,
-            top: `${newCircleY + smoothOffset.y}px`,
-            width: maxSize * 0.8,
-            height: maxSize * 0.8,
-            transform: `translate(-50%, -50%) translate(${logoOffset.x}px, ${logoOffset.y}px)`,
-            opacity: newCircleOpacity,
-          }}
-          data-testid="current-project-logo"
-        >
-          <img
-            src={hoveredProject ? projectLogos[hoveredProject] : currentLogo}
-            alt={hoveredProject || "Current"}
-            className="object-contain"
-            style={{
-              filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
-              maxWidth: ((hoveredProject === 'current' || hoveredProject === 'ticking') || !hoveredProject) ? '90%' : '70%',
-              maxHeight: ((hoveredProject === 'current' || hoveredProject === 'ticking') || !hoveredProject) ? '90%' : '70%',
             }}
           />
         </div>
