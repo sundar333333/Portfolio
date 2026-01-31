@@ -285,14 +285,11 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {/* Case Study Viewer */}
       {openCaseStudy && (
         <div 
-          className="fixed inset-0 z-[9999] pointer-events-auto"
+          className="fixed inset-0 z-[9999] pointer-events-auto overflow-hidden"
           style={{ 
             width: '100vw', 
             height: '100vh',
-            background: openCaseStudy === 'current' ? 'linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #8b5cf6 100%)' :
-                        openCaseStudy === 'ticking' ? 'linear-gradient(180deg, #f97316 0%, #ea580c 100%)' :
-                        openCaseStudy === 'spacejump' ? '#1a1a2e' :
-                        openCaseStudy === 'eventify' ? '#1a1a2e' : '#000'
+            background: '#000',
           }}
           data-testid="case-study-viewer"
         >
@@ -304,33 +301,22 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           >
             <X size={28} />
           </button>
-          <div 
+          <iframe
+            src={projectCaseStudies[openCaseStudy]}
+            className="border-0"
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              overflow: 'hidden',
-              clipPath: 'inset(0)',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '105vw',
+              height: '115vh',
+              minWidth: '105vw',
+              minHeight: '115vh',
             }}
-          >
-            <iframe
-              src={projectCaseStudies[openCaseStudy]}
-              className="border-0"
-              style={{
-                position: 'absolute',
-                top: '-56px',
-                left: '-56px',
-                right: '-56px',
-                bottom: '-56px',
-                width: 'calc(100% + 112px)',
-                height: 'calc(100% + 112px)',
-              }}
-              allowFullScreen
-              title={`${openCaseStudy} Case Study`}
-            />
-          </div>
+            allowFullScreen
+            title={`${openCaseStudy} Case Study`}
+          />
         </div>
       )}
     </div>
