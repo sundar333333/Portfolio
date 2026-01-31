@@ -13,6 +13,7 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
+  currentWorkProgress: number;
 }
 
 const projectLogos: Record<string, string> = {
@@ -24,12 +25,19 @@ const projectLogos: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, currentWorkProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
   const maxSize = 460;
-  const circleSize = minSize + (maxSize - minSize) * circleProgress;
+  const circleSize = minSize + (maxSize - minSize) * Math.min(1, circleProgress);
+  
+  // First ball moves upward as currentWorkProgress increases
+  const firstBallY = -currentWorkProgress * (window.innerHeight / 2 + maxSize);
+  
+  // Second ball (with Current Work logo) comes from bottom
+  const secondBallStartY = window.innerHeight / 2 + maxSize;
+  const secondBallY = secondBallStartY - currentWorkProgress * secondBallStartY;
   
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
@@ -157,8 +165,8 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       }}
       data-testid="white-section"
     >
-      {progress >= 1 && (
-        <>
+      {progress >= 1 && currentWorkProgress < 0.3 && (
+        <div style={{ opacity: 1 - currentWorkProgress * 3.33 }}>
           <div 
             className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
@@ -195,7 +203,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           >
             Ticking
           </div>
-        </>
+        </div>
       )}
 
       <svg 
@@ -219,7 +227,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           const opacity = (index + 1) / trail.length * 0.7;
           const scale = 0.85 + (index / trail.length) * 0.15;
           const centerX = window.innerWidth / 2 + point.x;
-          const centerY = window.innerHeight / 2 + point.y;
+          const centerY = window.innerHeight / 2 + point.y + firstBallY;
           
           return (
             <circle
@@ -236,29 +244,65 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
         {circleProgress > 0 && (
           <circle
             cx={window.innerWidth / 2 + smoothOffset.x}
-            cy={window.innerHeight / 2 + smoothOffset.y}
+            cy={window.innerHeight / 2 + smoothOffset.y + firstBallY}
             r={circleSize / 2}
+            fill="black"
+          />
+        )}
+        
+        {/* Second ball with Current Work logo coming from bottom */}
+        {currentWorkProgress > 0 && (
+          <circle
+            cx={window.innerWidth / 2}
+            cy={window.innerHeight / 2 + secondBallY}
+            r={maxSize / 2}
             fill="black"
           />
         )}
       </svg>
 
-      {/* Logo display inside circle - no mercury effect */}
-      {hoveredProject && circleProgress >= 1 && (
+      {/* Logo display inside first circle - no mercury effect */}
+      {hoveredProject && circleProgress >= 1 && currentWorkProgress < 0.3 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
             left: `calc(50% + ${smoothOffset.x}px)`,
-            top: `calc(50% + ${smoothOffset.y}px)`,
+            top: `calc(50% + ${smoothOffset.y + firstBallY}px)`,
             width: circleSize * 0.8,
             height: circleSize * 0.8,
             transform: `translate(-50%, -50%) translate(${logoOffset.x}px, ${logoOffset.y}px)`,
+            opacity: 1 - currentWorkProgress * 3.33,
           }}
           data-testid="project-logo"
         >
           <img
             src={projectLogos[hoveredProject]}
             alt={hoveredProject}
+            className="max-w-full max-h-[70%] object-contain"
+            style={{
+              filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Current Work logo inside second ball */}
+      {currentWorkProgress > 0 && (
+        <div
+          className="absolute pointer-events-none flex items-center justify-center"
+          style={{
+            left: '50%',
+            top: `calc(50% + ${secondBallY}px)`,
+            width: maxSize * 0.8,
+            height: maxSize * 0.8,
+            transform: 'translate(-50%, -50%)',
+            opacity: Math.min(1, currentWorkProgress * 2),
+          }}
+          data-testid="current-work-logo"
+        >
+          <img
+            src={currentLogo}
+            alt="Current Work"
             className="max-w-full max-h-[70%] object-contain"
             style={{
               filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))',
