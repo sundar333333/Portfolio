@@ -285,8 +285,15 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {/* Case Study Viewer */}
       {openCaseStudy && (
         <div 
-          className="fixed inset-0 z-[9999] bg-black pointer-events-auto overflow-hidden"
-          style={{ width: '100vw', height: '100vh' }}
+          className="fixed inset-0 z-[9999] pointer-events-auto overflow-hidden"
+          style={{ 
+            width: '100vw', 
+            height: '100vh',
+            background: openCaseStudy === 'current' ? 'linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #8b5cf6 100%)' :
+                        openCaseStudy === 'ticking' ? 'linear-gradient(180deg, #f97316 0%, #ea580c 100%)' :
+                        openCaseStudy === 'spacejump' ? '#1a1a2e' :
+                        openCaseStudy === 'eventify' ? '#1a1a2e' : '#000'
+          }}
           data-testid="case-study-viewer"
         >
           <button
@@ -303,9 +310,11 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             style={{
               position: 'absolute',
               top: 0,
-              left: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
               width: '100vw',
               height: 'calc(100vh + 60px)',
+              minWidth: '100%',
             }}
             allowFullScreen
             title={`${openCaseStudy} Case Study`}
