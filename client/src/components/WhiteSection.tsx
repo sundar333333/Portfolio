@@ -309,10 +309,10 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
             className="border-0"
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
+              top: '-48px',
+              left: '-48px',
+              width: 'calc(100vw + 96px)',
+              height: 'calc(100vh + 96px)',
             }}
             allowFullScreen
             title={`${openCaseStudy} Case Study`}
