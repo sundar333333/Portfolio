@@ -14,6 +14,7 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
+  onCaseStudyChange?: (isOpen: boolean) => void;
 }
 
 const projectLogos: Record<string, string> = {
@@ -32,7 +33,7 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -47,6 +48,10 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
+
+  useEffect(() => {
+    onCaseStudyChange?.(openCaseStudy !== null);
+  }, [openCaseStudy, onCaseStudyChange]);
 
   useEffect(() => {
     let animationId: number;

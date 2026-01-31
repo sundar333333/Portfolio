@@ -21,6 +21,7 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
+  const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -38,6 +39,10 @@ export default function Home() {
 
   const handleCircleProgress = useCallback((progress: number) => {
     setCircleProgress(progress);
+  }, []);
+
+  const handleCaseStudyChange = useCallback((isOpen: boolean) => {
+    setIsCaseStudyOpen(isOpen);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -86,48 +91,56 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} />
 
-          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
-            <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1} />
-          </div>
+          {!isCaseStudyOpen && (
+            <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
+              <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1} />
+            </div>
+          )}
 
-          <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
+          {!isCaseStudyOpen && (
+            <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
+          )}
 
-          <AnimatePresence>
-            {isVideoPlaying && (
-              <motion.div
-                className="fixed bottom-6 left-6 z-50 flex items-center gap-3 px-4 py-2 bg-white/10 border border-white/20 rounded-full backdrop-blur-sm"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                data-testid="video-playing-indicator"
-              >
+          {!isCaseStudyOpen && (
+            <>
+              <AnimatePresence>
+                {isVideoPlaying && (
+                  <motion.div
+                    className="fixed bottom-6 left-6 z-50 flex items-center gap-3 px-4 py-2 bg-white/10 border border-white/20 rounded-full backdrop-blur-sm"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    data-testid="video-playing-indicator"
+                  >
+                    <motion.div
+                      className="w-2 h-2 bg-red-500 rounded-full"
+                      animate={{ opacity: [1, 0.5, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    />
+                    <span className="text-white/80 text-sm font-medium">
+                      Now Playing: Messi Tribute
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-4 w-full max-w-md">
                 <motion.div
-                  className="w-2 h-2 bg-red-500 rounded-full"
-                  animate={{ opacity: [1, 0.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-                <span className="text-white/80 text-sm font-medium">
-                  Now Playing: Messi Tribute
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-4 w-full max-w-md">
-            <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-white/40 text-xs text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2 }}
-              data-testid="text-interaction-hint"
-            >
-              <span>Hover over text to see it on the TV</span>
-              <span className="hidden sm:block w-1 h-1 bg-white/40 rounded-full" />
-              <span>Click TV for a special tribute</span>
-            </motion.div>
-          </div>
+                  className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-white/40 text-xs text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                  data-testid="text-interaction-hint"
+                >
+                  <span>Hover over text to see it on the TV</span>
+                  <span className="hidden sm:block w-1 h-1 bg-white/40 rounded-full" />
+                  <span>Click TV for a special tribute</span>
+                </motion.div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

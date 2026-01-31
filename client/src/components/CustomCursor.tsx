@@ -92,7 +92,7 @@ export function CustomCursor({ isDark = false }: CustomCursorProps) {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-[9999]"
+      className="fixed inset-0 pointer-events-none z-[10001]"
       style={{ cursor: "none" }}
       data-testid="custom-cursor-container"
     >
