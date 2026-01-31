@@ -285,7 +285,7 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
       {/* Case Study Viewer */}
       {openCaseStudy && (
         <div 
-          className="fixed inset-0 z-[9999] pointer-events-auto overflow-hidden"
+          className="fixed inset-0 z-[9999] pointer-events-auto"
           style={{ 
             width: '100vw', 
             height: '100vh',
@@ -304,19 +304,33 @@ export function WhiteSection({ progress, circleProgress }: WhiteSectionProps) {
           >
             <X size={28} />
           </button>
-          <iframe
-            src={projectCaseStudies[openCaseStudy]}
-            className="border-0"
+          <div 
             style={{
               position: 'absolute',
-              top: '-48px',
-              left: '-48px',
-              width: 'calc(100vw + 96px)',
-              height: 'calc(100vh + 96px)',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              clipPath: 'inset(0)',
             }}
-            allowFullScreen
-            title={`${openCaseStudy} Case Study`}
-          />
+          >
+            <iframe
+              src={projectCaseStudies[openCaseStudy]}
+              className="border-0"
+              style={{
+                position: 'absolute',
+                top: '-56px',
+                left: '-56px',
+                right: '-56px',
+                bottom: '-56px',
+                width: 'calc(100% + 112px)',
+                height: 'calc(100% + 112px)',
+              }}
+              allowFullScreen
+              title={`${openCaseStudy} Case Study`}
+            />
+          </div>
         </div>
       )}
     </div>
