@@ -41,6 +41,7 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const isFullyExpanded = circleProgress >= 1;
   const isCurrentTransitionActive = currentTransitionProgress > 0;
+  const isNewCircleAtCenter = currentTransitionProgress >= 0.95;
 
   // Handle viewport resize
   useEffect(() => {
@@ -188,12 +189,12 @@ export function WhiteSection({ progress, circleProgress, currentTransitionProgre
       {progress >= 1 && (
         <>
           <div 
-            className={`project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto ${isCurrentTransitionActive ? 'current-active' : ''}`}
+            className={`project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto ${isNewCircleAtCenter ? 'current-active' : ''}`}
             style={{ 
               fontFamily: "'Orbitron', sans-serif",
-              backgroundColor: isCurrentTransitionActive ? 'black' : undefined,
-              color: isCurrentTransitionActive ? 'white' : undefined,
-              padding: isCurrentTransitionActive ? '0.25rem 0.75rem' : undefined,
+              backgroundColor: isNewCircleAtCenter ? 'black' : undefined,
+              color: isNewCircleAtCenter ? 'white' : undefined,
+              padding: isNewCircleAtCenter ? '0.25rem 0.75rem' : undefined,
             }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
