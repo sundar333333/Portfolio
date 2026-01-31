@@ -560,8 +560,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
-  const circleStart = 0.94;
-  const currentTransitionStart = 0.97;
+  const circleStart = 0.92;
+  const circleFullyExpanded = 0.95;
+  const currentTransitionStart = 0.975;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -625,7 +626,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
     }
 
     if (offset > circleStart) {
-      const circleProgress = (offset - circleStart) / (currentTransitionStart - circleStart);
+      const circleProgress = (offset - circleStart) / (circleFullyExpanded - circleStart);
       onCircleProgress?.(Math.min(1, circleProgress));
     } else {
       onCircleProgress?.(0);
