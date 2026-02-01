@@ -310,13 +310,16 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
           >
             <X size={28} />
           </button>
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center px-4 py-8">
             <img
               src={projectCaseStudies[openCaseStudy]}
               alt={`${openCaseStudy} Case Study`}
-              className="w-full max-w-[100vw] h-auto"
+              className="max-w-full h-auto"
               style={{
                 objectFit: 'contain',
+                imageRendering: 'auto',
+                maxWidth: '1200px',
+                width: '100%',
               }}
               data-testid="case-study-image"
             />
