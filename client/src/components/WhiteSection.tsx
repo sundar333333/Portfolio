@@ -4,6 +4,10 @@ import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
 import tickingLogo from "@assets/Group_27_1769812471632.png";
+import tickingCaseStudy from "@assets/image_1769954947300.png";
+import currentCaseStudy from "@assets/image_1769954987397.png";
+import eventifyCaseStudy from "@assets/image_1769955050232.png";
+import spaceJumpCaseStudy from "@assets/image_1769955092024.png";
 
 interface TrailPoint {
   x: number;
@@ -25,10 +29,10 @@ const projectLogos: Record<string, string> = {
 };
 
 const projectCaseStudies: Record<string, string> = {
-  current: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2F6D1cHJn9cNle6SrkOGKiwb%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D7-21388%26viewport%3D-16667%252C-1615%252C0.29%26t%3DA9IM3Eqf4hN8nX3w-1%26scaling%3Dmin-zoom%26content-scaling%3Dfixed",
-  spacejump: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FlzrqO3p3AxxkgrYxlnSuVO%2FSpace-Jump-Game-UX-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3Dyfoxkj3qDi0cwGa7-1",
-  eventify: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FvLXe2NKquLXGL0rg0BcE2E%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3DzUPLaoZt8Ni95D7f-1",
-  ticking: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FXZ8kBuNApBlz6LXvmpZvaP%2FTicking-Application-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26starting-point-node-id%3D1%253A2%26t%3Doya6bJf77Y9QDoi5-1",
+  current: currentCaseStudy,
+  spacejump: spaceJumpCaseStudy,
+  eventify: eventifyCaseStudy,
+  ticking: tickingCaseStudy,
 };
 
 let trailId = 0;
@@ -290,7 +294,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
       {/* Case Study Viewer */}
       {openCaseStudy && (
         <div 
-          className="fixed inset-0 z-[9999] pointer-events-auto overflow-hidden"
+          className="fixed inset-0 z-[9999] pointer-events-auto overflow-y-auto overflow-x-hidden"
           style={{ 
             width: '100vw', 
             height: '100vh',
@@ -306,22 +310,17 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
           >
             <X size={28} />
           </button>
-          <iframe
-            src={projectCaseStudies[openCaseStudy]}
-            className="border-0"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '105vw',
-              height: '115vh',
-              minWidth: '105vw',
-              minHeight: '115vh',
-            }}
-            allowFullScreen
-            title={`${openCaseStudy} Case Study`}
-          />
+          <div className="w-full flex justify-center">
+            <img
+              src={projectCaseStudies[openCaseStudy]}
+              alt={`${openCaseStudy} Case Study`}
+              className="w-full max-w-[100vw] h-auto"
+              style={{
+                objectFit: 'contain',
+              }}
+              data-testid="case-study-image"
+            />
+          </div>
         </div>
       )}
     </div>
