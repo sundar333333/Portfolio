@@ -55,6 +55,17 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
 
   useEffect(() => {
     onCaseStudyChange?.(openCaseStudy !== null);
+    
+    // Prevent background scrolling when case study is open
+    if (openCaseStudy !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [openCaseStudy, onCaseStudyChange]);
 
   useEffect(() => {
@@ -294,32 +305,36 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
       {/* Case Study Viewer */}
       {openCaseStudy && (
         <div 
-          className="fixed inset-0 z-[9999] pointer-events-auto overflow-y-auto overflow-x-hidden"
+          className="fixed inset-0 z-[9999] pointer-events-auto"
           style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
             width: '100vw', 
             height: '100vh',
             background: '#000',
+            margin: 0,
+            padding: 0,
           }}
           data-testid="case-study-viewer"
         >
           <button
             onClick={() => setOpenCaseStudy(null)}
-            className="fixed top-6 right-6 z-[10000] w-14 h-14 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-700 transition-colors border-2 border-white shadow-lg"
-            style={{ pointerEvents: 'auto' }}
+            className="fixed top-4 right-4 z-[10000] w-12 h-12 flex items-center justify-center bg-black/80 text-white rounded-full hover:bg-black transition-colors border border-white/30"
+            aria-label="Close case study"
             data-testid="close-case-study"
           >
-            <X size={28} />
+            <X size={24} />
           </button>
           <iframe
             src={projectCaseStudies[openCaseStudy]}
-            className="border-0"
             style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '110vw',
-              height: '120vh',
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'block',
             }}
             allowFullScreen
             title={`${openCaseStudy} Case Study`}
