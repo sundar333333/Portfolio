@@ -93,9 +93,9 @@ export default function Home() {
             onExpandProgress={handleExpandProgress}
           />
 
-          <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
-          <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
-          <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
+          <PixelEffect visible={showWorkSection && scrollProgress < 0.7} />
+          <AboutHeroSection visible={showWorkSection && scrollProgress < 0.7} scrollProgress={scrollProgress} />
+          <QASection visible={showWorkSection && scrollProgress < 0.7} scrollProgress={scrollProgress} />
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} expandProgress={expandProgress} onCaseStudyChange={handleCaseStudyChange} />
 

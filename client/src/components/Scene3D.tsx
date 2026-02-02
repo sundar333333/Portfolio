@@ -559,10 +559,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
-  const whiteSectionStart = 0.92;  // White section appears AFTER work section fades
-  const circleStart = 0.94;        // Circle starts growing
-  const circleEnd = 0.96;          // Circle reaches 460px
-  const expandStart = 0.98;        // Black expansion starts at very end
+  const whiteSectionStart = 0.75;  // White section appears after Q&A fades
+  const circleStart = 0.78;        // Circle starts growing
+  const circleEnd = 0.82;          // Circle reaches 460px  
+  const expandStart = 0.92;        // Black expansion starts later
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -720,7 +720,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={22} damping={0.2}>
+          <ScrollControls pages={30} damping={0.2}>
             <ScrollSceneContent
               hoveredText={hoveredText}
               onTVClick={onTVClick}
