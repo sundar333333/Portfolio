@@ -559,10 +559,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
   const transitionThreshold = 0.10;
-  const whiteSectionStart = 0.80;
-  const circleStart = 0.82;
-  const circleEnd = 0.88;  // Circle reaches 460px here and stays
-  const expandStart = 0.94; // Black expansion starts later
+  const whiteSectionStart = 0.70;  // White section slides up earlier
+  const circleStart = 0.75;        // Circle starts growing
+  const circleEnd = 0.80;          // Circle reaches 460px
+  const expandStart = 0.90;        // Black expansion starts much later
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
