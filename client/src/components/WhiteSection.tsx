@@ -18,7 +18,6 @@ interface TrailPoint {
 interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
-  expandProgress: number;
   onCaseStudyChange?: (isOpen: boolean) => void;
 }
 
@@ -38,24 +37,12 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, expandProgress, onCaseStudyChange }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
   const maxSize = 460;
-  const baseCircleSize = minSize + (maxSize - minSize) * circleProgress;
-  
-  // Calculate the size needed to fill the entire viewport (diagonal)
-  const maxExpandSize = Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2)) * 1.2;
-  
-  // Interpolate from maxSize (460px) to full viewport coverage based on expandProgress
-  const circleSize = expandProgress > 0 
-    ? maxSize + (maxExpandSize - maxSize) * expandProgress 
-    : baseCircleSize;
-  
-  // Background color transitions from white to black based on expandProgress
-  const bgWhite = 255 - Math.round(255 * expandProgress);
-  const backgroundColor = `rgb(${bgWhite}, ${bgWhite}, ${bgWhite})`;
+  const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
@@ -193,23 +180,17 @@ export function WhiteSection({ progress, circleProgress, expandProgress, onCaseS
 
   return (
     <div
-      className="fixed inset-0 z-20 pointer-events-none"
+      className="fixed inset-0 z-20 bg-white pointer-events-none"
       style={{
         transform: `translateY(${translateY}%)`,
-        backgroundColor: backgroundColor,
-        transition: 'background-color 0.1s ease-out',
       }}
       data-testid="white-section"
     >
-      {progress >= 1 && !openCaseStudy && expandProgress < 0.5 && (
+      {progress >= 1 && !openCaseStudy && (
         <>
           <div 
-            className="project-name-hover absolute top-[28%] left-4 md:left-12 font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
-            style={{ 
-              fontFamily: "'Orbitron', sans-serif",
-              color: `rgb(${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)})`,
-              opacity: 1 - expandProgress * 2,
-            }}
+            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('current')}
@@ -218,12 +199,8 @@ export function WhiteSection({ progress, circleProgress, expandProgress, onCaseS
             Current
           </div>
           <div 
-            className="project-name-hover absolute top-[28%] right-4 md:right-12 font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
-            style={{ 
-              fontFamily: "'Orbitron', sans-serif",
-              color: `rgb(${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)})`,
-              opacity: 1 - expandProgress * 2,
-            }}
+            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('spacejump')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('spacejump')}
@@ -232,12 +209,8 @@ export function WhiteSection({ progress, circleProgress, expandProgress, onCaseS
             Space Jump
           </div>
           <div 
-            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
-            style={{ 
-              fontFamily: "'Orbitron', sans-serif",
-              color: `rgb(${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)})`,
-              opacity: 1 - expandProgress * 2,
-            }}
+            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('eventify')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('eventify')}
@@ -246,12 +219,8 @@ export function WhiteSection({ progress, circleProgress, expandProgress, onCaseS
             Eventify
           </div>
           <div 
-            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
-            style={{ 
-              fontFamily: "'Orbitron', sans-serif",
-              color: `rgb(${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)}, ${Math.round(255 * expandProgress)})`,
-              opacity: 1 - expandProgress * 2,
-            }}
+            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
             onMouseEnter={() => setHoveredProject('ticking')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('ticking')}

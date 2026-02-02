@@ -21,7 +21,6 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
-  const [expandProgress, setExpandProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
@@ -40,10 +39,6 @@ export default function Home() {
 
   const handleCircleProgress = useCallback((progress: number) => {
     setCircleProgress(progress);
-  }, []);
-
-  const handleExpandProgress = useCallback((progress: number) => {
-    setExpandProgress(progress);
   }, []);
 
   const handleCaseStudyChange = useCallback((isOpen: boolean) => {
@@ -90,14 +85,13 @@ export default function Home() {
             onScrollProgress={handleScrollProgress}
             onWhiteSectionProgress={handleWhiteSectionProgress}
             onCircleProgress={handleCircleProgress}
-            onExpandProgress={handleExpandProgress}
           />
 
-          <PixelEffect visible={showWorkSection && scrollProgress < 0.7} />
-          <AboutHeroSection visible={showWorkSection && scrollProgress < 0.7} scrollProgress={scrollProgress} />
-          <QASection visible={showWorkSection && scrollProgress < 0.7} scrollProgress={scrollProgress} />
+          <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
+          <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
+          <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} expandProgress={expandProgress} onCaseStudyChange={handleCaseStudyChange} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} />
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
