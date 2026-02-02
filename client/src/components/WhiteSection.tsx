@@ -29,10 +29,10 @@ const projectLogos: Record<string, string> = {
 };
 
 const projectCaseStudies: Record<string, string> = {
-  current: currentCaseStudy,
-  spacejump: spaceJumpCaseStudy,
-  eventify: eventifyCaseStudy,
-  ticking: tickingCaseStudy,
+  current: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2F6D1cHJn9cNle6SrkOGKiwb%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D7-21388%26viewport%3D-16667%252C-1615%252C0.29%26t%3DA9IM3Eqf4hN8nX3w-1%26scaling%3Dmin-zoom%26content-scaling%3Dfixed",
+  spacejump: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FlzrqO3p3AxxkgrYxlnSuVO%2FSpace-Jump-Game-UX-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3Dyfoxkj3qDi0cwGa7-1",
+  eventify: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FvLXe2NKquLXGL0rg0BcE2E%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D1-2%26t%3DzUPLaoZt8Ni95D7f-1",
+  ticking: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FXZ8kBuNApBlz6LXvmpZvaP%2FTicking-Application-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26starting-point-node-id%3D1%253A2%26t%3Doya6bJf77Y9QDoi5-1",
 };
 
 let trailId = 0;
@@ -310,20 +310,21 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
           >
             <X size={28} />
           </button>
-          <div className="w-full flex justify-center px-4 py-8">
-            <img
-              src={projectCaseStudies[openCaseStudy]}
-              alt={`${openCaseStudy} Case Study`}
-              className="max-w-full h-auto"
-              style={{
-                objectFit: 'contain',
-                imageRendering: 'auto',
-                maxWidth: '1200px',
-                width: '100%',
-              }}
-              data-testid="case-study-image"
-            />
-          </div>
+          <iframe
+            src={projectCaseStudies[openCaseStudy]}
+            className="border-0"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '110vw',
+              height: '120vh',
+            }}
+            allowFullScreen
+            title={`${openCaseStudy} Case Study`}
+            data-testid="case-study-iframe"
+          />
         </div>
       )}
     </div>
