@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { Room3D } from "./Room3D";
 import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
@@ -385,6 +386,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           data-testid="black-screen-section"
         />
       )}
+
+      {/* 3D Room Scene */}
+      <Room3D isVisible={isZoomComplete && !openCaseStudy} />
 
       {/* Case Study Viewer */}
       {openCaseStudy && (
