@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -334,6 +334,16 @@ interface Room3DProps {
 
 export function Room3D({ isVisible }: Room3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showRoom, setShowRoom] = useState(false);
+  
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => setShowRoom(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShowRoom(false);
+    }
+  }, [isVisible]);
   
   if (!isVisible) return null;
   
@@ -342,8 +352,8 @@ export function Room3D({ isVisible }: Room3DProps) {
       ref={containerRef}
       className="fixed inset-0 z-40"
       style={{
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.8s ease-out',
+        opacity: showRoom ? 1 : 0,
+        transition: 'opacity 1.2s ease-out',
       }}
       data-testid="room-3d-container"
     >
