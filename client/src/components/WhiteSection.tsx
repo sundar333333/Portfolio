@@ -77,6 +77,15 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     };
   }, [openCaseStudy, onCaseStudyChange]);
 
+  // Reset zoom when leaving works screen or opening case study
+  useEffect(() => {
+    if (!isWorksScreenVisible || openCaseStudy !== null) {
+      zoomScrollAccumulator.current = 0;
+      setZoomProgress(0);
+      onZoomProgress?.(0);
+    }
+  }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
+
   // Separate scroll handler for zooming into the circle
   useEffect(() => {
     if (!isWorksScreenVisible || openCaseStudy !== null) return;
@@ -87,6 +96,14 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       // Only handle scroll when Works screen is fully visible and no case study is open
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
       
+      // Allow scrolling back to previous sections when zoom hasn't started
+      const isScrollingUp = e.deltaY < 0;
+      if (isScrollingUp && zoomScrollAccumulator.current <= 0) {
+        // Don't prevent default - let the base scroll handle going back
+        return;
+      }
+      
+      // Only prevent default when we're actively in the zoom phase
       e.preventDefault();
       
       zoomScrollAccumulator.current += e.deltaY;
