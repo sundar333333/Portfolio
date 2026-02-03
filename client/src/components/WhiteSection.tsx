@@ -90,7 +90,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   useEffect(() => {
     if (!isWorksScreenVisible || openCaseStudy !== null) return;
     
-    const scrollThreshold = 2000; // More scroll distance = slower transition
+    const freeScrollThreshold = 800; // Free scroll before zoom starts
+    const zoomThreshold = 2000; // Zoom scroll distance
+    const totalThreshold = freeScrollThreshold + zoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
       // Only handle scroll when Works screen is fully visible and no case study is open
@@ -103,17 +105,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         return;
       }
       
-      // Only prevent default when we're actively in the zoom phase
+      // Only prevent default when we're actively in the scroll phase
       e.preventDefault();
       
       zoomScrollAccumulator.current += e.deltaY;
       
       // Clamp the accumulator
-      zoomScrollAccumulator.current = Math.max(0, Math.min(scrollThreshold, zoomScrollAccumulator.current));
+      zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
       
-      const newZoomProgress = zoomScrollAccumulator.current / scrollThreshold;
-      setZoomProgress(newZoomProgress);
-      onZoomProgress?.(newZoomProgress);
+      // Calculate zoom progress (only starts after free scroll threshold)
+      const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
+      const newZoomProgress = zoomStart / zoomThreshold;
+      setZoomProgress(Math.min(1, newZoomProgress));
+      onZoomProgress?.(Math.min(1, newZoomProgress));
     };
     
     window.addEventListener('wheel', handleWheel, { passive: false });
