@@ -19,6 +19,7 @@ interface WhiteSectionProps {
   progress: number;
   circleProgress: number;
   onCaseStudyChange?: (isOpen: boolean) => void;
+  onZoomProgress?: (progress: number) => void;
 }
 
 const projectLogos: Record<string, string> = {
@@ -37,21 +38,29 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
   const maxSize = 460;
-  const circleSize = minSize + (maxSize - minSize) * circleProgress;
   
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const [openCaseStudy, setOpenCaseStudy] = useState<string | null>(null);
+  const [zoomProgress, setZoomProgress] = useState(0);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
+  const zoomScrollAccumulator = useRef(0);
   const isFullyExpanded = circleProgress >= 1;
+  const isWorksScreenVisible = circleProgress >= 1 && progress >= 1;
+  
+  const viewportDiagonal = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
+  const zoomedCircleSize = zoomProgress > 0 
+    ? maxSize + (viewportDiagonal * 1.5 - maxSize) * zoomProgress 
+    : minSize + (maxSize - minSize) * circleProgress;
+  const circleSize = zoomedCircleSize;
 
   useEffect(() => {
     onCaseStudyChange?.(openCaseStudy !== null);
@@ -67,6 +76,35 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
       document.body.style.overflow = '';
     };
   }, [openCaseStudy, onCaseStudyChange]);
+
+  // Separate scroll handler for zooming into the circle
+  useEffect(() => {
+    if (!isWorksScreenVisible || openCaseStudy !== null) return;
+    
+    const scrollThreshold = 2000; // More scroll distance = slower transition
+    
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle scroll when Works screen is fully visible and no case study is open
+      if (!isWorksScreenVisible || openCaseStudy !== null) return;
+      
+      e.preventDefault();
+      
+      zoomScrollAccumulator.current += e.deltaY;
+      
+      // Clamp the accumulator
+      zoomScrollAccumulator.current = Math.max(0, Math.min(scrollThreshold, zoomScrollAccumulator.current));
+      
+      const newZoomProgress = zoomScrollAccumulator.current / scrollThreshold;
+      setZoomProgress(newZoomProgress);
+      onZoomProgress?.(newZoomProgress);
+    };
+    
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
 
   useEffect(() => {
     let animationId: number;
@@ -178,16 +216,28 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
     };
   }, [isFullyExpanded]);
 
+  // Fade out projects as zoom progresses
+  const projectsOpacity = Math.max(0, 1 - zoomProgress * 3);
+  
+  // Background transitions from white to black as zoom progresses
+  const bgColor = zoomProgress > 0.3 
+    ? `rgb(${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))}, ${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))}, ${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))})`
+    : 'white';
+  
+  const isZoomComplete = zoomProgress >= 1;
+
   return (
     <div
-      className="fixed inset-0 z-20 bg-white pointer-events-none"
+      className="fixed inset-0 z-20 pointer-events-none"
       style={{
         transform: `translateY(${translateY}%)`,
+        backgroundColor: bgColor,
+        transition: 'background-color 0.1s ease-out',
       }}
       data-testid="white-section"
     >
-      {progress >= 1 && !openCaseStudy && (
-        <>
+      {progress >= 1 && !openCaseStudy && projectsOpacity > 0 && (
+        <div style={{ opacity: projectsOpacity, transition: 'opacity 0.15s ease-out' }}>
           <div 
             className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
@@ -228,7 +278,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
           >
             Ticking
           </div>
-        </>
+        </div>
       )}
 
       <svg 
@@ -277,7 +327,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
       </svg>
 
       {/* Logo display inside circle - no mercury effect */}
-      {hoveredProject && circleProgress >= 1 && !openCaseStudy && (
+      {hoveredProject && circleProgress >= 1 && !openCaseStudy && projectsOpacity > 0.5 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
           style={{
@@ -299,6 +349,29 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange }: Wh
               maxHeight: (hoveredProject === 'current' || hoveredProject === 'ticking') ? '90%' : '70%',
             }}
           />
+        </div>
+      )}
+
+      {/* Black Screen - Next Section after zoom complete */}
+      {isZoomComplete && !openCaseStudy && (
+        <div 
+          className="fixed inset-0 z-30 flex items-center justify-center pointer-events-auto"
+          style={{
+            backgroundColor: '#000',
+          }}
+          data-testid="black-screen-section"
+        >
+          <div className="text-center">
+            <h2 
+              className="text-white text-4xl md:text-6xl font-bold mb-4"
+              style={{ fontFamily: "'Orbitron', sans-serif" }}
+            >
+              Next Section
+            </h2>
+            <p className="text-white/60 text-lg">
+              Scroll back to return to projects
+            </p>
+          </div>
         </div>
       )}
 
