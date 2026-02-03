@@ -374,26 +374,16 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       )}
 
       {/* Black Screen - Next Section after zoom complete */}
-      {isZoomComplete && !openCaseStudy && (
+      {zoomProgress > 0.3 && !openCaseStudy && (
         <div 
-          className="fixed inset-0 z-30 flex items-center justify-center pointer-events-auto"
+          className="fixed inset-0 z-30 pointer-events-auto"
           style={{
             backgroundColor: '#000',
+            opacity: Math.min(1, (zoomProgress - 0.3) / 0.4),
+            transition: 'opacity 0.3s ease-out',
           }}
           data-testid="black-screen-section"
-        >
-          <div className="text-center">
-            <h2 
-              className="text-white text-4xl md:text-6xl font-bold mb-4"
-              style={{ fontFamily: "'Orbitron', sans-serif" }}
-            >
-              Next Section
-            </h2>
-            <p className="text-white/60 text-lg">
-              Scroll back to return to projects
-            </p>
-          </div>
-        </div>
+        />
       )}
 
       {/* Case Study Viewer */}

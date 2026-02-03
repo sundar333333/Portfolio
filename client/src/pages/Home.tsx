@@ -80,7 +80,7 @@ export default function Home() {
 
       {!isLoading && (
         <>
-          <CustomCursor isDark={whiteSectionProgress > 0.5} />
+          <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
           <Scene3D
             hoveredText={hoveredText}
