@@ -33,6 +33,8 @@ Preferred communication style: Simple, everyday language.
 - `CustomCursor.tsx` - Glassy liquid cursor with multi-color light trail effect
 - `Header.tsx` - Fixed navigation with brand name in Anton/Archivo Black font
 - `AudioToggle.tsx` - Mute/unmute control for static noise and video audio
+- `Room3DScene.tsx` - Interactive 3D room scene featuring gaming setup with RGB-lit peripherals, rotating office chair, wall-mounted TV, bed, vintage lamp, plant holder, and cupboard with books
+- `WhiteSection.tsx` - Manages the works/projects section with expanding circle, project logos, case study overlays, and zoom transition to 3D room scene
 
 **Scroll Transition ("Signal Breach")**
 - Uses @react-three/drei ScrollControls with 2 pages and damping
