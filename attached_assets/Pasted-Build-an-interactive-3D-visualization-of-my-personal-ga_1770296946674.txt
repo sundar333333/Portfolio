@@ -1,0 +1,33 @@
+Build an interactive 3D visualization of my personal gaming room setup using Three.js (latest version) in a single HTML/JS project with a canvas that fills the browser window. Make it high-quality and aim for sharp, near-4K appearance: use high-resolution rendering settings, enable antialiasing, set renderer pixel ratio to window.devicePixelRatio (or higher if possible), add realistic lighting, shadows where appropriate, and nice materials/textures. Include orbit controls so I can rotate, zoom, and pan around the room freely. Add ambient + directional + point lights to create a cozy gaming atmosphere with some RGB glow effects.
+
+Room layout description (follow this exactly):
+
+- The room is a simple rectangular bedroom with plain walls, floor, and ceiling (use basic colors or subtle textures — walls light gray, floor dark wood or carpet, ceiling white).
+- Against one main wall (back wall), place a computer desk/table close to the wall, centered or slightly off-center.
+- On the desk:
+  - Center: one large monitor (flat or slightly curved screen facing forward).
+  - Right side of the monitor: an RGB-lit gaming PC tower/CPU case standing on the desk or floor next to it (add glowing RGB lights on the case, fans, etc.).
+  - Left side of the monitor: a PlayStation 5 console placed horizontally.
+  - On the desk surface: place gaming headphones and a PS5 DualSense controller (model them simply or use basic shapes with colors).
+- Behind the desk, on the same back wall above the table: a wall-mounted shelf/holder with a few small potted plants on it.
+- Next to the right side of the desk (on the floor or small stand): a floor lamp (simple standing lamp with warm light).
+- On the same back wall, higher up to the side (not directly above desk): a large TV mounted on the wall, with the screen facing toward the viewer/chair (use a thin bezel modern TV model).
+- In front of the desk: a rolling/gaming chair facing the desk and monitor (ergonomic style with wheels, headrest if possible).
+- Behind the chair: a bed placed along the side/left wall, oriented lengthwise (simple bed with pillows, blanket — facing left relative to the desk view).
+- Next to the TV (on the wall or floor nearby): a cupboard/wardrobe with two closed shelves/doors, and above the shelves some stacked books.
+- On one of the walls (e.g., side wall visible in view): a large Lionel Messi poster hanging (use a simple rectangle with a football image or color placeholder if no texture).
+- Overall vibe: cozy modern gaming bedroom, subtle RGB accents on PC, soft lighting from lamp and LEDs, no clutter.
+
+Technical requirements:
+- Use Three.js with OrbitControls from examples/jsm/controls/OrbitControls.js (import via CDN or npm if needed).
+- Set up scene, camera (PerspectiveCamera with good FOV), renderer (WebGLRenderer with antialias: true, high pixelRatio).
+- Use simple geometries (boxes, cylinders, spheres) for most objects — make desk a large box, monitor a thin box with emissive screen, etc.
+- Add basic materials (MeshStandardMaterial or MeshPhongMaterial) with colors/metallics/emissive for RGB glow.
+- Enable shadows if performance allows (renderer.shadowMap.enabled = true).
+- Make the camera start positioned in front of the chair looking at the desk (good initial view).
+- Add window resize handling so it stays responsive.
+- Optional extras if easy: subtle animation like slow pulsing RGB lights on the PC, or floating particles for ambiance.
+- After building, add a note in the code or console about how to take high-res screenshots (e.g., set canvas size larger temporarily or use browser dev tools).
+- Deploy-ready: make sure it runs smoothly in the Replit preview and can be deployed as a static site.
+
+Start with this full scene — build the complete room first, then I can iterate to add more details, better models, or fixes. Use best practices for clean code and performance.

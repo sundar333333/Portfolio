@@ -8,6 +8,7 @@ import tickingCaseStudy from "@assets/image_1769954947300.png";
 import currentCaseStudy from "@assets/image_1769954987397.png";
 import eventifyCaseStudy from "@assets/image_1769955050232.png";
 import spaceJumpCaseStudy from "@assets/image_1769955092024.png";
+import { GamingRoom3D } from "./GamingRoom3D";
 
 interface TrailPoint {
   x: number;
@@ -373,10 +374,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         </div>
       )}
 
-      {/* Black Screen - Next Section after zoom complete */}
+      {/* Black Screen Background Layer */}
       {zoomProgress > 0.3 && !openCaseStudy && (
         <div 
-          className="fixed inset-0 z-30 pointer-events-auto"
+          className="fixed inset-0 z-30 pointer-events-none"
           style={{
             backgroundColor: '#000',
             opacity: Math.min(1, (zoomProgress - 0.3) / 0.4),
@@ -384,6 +385,18 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           }}
           data-testid="black-screen-section"
         />
+      )}
+      
+      {/* 3D Gaming Room Scene - Separate layer for full clarity */}
+      {zoomProgress > 0.7 && !openCaseStudy && (
+        <div 
+          className="fixed inset-0 z-31 pointer-events-auto"
+          style={{ zIndex: 31 }}
+        >
+          <GamingRoom3D 
+            opacity={Math.min(1, (zoomProgress - 0.7) / 0.3)} 
+          />
+        </div>
       )}
 
       {/* Case Study Viewer */}
