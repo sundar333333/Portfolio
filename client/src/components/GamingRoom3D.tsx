@@ -1,17 +1,30 @@
 import { useRef, useMemo, Suspense } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { 
   OrbitControls, 
   Environment, 
   ContactShadows,
-  useTexture,
   MeshReflectorMaterial,
   Float,
-  Sparkles
+  Sparkles,
+  useGLTF
 } from "@react-three/drei";
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette, SSAO } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
+
+const POLY_PIZZA_CDN = "https://d1a370nemizbjq.cloudfront.net";
+
+const MODEL_URLS = {
+  gamingComputer: `${POLY_PIZZA_CDN}/5cN7W4ufoII/model.gltf`,
+  monitor: `${POLY_PIZZA_CDN}/M9Lpzbr0bA/model.gltf`,
+  officeChair: `${POLY_PIZZA_CDN}/UfKvrZBK6C/model.gltf`,
+  deskChair: `${POLY_PIZZA_CDN}/CKSz6PB1vO/model.gltf`,
+  bedSingle: `${POLY_PIZZA_CDN}/sn8az3odMR/model.gltf`,
+  bedDouble: `${POLY_PIZZA_CDN}/wcmbCZ63mg/model.gltf`,
+  desk: `${POLY_PIZZA_CDN}/dptlMEX4tF_/model.gltf`,
+  pc: `${POLY_PIZZA_CDN}/7uQP127OF7z/model.gltf`,
+};
 
 function RGBLight({ position, color, intensity = 1, speed = 2 }: { position: [number, number, number]; color: string; intensity?: number; speed?: number }) {
   const lightRef = useRef<THREE.PointLight>(null);
@@ -48,40 +61,85 @@ function RGBStrip({ position, rotation, color, width = 0.3, height = 0.02 }: { p
   );
 }
 
-function Desk() {
+function LoadedModel({ url, position, rotation, scale }: { 
+  url: string; 
+  position: [number, number, number]; 
+  rotation?: [number, number, number]; 
+  scale?: number | [number, number, number];
+}) {
+  const { scene } = useGLTF(url);
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
+  
   return (
-    <group position={[0, 0.4, -2]}>
-      <mesh position={[0, 0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2.6, 0.04, 0.9]} />
-        <meshStandardMaterial 
-          color="#1a1a1a" 
-          roughness={0.15} 
-          metalness={0.4}
-          envMapIntensity={1.5}
+    <primitive 
+      object={clonedScene} 
+      position={position} 
+      rotation={rotation || [0, 0, 0]} 
+      scale={scale || 1}
+      castShadow
+      receiveShadow
+    />
+  );
+}
+
+function GamingComputer() {
+  return (
+    <group position={[0.9, 0.44, -2.1]}>
+      <Suspense fallback={<FallbackPC />}>
+        <LoadedModel 
+          url={MODEL_URLS.gamingComputer} 
+          position={[0, 0, 0]} 
+          scale={0.4}
         />
-      </mesh>
-      <mesh position={[0, -0.02, 0.42]} castShadow>
-        <boxGeometry args={[2.6, 0.08, 0.04]} />
-        <meshStandardMaterial color="#0f0f0f" roughness={0.2} metalness={0.6} />
-      </mesh>
-      {[[-1.15, 0.3], [1.15, 0.3], [-1.15, -0.3], [1.15, -0.3]].map(([x, z], i) => (
-        <group key={i} position={[x, -0.38, z]}>
-          <mesh castShadow>
-            <boxGeometry args={[0.06, 0.72, 0.06]} />
-            <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.38, 0]}>
-            <cylinderGeometry args={[0.025, 0.04, 0.03, 16]} />
-            <meshStandardMaterial color="#333" roughness={0.2} metalness={0.9} />
-          </mesh>
-        </group>
-      ))}
-      <RGBStrip position={[0, -0.01, 0.44]} color="#00ffff" width={2.4} />
+      </Suspense>
+      <RGBLight position={[-0.15, 0.2, 0.15]} color="#ff0055" intensity={0.8} speed={2.5} />
+      <RGBLight position={[-0.15, 0, 0.15]} color="#00ff88" intensity={0.8} speed={3} />
+      <RGBLight position={[-0.15, -0.2, 0]} color="#0088ff" intensity={0.6} speed={2} />
     </group>
   );
 }
 
-function CurvedMonitor() {
+function FallbackPC() {
+  const fanRef1 = useRef<THREE.Mesh>(null);
+  const fanRef2 = useRef<THREE.Mesh>(null);
+  
+  useFrame(({ clock }) => {
+    const speed = clock.elapsedTime * 8;
+    if (fanRef1.current) fanRef1.current.rotation.z = speed;
+    if (fanRef2.current) fanRef2.current.rotation.z = -speed;
+  });
+
+  return (
+    <group>
+      <mesh castShadow>
+        <boxGeometry args={[0.22, 0.48, 0.42]} />
+        <meshStandardMaterial color="#0a0a0a" roughness={0.2} metalness={0.85} />
+      </mesh>
+      <mesh position={[-0.112, 0, 0.08]}>
+        <boxGeometry args={[0.005, 0.44, 0.38]} />
+        <meshStandardMaterial color="#111" transparent opacity={0.25} />
+      </mesh>
+      <mesh ref={fanRef1} position={[-0.112, 0.12, 0.08]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.015, 8]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh ref={fanRef2} position={[-0.112, -0.12, 0.08]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.015, 8]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[-0.112, 0.12, 0.09]}>
+        <ringGeometry args={[0.045, 0.055, 32]} />
+        <meshStandardMaterial emissive="#ff0055" emissiveIntensity={3} toneMapped={false} />
+      </mesh>
+      <mesh position={[-0.112, -0.12, 0.09]}>
+        <ringGeometry args={[0.045, 0.055, 32]} />
+        <meshStandardMaterial emissive="#00ff88" emissiveIntensity={3} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Monitor3D() {
   const screenRef = useRef<THREE.Mesh>(null);
   
   useFrame(({ clock }) => {
@@ -91,127 +149,136 @@ function CurvedMonitor() {
     }
   });
 
-  const curveSegments = 32;
-  const curveGeometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.moveTo(-0.55, -0.32);
-    shape.lineTo(0.55, -0.32);
-    shape.lineTo(0.55, 0.32);
-    shape.lineTo(-0.55, 0.32);
-    shape.lineTo(-0.55, -0.32);
-    
-    const extrudeSettings = {
-      steps: 1,
-      depth: 0.02,
-      bevelEnabled: true,
-      bevelThickness: 0.01,
-      bevelSize: 0.01,
-      bevelSegments: 3
-    };
-    
-    return new THREE.ExtrudeGeometry(shape, extrudeSettings);
-  }, []);
-
   return (
-    <group position={[0, 0.78, -2.25]}>
-      <mesh castShadow geometry={curveGeometry} rotation={[0, 0, 0]}>
-        <meshStandardMaterial 
-          color="#050505" 
-          roughness={0.1} 
-          metalness={0.9}
-          envMapIntensity={2}
+    <group position={[0, 0.44, -2.25]}>
+      <Suspense fallback={
+        <group position={[0, 0.34, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.1, 0.65, 0.03]} />
+            <meshStandardMaterial color="#050505" roughness={0.1} metalness={0.9} />
+          </mesh>
+          <mesh ref={screenRef} position={[0, 0, 0.02]}>
+            <planeGeometry args={[1.0, 0.58]} />
+            <meshStandardMaterial color="#0a0a1a" emissive="#1a3a6a" emissiveIntensity={0.4} />
+          </mesh>
+        </group>
+      }>
+        <LoadedModel 
+          url={MODEL_URLS.monitor} 
+          position={[0, 0, 0]} 
+          scale={0.5}
         />
-      </mesh>
-      <mesh ref={screenRef} position={[0, 0, 0.025]}>
-        <planeGeometry args={[1.05, 0.6]} />
-        <meshStandardMaterial 
-          color="#0a0a1a" 
-          emissive="#1a3a6a"
-          emissiveIntensity={0.4}
-          roughness={0.1}
-          metalness={0.3}
-        />
-      </mesh>
-      <mesh position={[0, -0.38, 0.08]} castShadow>
-        <cylinderGeometry args={[0.03, 0.05, 0.12, 16]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.2} metalness={0.8} />
-      </mesh>
-      <mesh position={[0, -0.45, 0.08]} castShadow>
-        <boxGeometry args={[0.25, 0.02, 0.18]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.15} metalness={0.85} />
-      </mesh>
-      <RGBStrip position={[0, -0.34, 0.03]} color="#ff00ff" width={0.6} />
+      </Suspense>
+      <RGBStrip position={[0, 0.02, 0.03]} color="#ff00ff" width={0.6} />
     </group>
   );
 }
 
-function GamingPC() {
-  const fanRef1 = useRef<THREE.Mesh>(null);
-  const fanRef2 = useRef<THREE.Mesh>(null);
-  const fanRef3 = useRef<THREE.Mesh>(null);
-  
-  useFrame(({ clock }) => {
-    const speed = clock.elapsedTime * 8;
-    if (fanRef1.current) fanRef1.current.rotation.z = speed;
-    if (fanRef2.current) fanRef2.current.rotation.z = -speed;
-    if (fanRef3.current) fanRef3.current.rotation.z = speed;
-  });
-
-  const FanBlade = ({ meshRef }: { meshRef: React.RefObject<THREE.Mesh> }) => (
-    <mesh ref={meshRef}>
-      <cylinderGeometry args={[0.055, 0.055, 0.015, 8]} />
-      <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
-    </mesh>
-  );
-
+function GamingChair3D() {
   return (
-    <group position={[0.95, 0.68, -2.15]}>
-      <mesh castShadow>
-        <boxGeometry args={[0.22, 0.48, 0.42]} />
-        <meshStandardMaterial 
-          color="#0a0a0a" 
-          roughness={0.2} 
-          metalness={0.85}
-          envMapIntensity={1.5}
+    <group position={[0, 0, 0.3]}>
+      <Suspense fallback={<FallbackChair />}>
+        <LoadedModel 
+          url={MODEL_URLS.officeChair} 
+          position={[0, 0, 0]} 
+          rotation={[0, Math.PI, 0]}
+          scale={0.6}
         />
+      </Suspense>
+      <RGBStrip position={[0.27, 0.55, -0.1]} rotation={[0, 0, Math.PI / 2]} color="#ff0044" width={0.35} />
+      <RGBStrip position={[-0.27, 0.55, -0.1]} rotation={[0, 0, Math.PI / 2]} color="#ff0044" width={0.35} />
+      <RGBLight position={[0.3, 0.5, 0]} color="#ff0044" intensity={0.4} />
+      <RGBLight position={[-0.3, 0.5, 0]} color="#ff0044" intensity={0.4} />
+    </group>
+  );
+}
+
+function FallbackChair() {
+  return (
+    <group>
+      <mesh position={[0, 0.32, 0]} castShadow>
+        <boxGeometry args={[0.52, 0.1, 0.52]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
       </mesh>
-      <mesh position={[-0.112, 0, 0.08]}>
-        <boxGeometry args={[0.005, 0.44, 0.38]} />
-        <meshStandardMaterial 
-          color="#111" 
-          transparent 
-          opacity={0.25}
-          roughness={0.1}
-          metalness={0.3}
+      <mesh position={[0, 0.72, -0.22]} castShadow rotation={[-0.1, 0, 0]}>
+        <boxGeometry args={[0.52, 0.72, 0.08]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 1.12, -0.24]} castShadow>
+        <boxGeometry args={[0.32, 0.18, 0.1]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.85} />
+      </mesh>
+      {[[-0.2, 0.06, 0.2], [0.2, 0.06, 0.2], [-0.2, 0.06, -0.2], [0.2, 0.06, -0.2]].map((pos, i) => (
+        <mesh key={i} position={pos as [number, number, number]} castShadow>
+          <sphereGeometry args={[0.04, 20, 20]} />
+          <meshStandardMaterial color="#222" metalness={0.85} roughness={0.15} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function Bed3D() {
+  return (
+    <group position={[-2.25, 0, 0.6]} rotation={[0, Math.PI / 2, 0]}>
+      <Suspense fallback={<FallbackBed />}>
+        <LoadedModel 
+          url={MODEL_URLS.bedDouble} 
+          position={[0, 0, 0]} 
+          scale={0.8}
         />
+      </Suspense>
+    </group>
+  );
+}
+
+function FallbackBed() {
+  return (
+    <group>
+      <mesh position={[0, 0.22, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2.1, 0.32, 1.1]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.85} />
       </mesh>
-      <group position={[-0.112, 0.12, 0.08]}>
-        <FanBlade meshRef={fanRef1} />
-        <mesh position={[0, 0, 0.01]}>
-          <ringGeometry args={[0.045, 0.055, 32]} />
-          <meshStandardMaterial emissive="#ff0055" emissiveIntensity={3} toneMapped={false} />
+      <mesh position={[0, 0.42, 0]} receiveShadow>
+        <boxGeometry args={[2.0, 0.12, 1.0]} />
+        <meshStandardMaterial color="#2a2a3a" roughness={0.95} />
+      </mesh>
+      <mesh position={[-0.75, 0.52, -0.2]} castShadow>
+        <boxGeometry args={[0.45, 0.16, 0.38]} />
+        <meshStandardMaterial color="#4a4a5a" roughness={0.95} />
+      </mesh>
+    </group>
+  );
+}
+
+function Desk3D() {
+  return (
+    <group position={[0, 0, -2]}>
+      <Suspense fallback={<FallbackDesk />}>
+        <LoadedModel 
+          url={MODEL_URLS.desk} 
+          position={[0, 0.4, 0]} 
+          scale={0.8}
+        />
+      </Suspense>
+      <RGBStrip position={[0, 0.38, 0.44]} color="#00ffff" width={2.4} />
+    </group>
+  );
+}
+
+function FallbackDesk() {
+  return (
+    <group position={[0, 0.4, 0]}>
+      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2.6, 0.04, 0.9]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.15} metalness={0.4} />
+      </mesh>
+      {[[-1.15, -0.38, 0.3], [1.15, -0.38, 0.3], [-1.15, -0.38, -0.3], [1.15, -0.38, -0.3]].map((pos, i) => (
+        <mesh key={i} position={pos as [number, number, number]} castShadow>
+          <boxGeometry args={[0.06, 0.72, 0.06]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.7} />
         </mesh>
-      </group>
-      <group position={[-0.112, -0.12, 0.08]}>
-        <FanBlade meshRef={fanRef2} />
-        <mesh position={[0, 0, 0.01]}>
-          <ringGeometry args={[0.045, 0.055, 32]} />
-          <meshStandardMaterial emissive="#00ff88" emissiveIntensity={3} toneMapped={false} />
-        </mesh>
-      </group>
-      <group position={[-0.112, 0, -0.12]}>
-        <FanBlade meshRef={fanRef3} />
-        <mesh position={[0, 0, 0.01]}>
-          <ringGeometry args={[0.045, 0.055, 32]} />
-          <meshStandardMaterial emissive="#0088ff" emissiveIntensity={3} toneMapped={false} />
-        </mesh>
-      </group>
-      <RGBStrip position={[-0.11, 0.2, 0.2]} color="#ff0055" width={0.15} />
-      <RGBStrip position={[-0.11, 0, 0.2]} color="#00ff88" width={0.15} />
-      <RGBStrip position={[-0.11, -0.2, 0.2]} color="#0088ff" width={0.15} />
-      <RGBLight position={[-0.15, 0.1, 0.15]} color="#ff0055" intensity={0.8} speed={2.5} />
-      <RGBLight position={[-0.15, -0.1, 0.15]} color="#00ff88" intensity={0.8} speed={3} />
-      <RGBLight position={[-0.15, 0, 0]} color="#0088ff" intensity={0.6} speed={2} />
+      ))}
     </group>
   );
 }
@@ -221,28 +288,15 @@ function PlayStation5() {
     <group position={[-0.9, 0.47, -2.15]} rotation={[0, 0, Math.PI / 2]}>
       <mesh castShadow>
         <boxGeometry args={[0.06, 0.38, 0.24]} />
-        <meshStandardMaterial 
-          color="#ffffff" 
-          roughness={0.15} 
-          metalness={0.1}
-          envMapIntensity={1.2}
-        />
+        <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.1} />
       </mesh>
       <mesh position={[0.032, 0, 0]}>
         <boxGeometry args={[0.008, 0.36, 0.22]} />
-        <meshStandardMaterial 
-          color="#0a0a0a" 
-          roughness={0.05} 
-          metalness={0.9}
-        />
+        <meshStandardMaterial color="#0a0a0a" roughness={0.05} metalness={0.9} />
       </mesh>
       <mesh position={[0.035, -0.12, 0]}>
         <boxGeometry args={[0.003, 0.04, 0.03]} />
-        <meshStandardMaterial 
-          emissive="#0088ff" 
-          emissiveIntensity={2}
-          toneMapped={false}
-        />
+        <meshStandardMaterial emissive="#0088ff" emissiveIntensity={2} toneMapped={false} />
       </mesh>
       <RGBLight position={[0.05, -0.12, 0]} color="#0088ff" intensity={0.3} speed={1} />
     </group>
@@ -254,25 +308,13 @@ function GamingHeadphones() {
     <group position={[-0.55, 0.52, -1.85]} rotation={[0, 0.2, 0]}>
       <mesh castShadow>
         <torusGeometry args={[0.09, 0.018, 16, 32, Math.PI]} />
-        <meshStandardMaterial 
-          color="#1a1a1a" 
-          roughness={0.25} 
-          metalness={0.7}
-        />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.25} metalness={0.7} />
       </mesh>
       {[[-0.09, -0.02], [0.09, -0.02]].map(([x, y], i) => (
         <group key={i} position={[x, y, 0]}>
           <mesh castShadow>
             <sphereGeometry args={[0.05, 24, 24]} />
-            <meshStandardMaterial 
-              color="#2a2a2a" 
-              roughness={0.3}
-              metalness={0.5}
-            />
-          </mesh>
-          <mesh position={[i === 1 ? 0.01 : -0.01, 0, 0]}>
-            <sphereGeometry args={[0.042, 16, 16]} />
-            <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
+            <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.5} />
           </mesh>
         </group>
       ))}
@@ -289,11 +331,7 @@ function PS5Controller() {
     <group position={[0.35, 0.455, -1.75]} rotation={[0.1, 0.4, 0]}>
       <mesh castShadow>
         <boxGeometry args={[0.15, 0.025, 0.095]} />
-        <meshStandardMaterial 
-          color="#ffffff" 
-          roughness={0.15}
-          metalness={0.1}
-        />
+        <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.1} />
       </mesh>
       {[[-0.045, -0.02], [0.045, 0.015]].map(([x, z], i) => (
         <mesh key={i} position={[x, 0.018, z]}>
@@ -303,11 +341,7 @@ function PS5Controller() {
       ))}
       <mesh position={[0, 0.02, -0.01]}>
         <boxGeometry args={[0.035, 0.004, 0.035]} />
-        <meshStandardMaterial 
-          color="#1a1a2a"
-          emissive="#0066ff" 
-          emissiveIntensity={0.8}
-        />
+        <meshStandardMaterial color="#1a1a2a" emissive="#0066ff" emissiveIntensity={0.8} />
       </mesh>
     </group>
   );
@@ -320,21 +354,11 @@ function PlantShelf() {
         <cylinderGeometry args={[0.045, 0.035, 0.08, 16]} />
         <meshStandardMaterial color="#5a3a2a" roughness={0.85} />
       </mesh>
-      <mesh position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.042, 0.042, 0.02, 16]} />
-        <meshStandardMaterial color="#3a2a1a" roughness={0.95} />
-      </mesh>
       <Float speed={2} rotationIntensity={0.1} floatIntensity={0.1}>
         <mesh position={[0, 0.08, 0]}>
           <sphereGeometry args={[0.055, 12, 12]} />
           <meshStandardMaterial color="#1a5a1a" roughness={0.9} />
         </mesh>
-        {[0, 1.5, 3, 4.5].map((rot, i) => (
-          <mesh key={i} position={[Math.cos(rot) * 0.03, 0.12, Math.sin(rot) * 0.03]} rotation={[0.3, rot, 0]}>
-            <sphereGeometry args={[0.025, 8, 8]} />
-            <meshStandardMaterial color="#2a7a2a" roughness={0.85} />
-          </mesh>
-        ))}
       </Float>
     </group>
   );
@@ -344,14 +368,6 @@ function PlantShelf() {
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.85, 0.025, 0.14]} />
         <meshStandardMaterial color="#5a3a1a" roughness={0.6} metalness={0.1} />
-      </mesh>
-      <mesh position={[-0.4, -0.015, 0]}>
-        <boxGeometry args={[0.02, 0.06, 0.04]} />
-        <meshStandardMaterial color="#333" metalness={0.9} roughness={0.2} />
-      </mesh>
-      <mesh position={[0.4, -0.015, 0]}>
-        <boxGeometry args={[0.02, 0.06, 0.04]} />
-        <meshStandardMaterial color="#333" metalness={0.9} roughness={0.2} />
       </mesh>
       <PlantPot position={[-0.28, 0.055, 0]} />
       <PlantPot position={[0, 0.055, 0]} />
@@ -374,104 +390,11 @@ function WallTV() {
     <group position={[1.6, 1.35, -2.48]}>
       <mesh castShadow>
         <boxGeometry args={[1.0, 0.6, 0.025]} />
-        <meshStandardMaterial 
-          color="#050505" 
-          roughness={0.1} 
-          metalness={0.95}
-          envMapIntensity={2}
-        />
+        <meshStandardMaterial color="#050505" roughness={0.1} metalness={0.95} />
       </mesh>
       <mesh ref={screenRef} position={[0, 0, 0.015]}>
         <planeGeometry args={[0.96, 0.56]} />
-        <meshStandardMaterial 
-          color="#0a0a12"
-          emissive="#1a2a3a"
-          emissiveIntensity={0.15}
-          roughness={0.05}
-        />
-      </mesh>
-      <mesh position={[0, -0.32, 0.015]}>
-        <boxGeometry args={[0.12, 0.008, 0.015]} />
-        <meshStandardMaterial color="#0a0a0a" metalness={0.9} roughness={0.1} />
-      </mesh>
-    </group>
-  );
-}
-
-function GamingChair() {
-  return (
-    <group position={[0, 0, 0.2]}>
-      <mesh position={[0, 0.32, 0]} castShadow>
-        <boxGeometry args={[0.52, 0.1, 0.52]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 0.38, 0]} castShadow>
-        <boxGeometry args={[0.48, 0.06, 0.48]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, 0.72, -0.22]} castShadow rotation={[-0.1, 0, 0]}>
-        <boxGeometry args={[0.52, 0.72, 0.08]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 1.12, -0.24]} castShadow>
-        <boxGeometry args={[0.32, 0.18, 0.1]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.85} />
-      </mesh>
-      {[[0.28, 0.48], [-0.28, 0.48]].map(([x, y], i) => (
-        <group key={i}>
-          <mesh position={[x, y, 0]} castShadow>
-            <boxGeometry args={[0.08, 0.1, 0.38]} />
-            <meshStandardMaterial color="#252525" roughness={0.7} />
-          </mesh>
-          <mesh position={[x, y + 0.06, 0.08]}>
-            <boxGeometry args={[0.06, 0.025, 0.12]} />
-            <meshStandardMaterial color="#1a1a1a" roughness={0.6} />
-          </mesh>
-        </group>
-      ))}
-      {[
-        [-0.2, 0.06, 0.2], [0.2, 0.06, 0.2],
-        [-0.2, 0.06, -0.2], [0.2, 0.06, -0.2], [0, 0.06, 0.22]
-      ].map((pos, i) => (
-        <mesh key={i} position={pos as [number, number, number]} castShadow>
-          <sphereGeometry args={[0.04, 20, 20]} />
-          <meshStandardMaterial color="#222" metalness={0.85} roughness={0.15} />
-        </mesh>
-      ))}
-      <RGBStrip position={[0.27, 0.55, -0.1]} rotation={[0, 0, Math.PI / 2]} color="#ff0044" width={0.35} />
-      <RGBStrip position={[-0.27, 0.55, -0.1]} rotation={[0, 0, Math.PI / 2]} color="#ff0044" width={0.35} />
-      <RGBLight position={[0.3, 0.5, 0]} color="#ff0044" intensity={0.4} />
-      <RGBLight position={[-0.3, 0.5, 0]} color="#ff0044" intensity={0.4} />
-    </group>
-  );
-}
-
-function Bed() {
-  return (
-    <group position={[-2.25, 0, 0.6]} rotation={[0, Math.PI / 2, 0]}>
-      <mesh position={[0, 0.22, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2.1, 0.32, 1.1]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.85} />
-      </mesh>
-      <mesh position={[0, 0.42, 0]} receiveShadow>
-        <boxGeometry args={[2.0, 0.12, 1.0]} />
-        <meshStandardMaterial color="#2a2a3a" roughness={0.95} />
-      </mesh>
-      <mesh position={[0.3, 0.48, 0]} receiveShadow>
-        <boxGeometry args={[1.2, 0.08, 0.9]} />
-        <meshStandardMaterial color="#3a3a4a" roughness={0.92} />
-      </mesh>
-      <mesh position={[-0.75, 0.52, -0.2]} castShadow>
-        <boxGeometry args={[0.45, 0.16, 0.38]} />
-        <meshStandardMaterial color="#4a4a5a" roughness={0.95} />
-      </mesh>
-      <mesh position={[-0.75, 0.52, 0.25]} castShadow>
-        <boxGeometry args={[0.42, 0.14, 0.35]} />
-        <meshStandardMaterial color="#5a5a6a" roughness={0.95} />
-      </mesh>
-      <mesh position={[1.0, 0.48, 0]} castShadow>
-        <boxGeometry args={[0.06, 0.55, 1.1]} />
-        <meshStandardMaterial color="#0f0f0f" roughness={0.3} metalness={0.5} />
+        <meshStandardMaterial color="#0a0a12" emissive="#1a2a3a" emissiveIntensity={0.15} />
       </mesh>
     </group>
   );
@@ -511,16 +434,7 @@ function FloorLamp() {
           side={THREE.DoubleSide}
         />
       </mesh>
-      <pointLight 
-        ref={lightRef} 
-        position={[0, 1.42, 0]} 
-        color="#fff5e0" 
-        intensity={1.2} 
-        distance={5}
-        decay={2}
-        castShadow 
-        shadow-mapSize={512}
-      />
+      <pointLight ref={lightRef} position={[0, 1.42, 0]} color="#fff5e0" intensity={1.2} distance={5} decay={2} castShadow />
     </group>
   );
 }
@@ -536,23 +450,10 @@ function Cupboard() {
         <boxGeometry args={[0.6, 0.92, 0.015]} />
         <meshStandardMaterial color="#1a0a00" roughness={0.55} />
       </mesh>
-      <mesh position={[0.01, 0.95, 0.245]}>
-        <boxGeometry args={[0.015, 1.85, 0.015]} />
-        <meshStandardMaterial color="#1a0a00" roughness={0.55} />
-      </mesh>
-      {[[0.14, 0.65], [-0.14, 1.25]].map(([x, y], i) => (
-        <mesh key={i} position={[x, y, 0.26]}>
-          <sphereGeometry args={[0.018, 12, 12]} />
-          <meshStandardMaterial color="#d4af80" metalness={0.85} roughness={0.2} />
-        </mesh>
-      ))}
       {[0, 0.07, 0.14].map((y, i) => (
         <mesh key={i} position={[0, 1.95 + y, 0]} castShadow>
           <boxGeometry args={[0.22, 0.055, 0.16]} />
-          <meshStandardMaterial 
-            color={["#3a2a1a", "#2a3a2a", "#2a2a3a"][i]} 
-            roughness={0.45} 
-          />
+          <meshStandardMaterial color={["#3a2a1a", "#2a3a2a", "#2a2a3a"][i]} roughness={0.45} />
         </mesh>
       ))}
     </group>
@@ -574,17 +475,9 @@ function MessiPoster() {
         <boxGeometry args={[0.28, 0.42, 0.004]} />
         <meshStandardMaterial color="#75aadb" roughness={0.6} />
       </mesh>
-      <mesh position={[0, -0.12, 0.018]}>
-        <boxGeometry args={[0.18, 0.25, 0.002]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} />
-      </mesh>
       <mesh position={[0, 0.28, 0.015]}>
         <boxGeometry args={[0.45, 0.1, 0.003]} />
-        <meshStandardMaterial 
-          color="#ffd700" 
-          roughness={0.25}
-          metalness={0.6}
-        />
+        <meshStandardMaterial color="#ffd700" roughness={0.25} metalness={0.6} />
       </mesh>
     </group>
   );
@@ -669,16 +562,16 @@ function Scene() {
       />
       
       <Room />
-      <Desk />
-      <CurvedMonitor />
-      <GamingPC />
+      <Desk3D />
+      <Monitor3D />
+      <GamingComputer />
       <PlayStation5 />
       <GamingHeadphones />
       <PS5Controller />
       <PlantShelf />
       <WallTV />
-      <GamingChair />
-      <Bed />
+      <GamingChair3D />
+      <Bed3D />
       <FloorLamp />
       <Cupboard />
       <MessiPoster />
@@ -698,17 +591,19 @@ function Scene() {
 function PostProcessing() {
   return (
     <EffectComposer>
+      <SSAO
+        blendFunction={BlendFunction.MULTIPLY}
+        samples={16}
+        radius={0.1}
+        intensity={20}
+        luminanceInfluence={0.5}
+        color="black"
+      />
       <Bloom 
         intensity={0.8}
         luminanceThreshold={0.6}
         luminanceSmoothing={0.9}
         mipmapBlur
-      />
-      <ChromaticAberration
-        blendFunction={BlendFunction.NORMAL}
-        offset={new THREE.Vector2(0.0005, 0.0005)}
-        radialModulation={false}
-        modulationOffset={0}
       />
       <Vignette
         offset={0.3}
@@ -735,7 +630,11 @@ export function GamingRoom3D({ opacity = 1 }: GamingRoom3DProps) {
       }}
       data-testid="gaming-room-3d"
     >
-      <Suspense fallback={null}>
+      <Suspense fallback={
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-white text-lg">Loading 3D Room...</div>
+        </div>
+      }>
         <Canvas
           shadows
           dpr={targetDpr}
@@ -756,8 +655,10 @@ export function GamingRoom3D({ opacity = 1 }: GamingRoom3DProps) {
           }}
           style={{ background: 'transparent' }}
         >
-          <Scene />
-          <PostProcessing />
+          <Suspense fallback={null}>
+            <Scene />
+            <PostProcessing />
+          </Suspense>
           <OrbitControls
             enablePan={false}
             enableZoom={true}
@@ -777,3 +678,7 @@ export function GamingRoom3D({ opacity = 1 }: GamingRoom3DProps) {
     </div>
   );
 }
+
+Object.values(MODEL_URLS).forEach(url => {
+  useGLTF.preload(url);
+});
