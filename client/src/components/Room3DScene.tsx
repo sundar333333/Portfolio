@@ -549,7 +549,7 @@ export function Room3DScene({ visible }: Room3DSceneProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-40"
+      className="fixed inset-0 z-50 pointer-events-auto"
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.5s ease-out' }}
       data-testid="room-3d-scene"
     >
