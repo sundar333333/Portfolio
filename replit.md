@@ -29,7 +29,6 @@ Preferred communication style: Simple, everyday language.
 **Component Structure**
 - `Scene3D.tsx` - Main 3D canvas containing the room environment, vintage TV model, scroll-based transitions, and glitch effects
 - `WorkSection.tsx` - "Digital Void" scene with neon Tron-style grid floor/ceiling, curved wall of floating monitors, and particle effects
-- `GamingRoom3D.tsx` - Photorealistic 3D gaming room with free GLTF models from Poly.pizza CDN (gaming computer, monitor, chair, desk, bed, PlayStation 5, headphones, controller, floor lamp, cupboard), RGB lighting effects, reflective floor using MeshReflectorMaterial, and post-processing (SSAO, Bloom, Vignette)
 - `LoadingScreen.tsx` - Full-screen static noise with countdown animation
 - `CustomCursor.tsx` - Glassy liquid cursor with multi-color light trail effect
 - `Header.tsx` - Fixed navigation with brand name in Anton/Archivo Black font
