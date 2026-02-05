@@ -86,25 +86,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     }
   }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
 
-  // Debug keyboard shortcut to jump to 3D room (press 'R' key)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'r' || e.key === 'R') {
-        console.log('Jumping to 3D room');
-        setZoomProgress(1);
-        onZoomProgress?.(1);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onZoomProgress]);
-
   // Separate scroll handler for zooming into the circle
   useEffect(() => {
     if (!isWorksScreenVisible || openCaseStudy !== null) return;
     
-    const freeScrollThreshold = 300; // Free scroll before zoom starts (reduced)
-    const zoomThreshold = 800; // Zoom scroll distance (reduced)
+    const freeScrollThreshold = 800; // Free scroll before zoom starts
+    const zoomThreshold = 2000; // Zoom scroll distance
     const totalThreshold = freeScrollThreshold + zoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -272,16 +259,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     >
       {progress >= 1 && !openCaseStudy && projectsOpacity > 0 && (
         <div style={{ opacity: projectsOpacity, transition: 'opacity 0.15s ease-out' }}>
-          {/* Scroll hint */}
-          <div 
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-black/50 text-sm flex flex-col items-center gap-2"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            <span>Scroll to explore the room</span>
-            <div className="w-6 h-10 border-2 border-black/30 rounded-full flex justify-center pt-2">
-              <div className="w-1.5 h-3 bg-black/40 rounded-full animate-bounce" />
-            </div>
-          </div>
           <div 
             className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
