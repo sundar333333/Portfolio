@@ -8,7 +8,6 @@ import tickingCaseStudy from "@assets/image_1769954947300.png";
 import currentCaseStudy from "@assets/image_1769954987397.png";
 import eventifyCaseStudy from "@assets/image_1769955050232.png";
 import spaceJumpCaseStudy from "@assets/image_1769955092024.png";
-import { Room3DScene } from "./Room3DScene";
 
 interface TrailPoint {
   x: number;
@@ -409,9 +408,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           data-testid="black-screen-section"
         />
       )}
-
-      {/* 3D Room Scene */}
-      <Room3DScene visible={isZoomComplete && !openCaseStudy} />
 
       {/* Case Study Viewer */}
       {openCaseStudy && (

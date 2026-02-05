@@ -549,15 +549,15 @@ export function Room3DScene({ visible }: Room3DSceneProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 pointer-events-auto"
+      className="fixed inset-0 z-50 pointer-events-auto bg-black"
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.5s ease-out' }}
       data-testid="room-3d-scene"
     >
       <Canvas
         shadows
         camera={{ position: [3, 2.5, 4], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
+        gl={{ antialias: true }}
+        style={{ background: '#000000' }}
       >
         <color attach="background" args={['#000000']} />
         

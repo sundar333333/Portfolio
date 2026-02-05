@@ -9,6 +9,7 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
+import { Room3DScene } from "@/components/Room3DScene";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -97,6 +98,9 @@ export default function Home() {
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
+
+          {/* 3D Room Scene - renders when zoom is complete */}
+          <Room3DScene visible={zoomProgress >= 1 && !isCaseStudyOpen} />
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
