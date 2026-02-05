@@ -8,8 +8,6 @@ import {
   Float,
   Sparkles
 } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 
 function RGBLight({ position, color, intensity = 1, speed = 2 }: { position: [number, number, number]; color: string; intensity?: number; speed?: number }) {
@@ -567,23 +565,6 @@ function Scene() {
   );
 }
 
-function PostProcessing() {
-  return (
-    <EffectComposer>
-      <Bloom 
-        intensity={0.8}
-        luminanceThreshold={0.6}
-        luminanceSmoothing={0.9}
-        mipmapBlur
-      />
-      <Vignette
-        offset={0.3}
-        darkness={0.6}
-        blendFunction={BlendFunction.NORMAL}
-      />
-    </EffectComposer>
-  );
-}
 
 interface GamingRoom3DProps {
   opacity?: number;
@@ -626,7 +607,6 @@ export function GamingRoom3D({ opacity = 1 }: GamingRoom3DProps) {
         >
           <Suspense fallback={null}>
             <Scene />
-            <PostProcessing />
           </Suspense>
           <OrbitControls
             enablePan={false}
