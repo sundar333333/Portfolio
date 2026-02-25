@@ -1,11 +1,30 @@
-import { Suspense, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Suspense, useRef, useState, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 function RoomModel() {
   const { scene } = useGLTF("/room.glb", true);
   const groupRef = useRef<THREE.Group>(null);
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        if (mesh.material) {
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          materials.forEach((mat) => {
+            if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+              if (mat.map) mat.map.anisotropy = 1;
+              mat.envMapIntensity = 0.5;
+            }
+          });
+        }
+      }
+    });
+  }, [scene]);
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -30,30 +49,24 @@ function RoomModel() {
   );
 }
 
-function CameraSetup() {
-  const { camera } = useThree();
-  
-  useFrame(() => {
-    camera.lookAt(0, 0.5, 0);
-  });
-
-  return null;
-}
-
-function LoadingFallback() {
+function LoadingIndicator() {
   const meshRef = useRef<THREE.Mesh>(null);
-  
+
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime;
+      meshRef.current.rotation.y = state.clock.elapsedTime * 2;
+      meshRef.current.rotation.x = state.clock.elapsedTime;
     }
   });
 
   return (
-    <mesh ref={meshRef}>
-      <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshStandardMaterial color="#333" wireframe />
-    </mesh>
+    <group>
+      <mesh ref={meshRef}>
+        <boxGeometry args={[0.3, 0.3, 0.3]} />
+        <meshStandardMaterial color="#444" wireframe />
+      </mesh>
+      <ambientLight intensity={0.5} />
+    </group>
   );
 }
 
@@ -62,29 +75,35 @@ interface Room3DProps {
 }
 
 export function Room3D({ visible }: Room3DProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  if (!visible) return null;
+  if (!visible || hasError) return null;
 
   return (
     <div
       className="fixed inset-0 z-[31]"
-      style={{
-        opacity: isLoaded ? 1 : 0,
-        transition: "opacity 1.2s ease-in-out",
-      }}
       data-testid="room-3d-container"
     >
       <Canvas
         shadows
         camera={{ position: [3, 3, 5], fov: 45 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.2,
+        }}
         style={{ background: "transparent" }}
-        onCreated={() => setIsLoaded(true)}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            setHasError(true);
+          });
+        }}
       >
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <CameraSetup />
           <ambientLight intensity={0.3} />
           <pointLight position={[3, 4, 2]} intensity={0.8} color="#ffffff" castShadow />
           <pointLight position={[-2, 3, -1]} intensity={0.4} color="#4a8fe7" />
@@ -114,4 +133,3 @@ export function Room3D({ visible }: Room3DProps) {
   );
 }
 
-useGLTF.preload("/room.glb", true);

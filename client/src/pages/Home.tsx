@@ -83,15 +83,17 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          <Scene3D
-            hoveredText={hoveredText}
-            onTVClick={handleTVClick}
-            isVideoPlaying={isVideoPlaying}
-            onWorkSectionChange={handleWorkSectionChange}
-            onScrollProgress={handleScrollProgress}
-            onWhiteSectionProgress={handleWhiteSectionProgress}
-            onCircleProgress={handleCircleProgress}
-          />
+          {zoomProgress < 0.95 && (
+            <Scene3D
+              hoveredText={hoveredText}
+              onTVClick={handleTVClick}
+              isVideoPlaying={isVideoPlaying}
+              onWorkSectionChange={handleWorkSectionChange}
+              onScrollProgress={handleScrollProgress}
+              onWhiteSectionProgress={handleWhiteSectionProgress}
+              onCircleProgress={handleCircleProgress}
+            />
+          )}
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
