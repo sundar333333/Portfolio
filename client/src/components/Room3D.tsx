@@ -34,12 +34,29 @@ function RoomModel() {
       name: "Sill_material",
     });
 
+    const glassPaneNames = new Set<string>();
+    scene.traverse((obj) => {
+      if (obj.name === "GlassA" || obj.name === "GlassB") {
+        obj.traverse((c) => {
+          if ((c as THREE.Mesh).isMesh) {
+            glassPaneNames.add(c.name);
+          }
+        });
+      }
+    });
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         const meshName = mesh.name;
+
+        if (glassPaneNames.has(meshName)) {
+          mesh.material = glassMat.clone();
+          return;
+        }
+
         if (mesh.material) {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
@@ -52,19 +69,6 @@ function RoomModel() {
             }
           });
 
-          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          let replaced = false;
-          const newMats = mats.map((m) => {
-            if (m.name === "GlassA_1001" || m.name === "GlassB_1001") {
-              replaced = true;
-              return glassMat.clone();
-            }
-            return m;
-          });
-          if (replaced) {
-            mesh.material = Array.isArray(mesh.material) ? newMats : newMats[0];
-          }
-
           if (meshName === "CTRL_Hole") {
             mesh.visible = false;
           } else if (meshName === "WindowFrame") {
@@ -73,20 +77,10 @@ function RoomModel() {
             mesh.material = sillMat;
           } else if (meshName === "Handle" || meshName === "Handle001") {
             mesh.material = handleMat;
-          } else if (meshName === "WindowL" || meshName === "WindowR" ||
-                     meshName === "Window.L" || meshName === "Window.R" ||
-                     meshName === "WindowL_1" || meshName === "WindowR_1" ||
-                     meshName === "WindowL_2" || meshName === "WindowR_2") {
-            if (Array.isArray(mesh.material)) {
-              mesh.material = [windowFrameMat, glassMat];
-            } else {
-              const suffix = meshName.slice(-2);
-              if (suffix === "_2" || suffix === ".2") {
-                mesh.material = glassMat;
-              } else {
-                mesh.material = windowFrameMat;
-              }
-            }
+          } else if (meshName === "WindowL_1" || meshName === "WindowR_1") {
+            mesh.material = windowFrameMat;
+          } else if (meshName === "WindowL_2" || meshName === "WindowR_2") {
+            mesh.material = glassMat.clone();
           }
         }
       }
