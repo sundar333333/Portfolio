@@ -52,7 +52,9 @@ function RoomModel() {
             }
           });
 
-          if (meshName === "WindowFrame" || meshName === "CTRL_Hole") {
+          if (meshName === "CTRL_Hole") {
+            mesh.visible = false;
+          } else if (meshName === "WindowFrame") {
             mesh.material = windowFrameMat;
           } else if (meshName === "Windows_Sill") {
             mesh.material = sillMat;
