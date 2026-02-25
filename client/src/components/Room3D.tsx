@@ -1,11 +1,10 @@
 import { Suspense, useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, Environment, OrbitControls } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { useGLTF, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 function RoomModel() {
   const { scene } = useGLTF("/room.glb", true);
-  const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -17,20 +16,14 @@ function RoomModel() {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
             if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-              if (mat.map) mat.map.anisotropy = 1;
-              mat.envMapIntensity = 0.5;
+              mat.envMapIntensity = 0.15;
+              mat.needsUpdate = true;
             }
           });
         }
       }
     });
   }, [scene]);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.1) * 0.03;
-    }
-  });
 
   const box = new THREE.Box3().setFromObject(scene);
   const size = box.getSize(new THREE.Vector3());
@@ -39,25 +32,16 @@ function RoomModel() {
   const scale = 4 / maxDim;
 
   return (
-    <group ref={groupRef}>
-      <primitive
-        object={scene}
-        scale={scale}
-        position={[-center.x * scale, -center.y * scale + 0.5, -center.z * scale]}
-      />
-    </group>
+    <primitive
+      object={scene}
+      scale={scale}
+      position={[-center.x * scale, -center.y * scale + 0.5, -center.z * scale]}
+    />
   );
 }
 
 function LoadingIndicator() {
   const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 2;
-      meshRef.current.rotation.x = state.clock.elapsedTime;
-    }
-  });
 
   return (
     <group>
@@ -86,13 +70,13 @@ export function Room3D({ visible }: Room3DProps) {
     >
       <Canvas
         shadows
-        camera={{ position: [3, 3, 5], fov: 45 }}
+        camera={{ position: [3, 2.5, 5], fov: 45 }}
         gl={{
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
+          toneMappingExposure: 0.7,
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 1.5]}
@@ -106,18 +90,14 @@ export function Room3D({ visible }: Room3DProps) {
       >
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.3} />
-          <pointLight position={[3, 4, 2]} intensity={0.8} color="#ffffff" castShadow />
-          <pointLight position={[-2, 3, -1]} intensity={0.4} color="#4a8fe7" />
-          <spotLight
-            position={[0, 5, 3]}
-            angle={0.5}
-            penumbra={0.8}
+          <ambientLight intensity={0.4} />
+          <directionalLight
+            position={[2, 4, 3]}
             intensity={0.6}
             color="#ffffff"
             castShadow
           />
-          <Environment preset="apartment" />
+          <pointLight position={[-2, 2, 0]} intensity={0.3} color="#b4c7ff" distance={8} />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
@@ -125,8 +105,7 @@ export function Room3D({ visible }: Room3DProps) {
             maxDistance={10}
             minPolarAngle={Math.PI / 6}
             maxPolarAngle={Math.PI / 2.2}
-            autoRotate
-            autoRotateSpeed={0.3}
+            autoRotate={false}
             target={[0, 0.5, 0]}
           />
         </Suspense>
@@ -134,4 +113,3 @@ export function Room3D({ visible }: Room3DProps) {
     </div>
   );
 }
-
