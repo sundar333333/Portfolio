@@ -23,6 +23,7 @@ export default function Home() {
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
+  const [showRoom, setShowRoom] = useState(false);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
@@ -49,6 +50,9 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
+    if (progress >= 0.95) {
+      setShowRoom(true);
+    }
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -83,7 +87,7 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          {zoomProgress < 0.95 && (
+          <div style={{ display: showRoom ? 'none' : undefined }}>
             <Scene3D
               hoveredText={hoveredText}
               onTVClick={handleTVClick}
@@ -93,7 +97,7 @@ export default function Home() {
               onWhiteSectionProgress={handleWhiteSectionProgress}
               onCircleProgress={handleCircleProgress}
             />
-          )}
+          </div>
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
@@ -101,7 +105,7 @@ export default function Home() {
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
 
-          <Room3D visible={zoomProgress >= 0.95} />
+          <Room3D visible={showRoom} />
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
