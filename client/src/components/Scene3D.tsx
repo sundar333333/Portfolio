@@ -704,8 +704,18 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
           alpha: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 0.9,
+          failIfMajorPerformanceCaveat: false,
+          preserveDrawingBuffer: true,
         }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+          });
+          gl.domElement.addEventListener("webglcontextrestored", () => {
+            gl.compile(gl.domElement as any, gl as any);
+          });
+        }}
       >
         <Suspense fallback={null}>
           <ScrollControls pages={22} damping={0.2}>

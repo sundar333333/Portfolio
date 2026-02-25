@@ -93,7 +93,9 @@ export function Room3D({ visible }: Room3DProps) {
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
+          failIfMajorPerformanceCaveat: false,
         }}
+        dpr={[1, 1.5]}
         style={{ background: "transparent" }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (e) => {
