@@ -7,56 +7,11 @@ function RoomModel() {
   const { scene } = useGLTF("/room.glb", true);
 
   useEffect(() => {
-    const windowFrameMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0.7, 0.7, 0.72),
-      metalness: 0.4,
-      roughness: 0.35,
-      name: "Window_material",
-    });
-    const glassMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0.0, 0.003, 0.5),
-      metalness: 0.1,
-      roughness: 0.05,
-      transparent: true,
-      opacity: 0.7,
-      name: "Glass_material",
-    });
-    const handleMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0.15, 0.15, 0.15),
-      metalness: 0.3,
-      roughness: 0.5,
-      name: "Plastic_Handle_material",
-    });
-    const sillMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0.8, 0.8, 0.82),
-      metalness: 0.2,
-      roughness: 0.4,
-      name: "Sill_material",
-    });
-
-    const glassPaneNames = new Set<string>();
-    scene.traverse((obj) => {
-      if (obj.name === "GlassA" || obj.name === "GlassB") {
-        obj.traverse((c) => {
-          if ((c as THREE.Mesh).isMesh) {
-            glassPaneNames.add(c.name);
-          }
-        });
-      }
-    });
-
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        const meshName = mesh.name;
-
-        if (glassPaneNames.has(meshName)) {
-          mesh.material = glassMat.clone();
-          return;
-        }
-
         if (mesh.material) {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
@@ -68,20 +23,6 @@ function RoomModel() {
               }
             }
           });
-
-          if (meshName === "CTRL_Hole") {
-            mesh.visible = false;
-          } else if (meshName === "WindowFrame") {
-            mesh.material = windowFrameMat;
-          } else if (meshName === "Windows_Sill") {
-            mesh.material = sillMat;
-          } else if (meshName === "Handle" || meshName === "Handle001") {
-            mesh.material = handleMat;
-          } else if (meshName === "WindowL_1" || meshName === "WindowR_1") {
-            mesh.material = windowFrameMat;
-          } else if (meshName === "WindowL_2" || meshName === "WindowR_2") {
-            mesh.material = glassMat.clone();
-          }
         }
       }
     });
