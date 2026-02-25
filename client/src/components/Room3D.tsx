@@ -52,9 +52,17 @@ function RoomModel() {
             }
           });
 
-          if (meshName === "defaultMaterial.004" || meshName === "defaultMaterial.003" ||
-              meshName === "defaultMaterial004" || meshName === "defaultMaterial003") {
-            mesh.material = glassMat.clone();
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          let replaced = false;
+          const newMats = mats.map((m) => {
+            if (m.name === "GlassA_1001" || m.name === "GlassB_1001") {
+              replaced = true;
+              return glassMat.clone();
+            }
+            return m;
+          });
+          if (replaced) {
+            mesh.material = Array.isArray(mesh.material) ? newMats : newMats[0];
           }
 
           if (meshName === "CTRL_Hole") {
