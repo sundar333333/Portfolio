@@ -52,20 +52,10 @@ function RoomModel() {
             }
           });
 
-          materials.forEach((mat) => {
-            if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-              const matName = mat.name;
-              if (matName === "GlassA_1001" || matName === "GlassB_1001") {
-                mat.color.set("#3a4d7a");
-                mat.transparent = true;
-                mat.opacity = 0.45;
-                mat.metalness = 0.0;
-                mat.roughness = 0.05;
-                mat.map = null;
-                mat.needsUpdate = true;
-              }
-            }
-          });
+          if (meshName === "defaultMaterial.004" || meshName === "defaultMaterial.003" ||
+              meshName === "defaultMaterial004" || meshName === "defaultMaterial003") {
+            mesh.material = glassMat.clone();
+          }
 
           if (meshName === "CTRL_Hole") {
             mesh.visible = false;
