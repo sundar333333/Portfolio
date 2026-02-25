@@ -17,13 +17,6 @@ function RoomModel() {
           materials.forEach((mat) => {
             if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
               const name = mat.name.toLowerCase();
-              if (name.includes("beige") && name.includes("plaster") && name.includes("wall")) {
-                mat.color.set("#0a0a0a");
-                mat.map = null;
-                mat.roughness = 0.9;
-                mat.metalness = 0.0;
-                mat.needsUpdate = true;
-              }
               if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
                 mat.color.set("#0a0a0a");
                 mat.needsUpdate = true;
