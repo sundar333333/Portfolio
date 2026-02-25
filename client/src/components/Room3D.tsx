@@ -16,7 +16,17 @@ function RoomModel() {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
             if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-              mat.envMapIntensity = 0.15;
+              mat.envMapIntensity = 0.3;
+              const name = mat.name.toLowerCase();
+              if (name.includes("beige") && name.includes("plaster") && name.includes("wall")) {
+                mat.color.set("#0a0a0a");
+                mat.map = null;
+                mat.roughness = 0.9;
+                mat.metalness = 0.0;
+              }
+              if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
+                mat.color.set("#0a0a0a");
+              }
               mat.needsUpdate = true;
             }
           });
@@ -76,7 +86,7 @@ export function Room3D({ visible }: Room3DProps) {
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.7,
+          toneMappingExposure: 1.0,
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 1.5]}
@@ -90,14 +100,15 @@ export function Room3D({ visible }: Room3DProps) {
       >
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.4} />
+          <ambientLight intensity={0.5} />
           <directionalLight
             position={[2, 4, 3]}
-            intensity={0.6}
+            intensity={0.8}
             color="#ffffff"
             castShadow
           />
-          <pointLight position={[-2, 2, 0]} intensity={0.3} color="#b4c7ff" distance={8} />
+          <pointLight position={[-2, 2, 0]} intensity={0.4} color="#b4c7ff" distance={8} />
+          <pointLight position={[2, 2, -1]} intensity={0.3} color="#ffffff" distance={8} />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
