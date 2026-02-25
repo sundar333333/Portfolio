@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 **Component Structure**
 - `Scene3D.tsx` - Main 3D canvas containing the room environment, vintage TV model, scroll-based transitions, and glitch effects
 - `WorkSection.tsx` - "Digital Void" scene with neon Tron-style grid floor/ceiling, curved wall of floating monitors, and particle effects
-- `Room3D.tsx` - Dark 3D room scene that appears after Works section zoom transition; features desk with monitor (code editor), chair, bookshelf, plant, coffee mug, neon sign, LED strip, headphones, and wall art - all built with Three.js primitives (no external models)
+- `Room3D.tsx` - 3D room scene that appears after Works section zoom transition; loads the user's actual Blender model (compressed from 603MB to 19MB GLB with Draco compression and WebP textures) using useGLTF with OrbitControls for interactive viewing
 - `LoadingScreen.tsx` - Full-screen static noise with countdown animation
 - `CustomCursor.tsx` - Glassy liquid cursor with multi-color light trail effect
 - `Header.tsx` - Fixed navigation with brand name in Anton/Archivo Black font
