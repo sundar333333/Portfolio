@@ -79,7 +79,7 @@ export function Room3D({ visible }: Room3DProps) {
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.4,
+          toneMappingExposure: 1.0,
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 1.5]}
@@ -93,21 +93,16 @@ export function Room3D({ visible }: Room3DProps) {
       >
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={1.0} />
+          <ambientLight intensity={0.4} />
           <directionalLight
-            position={[2, 5, 3]}
-            intensity={1.5}
+            position={[-3.79, 8.13, 4.43]}
+            intensity={1.8}
             color="#ffffff"
             castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
           />
-          <directionalLight
-            position={[-3, 4, -2]}
-            intensity={0.8}
-            color="#ffffff"
-          />
-          <pointLight position={[-2, 3, 1]} intensity={0.8} color="#ffffff" distance={15} />
-          <pointLight position={[2, 3, -1]} intensity={0.8} color="#ffffff" distance={15} />
-          <pointLight position={[0, 4, 0]} intensity={0.6} color="#ffffff" distance={15} />
+          <hemisphereLight args={["#ffffff", "#333333", 0.5]} />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
