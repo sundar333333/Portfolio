@@ -7,12 +7,39 @@ function RoomModel() {
   const { scene } = useGLTF("/room.glb", true);
 
   useEffect(() => {
+    const windowFrameMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0.7, 0.7, 0.72),
+      metalness: 0.4,
+      roughness: 0.35,
+      name: "Window_material",
+    });
+    const glassMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0.0, 0.003, 0.5),
+      metalness: 0.1,
+      roughness: 0.05,
+      transparent: true,
+      opacity: 0.7,
+      name: "Glass_material",
+    });
+    const handleMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0.15, 0.15, 0.15),
+      metalness: 0.3,
+      roughness: 0.5,
+      name: "Plastic_Handle_material",
+    });
+    const sillMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0.8, 0.8, 0.82),
+      metalness: 0.2,
+      roughness: 0.4,
+      name: "Sill_material",
+    });
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        const meshName = mesh.name.toLowerCase();
+        const meshName = mesh.name;
         if (mesh.material) {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
@@ -22,35 +49,30 @@ function RoomModel() {
                 mat.color.set("#0a0a0a");
                 mat.needsUpdate = true;
               }
-              if (name === "hidden_material") {
-                if (meshName.includes("windowl_2") || meshName.includes("windowr_2")) {
-                  mat.color.set("#4a5e8a");
-                  mat.transparent = true;
-                  mat.opacity = 0.6;
-                  mat.metalness = 0.1;
-                  mat.roughness = 0.05;
-                  mat.needsUpdate = true;
-                  mesh.material = mat.clone();
-                  (mesh.material as THREE.MeshStandardMaterial).color.set("#4a5e8a");
-                  (mesh.material as THREE.MeshStandardMaterial).transparent = true;
-                  (mesh.material as THREE.MeshStandardMaterial).opacity = 0.6;
-                  (mesh.material as THREE.MeshStandardMaterial).metalness = 0.1;
-                  (mesh.material as THREE.MeshStandardMaterial).roughness = 0.05;
-                  (mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
-                } else if (meshName.includes("window") || meshName.includes("handle") || meshName.includes("ctrl_hole")) {
-                  mat.color.set("#c0c0c0");
-                  mat.metalness = 0.6;
-                  mat.roughness = 0.3;
-                  mat.needsUpdate = true;
-                  mesh.material = mat.clone();
-                  (mesh.material as THREE.MeshStandardMaterial).color.set("#c0c0c0");
-                  (mesh.material as THREE.MeshStandardMaterial).metalness = 0.6;
-                  (mesh.material as THREE.MeshStandardMaterial).roughness = 0.3;
-                  (mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
-                }
-              }
             }
           });
+
+          if (meshName === "WindowFrame" || meshName === "CTRL_Hole") {
+            mesh.material = windowFrameMat;
+          } else if (meshName === "Windows_Sill") {
+            mesh.material = sillMat;
+          } else if (meshName === "Handle" || meshName === "Handle001") {
+            mesh.material = handleMat;
+          } else if (meshName === "WindowL" || meshName === "WindowR" ||
+                     meshName === "Window.L" || meshName === "Window.R" ||
+                     meshName === "WindowL_1" || meshName === "WindowR_1" ||
+                     meshName === "WindowL_2" || meshName === "WindowR_2") {
+            if (Array.isArray(mesh.material)) {
+              mesh.material = [windowFrameMat, glassMat];
+            } else {
+              const suffix = meshName.slice(-2);
+              if (suffix === "_2" || suffix === ".2") {
+                mesh.material = glassMat;
+              } else {
+                mesh.material = windowFrameMat;
+              }
+            }
+          }
         }
       }
     });
