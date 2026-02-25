@@ -12,6 +12,7 @@ function RoomModel() {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+        const meshName = mesh.name.toLowerCase();
         if (mesh.material) {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
@@ -20,6 +21,33 @@ function RoomModel() {
               if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
                 mat.color.set("#0a0a0a");
                 mat.needsUpdate = true;
+              }
+              if (name === "hidden_material") {
+                if (meshName.includes("windowl_2") || meshName.includes("windowr_2")) {
+                  mat.color.set("#4a5e8a");
+                  mat.transparent = true;
+                  mat.opacity = 0.6;
+                  mat.metalness = 0.1;
+                  mat.roughness = 0.05;
+                  mat.needsUpdate = true;
+                  mesh.material = mat.clone();
+                  (mesh.material as THREE.MeshStandardMaterial).color.set("#4a5e8a");
+                  (mesh.material as THREE.MeshStandardMaterial).transparent = true;
+                  (mesh.material as THREE.MeshStandardMaterial).opacity = 0.6;
+                  (mesh.material as THREE.MeshStandardMaterial).metalness = 0.1;
+                  (mesh.material as THREE.MeshStandardMaterial).roughness = 0.05;
+                  (mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
+                } else if (meshName.includes("window") || meshName.includes("handle") || meshName.includes("ctrl_hole")) {
+                  mat.color.set("#c0c0c0");
+                  mat.metalness = 0.6;
+                  mat.roughness = 0.3;
+                  mat.needsUpdate = true;
+                  mesh.material = mat.clone();
+                  (mesh.material as THREE.MeshStandardMaterial).color.set("#c0c0c0");
+                  (mesh.material as THREE.MeshStandardMaterial).metalness = 0.6;
+                  (mesh.material as THREE.MeshStandardMaterial).roughness = 0.3;
+                  (mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
+                }
               }
             }
           });
