@@ -93,15 +93,15 @@ export function Room3D({ visible }: Room3DProps) {
       >
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.6} />
+          <ambientLight intensity={0.5} />
           <directionalLight
             position={[2, 4, 3]}
-            intensity={1.0}
+            intensity={0.8}
             color="#ffffff"
             castShadow
           />
-          <pointLight position={[-2, 3, 1]} intensity={0.5} color="#ffffff" distance={10} />
-          <pointLight position={[2, 3, -1]} intensity={0.5} color="#ffffff" distance={10} />
+          <pointLight position={[-2, 2, 0]} intensity={0.4} color="#b4c7ff" distance={8} />
+          <pointLight position={[2, 2, -1]} intensity={0.3} color="#ffffff" distance={8} />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
