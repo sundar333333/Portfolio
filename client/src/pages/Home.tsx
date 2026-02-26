@@ -12,55 +12,6 @@ import { WhiteSection } from "@/components/WhiteSection";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
-function RoomEnterOverlay({ onEnter, onClose }: { onEnter: () => void; onClose: () => void }) {
-  return (
-    <motion.div
-      className="fixed inset-0 z-[60] bg-black flex items-center justify-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      data-testid="room-enter-overlay"
-    >
-      <motion.button
-        className="relative w-40 h-40 md:w-52 md:h-52 rounded-full border-[3px] border-white/30 bg-white/5 flex items-center justify-center cursor-pointer group"
-        onClick={onEnter}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.6, type: "spring", stiffness: 100 }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        data-testid="button-enter-room"
-      >
-        <motion.div
-          className="absolute inset-0 rounded-full border-[2px] border-white/10"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0, 0.4] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute inset-0 rounded-full border border-white/5"
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0, 0.2] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        />
-        <span className="font-anton text-white text-2xl md:text-3xl tracking-[0.2em] uppercase group-hover:text-white/90 transition-colors">
-          ENTER
-        </span>
-      </motion.button>
-
-      <motion.button
-        className="absolute top-6 right-6 text-white/40 hover:text-white/80 text-sm transition-colors"
-        onClick={onClose}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        data-testid="button-close-room"
-      >
-        ✕
-      </motion.button>
-    </motion.div>
-  );
-}
-
 class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -82,11 +33,6 @@ export default function Home() {
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
-  const [showRoomOverlay, setShowRoomOverlay] = useState(false);
-
-  const handleRoomClick = useCallback(() => {
-    setShowRoomOverlay(true);
-  }, []);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -164,18 +110,9 @@ export default function Home() {
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
 
-          <AnimatePresence>
-            {showRoomOverlay && (
-              <RoomEnterOverlay
-                onEnter={() => setShowRoomOverlay(false)}
-                onClose={() => setShowRoomOverlay(false)}
-              />
-            )}
-          </AnimatePresence>
-
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
-              <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} onRoomClick={handleRoomClick} />
+              <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} />
             </div>
           )}
 

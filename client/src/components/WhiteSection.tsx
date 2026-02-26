@@ -373,17 +373,45 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         </div>
       )}
 
-      {/* Black Screen - Next Section after zoom complete */}
+      {/* Black Screen with Enter Button - Next Section after zoom complete */}
       {zoomProgress > 0.3 && !openCaseStudy && (
         <div 
-          className="fixed inset-0 z-30 pointer-events-auto"
+          className="fixed inset-0 z-30 pointer-events-auto flex items-center justify-center"
           style={{
             backgroundColor: '#000',
             opacity: Math.min(1, (zoomProgress - 0.3) / 0.4),
             transition: 'opacity 0.3s ease-out',
           }}
           data-testid="black-screen-section"
-        />
+        >
+          {zoomProgress >= 0.85 && (
+            <button
+              className="relative w-40 h-40 md:w-52 md:h-52 rounded-full border-[3px] border-white/30 bg-white/5 flex items-center justify-center cursor-pointer group"
+              style={{
+                opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
+                transform: `scale(${0.8 + 0.2 * Math.min(1, (zoomProgress - 0.85) / 0.15)})`,
+                transition: 'transform 0.4s ease-out',
+              }}
+              data-testid="button-enter-room"
+            >
+              <div
+                className="absolute inset-0 rounded-full border-[2px] border-white/10"
+                style={{
+                  animation: 'pulseRing 2.5s ease-in-out infinite',
+                }}
+              />
+              <div
+                className="absolute inset-0 rounded-full border border-white/5"
+                style={{
+                  animation: 'pulseRing 3s ease-in-out infinite 0.5s',
+                }}
+              />
+              <span className="font-anton text-white text-2xl md:text-3xl tracking-[0.2em] uppercase group-hover:text-white/90 transition-colors">
+                ENTER
+              </span>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Case Study Viewer */}
