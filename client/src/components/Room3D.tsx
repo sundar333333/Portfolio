@@ -17,76 +17,89 @@ const WINDOW_GLASS_MATS = new Set([
 ]);
 const ALL_WINDOW_MATS = new Set([...WINDOW_FRAME_MATS, ...WINDOW_GLASS_MATS]);
 
-function applyWindowMaterials(scene: THREE.Group) {
+const WALL_DARKEN_MATS = new Set([
+  "palettematerial001",
+  "black painted plaster wall",
+]);
+
+function applyMaterials(scene: THREE.Group) {
   scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+    if (!(child as THREE.Mesh).isMesh) return;
+    const mesh = child as THREE.Mesh;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-      if (mesh.material) {
-        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
-        const hasWindowMat = materials.some((mat) => {
-          const name = (mat as THREE.MeshStandardMaterial).name?.toLowerCase() || "";
-          return ALL_WINDOW_MATS.has(name);
-        });
-        if (hasWindowMat) {
-          mesh.renderOrder = 10;
-          const wx = mesh.position.x;
-          const wz = mesh.position.z;
-          if (wx < -3 && wz < -3) {
-            const dx = wx - (-3.6);
-            const dz = wz - (-3.6);
-            const len = Math.sqrt(dx * dx + dz * dz) || 1;
-            mesh.position.x += (dx / len) * 0.15;
-            mesh.position.z += (dz / len) * 0.15;
-          }
-        }
+    materials.forEach((mat) => {
+      if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+      const matKey = mat.name.toLowerCase();
 
-        materials.forEach((mat) => {
-          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-          const matKey = mat.name.toLowerCase();
+      if (matKey === "phong1") return;
 
-          if (WINDOW_FRAME_MATS.has(matKey)) {
-            mat.color.set("#c0c0c0");
-            mat.emissive.set("#ffffff");
-            mat.emissiveIntensity = 0.15;
-            mat.metalness = 0.4;
-            mat.roughness = 0.3;
-            mat.side = THREE.DoubleSide;
-            mat.depthWrite = true;
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -6;
-            mat.polygonOffsetUnits = -6;
-          }
-
-          if (WINDOW_GLASS_MATS.has(matKey)) {
-            mat.color.set("#6688bb");
-            mat.emissive.set("#4466aa");
-            mat.emissiveIntensity = 0.3;
-            mat.transparent = true;
-            mat.opacity = 0.4;
-            mat.metalness = 0.1;
-            mat.roughness = 0.05;
-            mat.side = THREE.DoubleSide;
-            mat.depthWrite = false;
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -8;
-            mat.polygonOffsetUnits = -8;
-          }
-
-          if (matKey === "palettematerial001") {
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = 4;
-            mat.polygonOffsetUnits = 4;
-          }
-
-          mat.needsUpdate = true;
-        });
+      if (WALL_DARKEN_MATS.has(matKey)) {
+        mat.color.set("#333333");
+        mat.needsUpdate = true;
+        return;
       }
+
+      if (WINDOW_FRAME_MATS.has(matKey)) {
+        mat.color.set("#f0f0f0");
+        mat.emissive.set("#ffffff");
+        mat.emissiveIntensity = 0.08;
+        mat.metalness = 0.3;
+        mat.roughness = 0.4;
+        mat.side = THREE.DoubleSide;
+        mat.depthWrite = true;
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -4;
+        mat.polygonOffsetUnits = -4;
+        mat.needsUpdate = true;
+      }
+
+      if (WINDOW_GLASS_MATS.has(matKey)) {
+        mat.color.set("#88aadd");
+        mat.emissive.set("#4466aa");
+        mat.emissiveIntensity = 0.25;
+        mat.transparent = true;
+        mat.opacity = 0.45;
+        mat.metalness = 0.0;
+        mat.roughness = 0.05;
+        mat.side = THREE.DoubleSide;
+        mat.depthWrite = false;
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -6;
+        mat.polygonOffsetUnits = -6;
+        mat.needsUpdate = true;
+      }
+    });
+
+    const hasWindowMat = materials.some((m) => {
+      const n = (m as THREE.MeshStandardMaterial).name?.toLowerCase() || "";
+      return ALL_WINDOW_MATS.has(n);
+    });
+    if (hasWindowMat) {
+      mesh.renderOrder = 10;
     }
   });
+}
+
+function computeRoomBoundingBox(scene: THREE.Group): THREE.Box3 {
+  const box = new THREE.Box3();
+  const worldPos = new THREE.Vector3();
+
+  scene.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh || !child.visible) return;
+    child.getWorldPosition(worldPos);
+    if (Math.abs(worldPos.x) > 50 || Math.abs(worldPos.y) > 50 || Math.abs(worldPos.z) > 50) return;
+    const meshBox = new THREE.Box3().setFromObject(child);
+    box.union(meshBox);
+  });
+
+  if (box.isEmpty()) {
+    box.setFromObject(scene);
+  }
+  return box;
 }
 
 export function preloadRoom3D() {
@@ -98,7 +111,7 @@ export function preloadRoom3D() {
   loader.load(
     "/render3d.glb",
     (gltf) => {
-      applyWindowMaterials(gltf.scene);
+      applyMaterials(gltf.scene);
       cachedScene = gltf.scene;
     },
     undefined,
@@ -126,7 +139,7 @@ function RoomModel() {
     loader.load(
       "/render3d.glb",
       (gltf) => {
-        applyWindowMaterials(gltf.scene);
+        applyMaterials(gltf.scene);
 
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
@@ -158,21 +171,7 @@ function RoomModel() {
 
   if (!scene) return <LoadingSpinner />;
 
-  const box = new THREE.Box3();
-  const worldPos = new THREE.Vector3();
-  scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh && child.visible) {
-      child.getWorldPosition(worldPos);
-      if (Math.abs(worldPos.x) < 50 && Math.abs(worldPos.y) < 50 && Math.abs(worldPos.z) < 50) {
-        const meshBox = new THREE.Box3().setFromObject(child);
-        box.union(meshBox);
-      }
-    }
-  });
-  if (box.isEmpty()) {
-    box.setFromObject(scene);
-  }
-
+  const box = computeRoomBoundingBox(scene);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
