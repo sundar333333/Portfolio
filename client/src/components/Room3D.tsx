@@ -2,6 +2,7 @@ import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
 function RoomModel() {
@@ -9,6 +10,7 @@ function RoomModel() {
 
   useEffect(() => {
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
 
     loader.load(
       "/room.glb",
