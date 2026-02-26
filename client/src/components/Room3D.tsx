@@ -28,16 +28,19 @@ function RoomModel() {
               materials.forEach((mat) => {
                 if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
                   const matName = mat.name.toLowerCase();
-                  const meshName = mesh.name.toLowerCase();
 
-                  if (matName.includes("black painted plaster wall")) {
+                  const darkWallMaterials = [
+                    "phong1",
+                    "palettematerial001",
+                    "black painted plaster wall",
+                    "beige painted plaster wall",
+                  ];
+
+                  const isDarkWall = darkWallMaterials.some(w => matName === w);
+                  if (isDarkWall) {
                     if (mat.map) {
                       mat.map.dispose();
                       mat.map = null;
-                    }
-                    if (mat.normalMap) {
-                      mat.normalMap.dispose();
-                      mat.normalMap = null;
                     }
                     if (mat.roughnessMap) {
                       mat.roughnessMap.dispose();
@@ -53,12 +56,30 @@ function RoomModel() {
                     mat.side = THREE.DoubleSide;
                   }
 
-                  if (matName.startsWith("defaultmaterial")) {
-                    mat.side = THREE.DoubleSide;
-                    mat.visible = true;
-                    mat.color.set("#e8e8e8");
-                    mat.roughness = 0.4;
+                  const windowFrameParts = [
+                    "border_1001",
+                    "sides_1001",
+                    "bottombase_1001",
+                    "top_1001",
+                    "shelves_1001",
+                  ];
+                  const isWindowFrame = windowFrameParts.some(w => matName === w);
+                  if (isWindowFrame) {
+                    mat.color.set("#f0f0f0");
+                    mat.roughness = 0.3;
                     mat.metalness = 0.0;
+                    mat.side = THREE.DoubleSide;
+                  }
+
+                  const windowGlassParts = ["glassa_1001", "glassb_1001"];
+                  const isWindowGlass = windowGlassParts.some(w => matName === w);
+                  if (isWindowGlass) {
+                    mat.color.set("#c8daf0");
+                    mat.roughness = 0.05;
+                    mat.metalness = 0.5;
+                    mat.transparent = true;
+                    mat.opacity = 0.3;
+                    mat.side = THREE.DoubleSide;
                   }
 
                   if (mat.map) {
@@ -175,7 +196,7 @@ export function Room3D({ visible }: Room3DProps) {
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
+          toneMappingExposure: 1.1,
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 2]}
@@ -190,7 +211,7 @@ export function Room3D({ visible }: Room3DProps) {
         <SceneCleanup />
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.5} />
+          <ambientLight intensity={0.55} />
           <directionalLight
             position={[-3.79, 8.13, 4.43]}
             intensity={2.2}

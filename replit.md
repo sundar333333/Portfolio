@@ -107,5 +107,10 @@ Preferred communication style: Simple, everyday language.
 - Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
 - The 3D room model (`server/static/room.glb`, 26MB) was compressed from 576MB GitHub original using gltf-transform with meshopt compression and 1024px WebP textures
 - The Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
+- GLB material mapping (important for future material fixes):
+  - Walls: `phong1` (back wall via Object_1.002), `PaletteMaterial001` (right wall via Plane.002), `Beige Painted Plaster Wall` (Cylinder.002), `Black Painted Plaster Wall` (tiny accent Plane)
+  - Window frame: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`
+  - Window glass: `GlassA_1001`, `GlassB_1001`
+  - Room3D.tsx strips wall baseColorTextures and forces dark color (#1a1a1a), sets window frame to white, glass to transparent
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build
