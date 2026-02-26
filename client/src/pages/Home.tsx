@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from "react";
+import { useState, useCallback, lazy, Suspense, Component, type ReactNode } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
@@ -11,6 +11,16 @@ import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
+
+class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch() {}
+  render() {
+    if (this.state.hasError) return this.props.fallback || null;
+    return this.props.children;
+  }
+}
 
 const LazyRoom3D = lazy(() => import("@/components/Room3D").then(m => ({ default: m.Room3D })));
 
@@ -89,15 +99,17 @@ export default function Home() {
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
           {!showRoom && (
-            <Scene3D
-              hoveredText={hoveredText}
-              onTVClick={handleTVClick}
-              isVideoPlaying={isVideoPlaying}
-              onWorkSectionChange={handleWorkSectionChange}
-              onScrollProgress={handleScrollProgress}
-              onWhiteSectionProgress={handleWhiteSectionProgress}
-              onCircleProgress={handleCircleProgress}
-            />
+            <WebGLErrorBoundary>
+              <Scene3D
+                hoveredText={hoveredText}
+                onTVClick={handleTVClick}
+                isVideoPlaying={isVideoPlaying}
+                onWorkSectionChange={handleWorkSectionChange}
+                onScrollProgress={handleScrollProgress}
+                onWhiteSectionProgress={handleWhiteSectionProgress}
+                onCircleProgress={handleCircleProgress}
+              />
+            </WebGLErrorBoundary>
           )}
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
@@ -107,9 +119,11 @@ export default function Home() {
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
 
           {showRoom && (
-            <Suspense fallback={null}>
-              <LazyRoom3D visible={showRoom} />
-            </Suspense>
+            <WebGLErrorBoundary>
+              <Suspense fallback={null}>
+                <LazyRoom3D visible={showRoom} />
+              </Suspense>
+            </WebGLErrorBoundary>
           )}
 
           {!isCaseStudyOpen && (

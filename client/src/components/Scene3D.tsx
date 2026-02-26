@@ -713,7 +713,6 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
             e.preventDefault();
           });
           gl.domElement.addEventListener("webglcontextrestored", () => {
-            gl.compile(gl.domElement as any, gl as any);
           });
         }}
       >
