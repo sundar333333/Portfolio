@@ -13,6 +13,7 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
   const navItems = [
     { label: "About Me", href: "#about" },
     { label: "Works", href: "#works" },
+    { label: "3D Room", href: "#room" },
   ];
 
   return (
