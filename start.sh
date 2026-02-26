@@ -27,6 +27,9 @@ fi
 
 mkdir -p dist/static
 ln -sf "$WORKSPACE/server/static/room.glb" dist/static/room.glb
+ln -sf "$WORKSPACE/server/static/ballon_dor.glb" dist/static/ballon_dor.glb
+ln -sf "$WORKSPACE/server/static/corner_shelves.glb" dist/static/corner_shelves.glb
+ln -sf "$WORKSPACE/server/static/table.glb" dist/static/table.glb
 
 echo "Starting production server on port 5000..."
 export NODE_ENV=production

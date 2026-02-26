@@ -16,22 +16,29 @@ export async function registerRoutes(
 ): Promise<Server> {
   const staticDir = path.resolve(currentDir, "static");
 
-  app.get("/room.glb", (_req, res) => {
-    const filePath = path.join(staticDir, "room.glb");
-    try {
-      const stat = fs.statSync(filePath);
-      res.setHeader("Content-Type", "model/gltf-binary");
-      res.setHeader("Content-Length", stat.size);
-      res.setHeader("Cache-Control", "public, max-age=604800, immutable");
-      const stream = fs.createReadStream(filePath, { highWaterMark: 64 * 1024 });
-      stream.on("error", () => {
-        if (!res.headersSent) res.status(500).end();
-      });
-      stream.pipe(res);
-    } catch {
-      res.status(404).end();
-    }
-  });
+  const serveGLB = (route: string, filename: string) => {
+    app.get(route, (_req, res) => {
+      const filePath = path.join(staticDir, filename);
+      try {
+        const stat = fs.statSync(filePath);
+        res.setHeader("Content-Type", "model/gltf-binary");
+        res.setHeader("Content-Length", stat.size);
+        res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+        const stream = fs.createReadStream(filePath, { highWaterMark: 64 * 1024 });
+        stream.on("error", () => {
+          if (!res.headersSent) res.status(500).end();
+        });
+        stream.pipe(res);
+      } catch {
+        res.status(404).end();
+      }
+    });
+  };
+
+  serveGLB("/room.glb", "room.glb");
+  serveGLB("/ballon_dor.glb", "ballon_dor.glb");
+  serveGLB("/corner_shelves.glb", "corner_shelves.glb");
+  serveGLB("/table.glb", "table.glb");
 
   return httpServer;
 }

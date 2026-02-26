@@ -5,6 +5,34 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
+const HIDE_NODES = new Set([
+  "object_4.003",
+  "object_23_custom_0",
+  "object_1_custom (1)_0",
+  "skruvby",
+]);
+
+const REPLACEMENT_MODELS = [
+  {
+    url: "/ballon_dor.glb",
+    position: [-3.44, 1.89, 2.69] as [number, number, number],
+    scale: 0.15,
+    rotationY: 0,
+  },
+  {
+    url: "/corner_shelves.glb",
+    position: [-3.60, 0.05, 2.51] as [number, number, number],
+    scale: 0.27,
+    rotationY: Math.PI / 2,
+  },
+  {
+    url: "/table.glb",
+    position: [-3.80, 0.05, -0.61] as [number, number, number],
+    scale: 0.75,
+    rotationY: 0,
+  },
+];
+
 function RoomModel() {
   const [scene, setScene] = useState<THREE.Group | null>(null);
   const { gl } = useThree();
@@ -12,6 +40,7 @@ function RoomModel() {
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
+    const basicLoader = new GLTFLoader();
 
     const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
 
@@ -30,6 +59,12 @@ function RoomModel() {
             mesh.castShadow = true;
             mesh.receiveShadow = true;
 
+            const nodeName = (mesh.name || "").toLowerCase();
+            if (HIDE_NODES.has(nodeName)) {
+              mesh.visible = false;
+              return;
+            }
+
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               const hasWindowMat = materials.some((mat) => {
@@ -43,30 +78,9 @@ function RoomModel() {
                 mesh.renderOrder = 10;
               }
 
-              materials.forEach((mat, matIdx) => {
-                const matName = mat.name?.toLowerCase() || "";
-
-                if (matName === "material_0" && mat instanceof THREE.MeshBasicMaterial) {
-                  const newMat = new THREE.MeshStandardMaterial({
-                    color: new THREE.Color("#c9a84c"),
-                    metalness: 0.8,
-                    roughness: 0.2,
-                    emissive: new THREE.Color("#aa8800"),
-                    emissiveIntensity: 0.3,
-                  });
-                  if (mat.map) newMat.map = mat.map;
-                  newMat.name = mat.name;
-                  newMat.needsUpdate = true;
-                  if (Array.isArray(mesh.material)) {
-                    mesh.material[matIdx] = newMat;
-                  } else {
-                    mesh.material = newMat;
-                  }
-                  return;
-                }
-
+              materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-                const matKey = matName;
+                const matKey = mat.name.toLowerCase();
 
                 if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
                   mat.color.set("#1a1a1a");
@@ -82,13 +96,6 @@ function RoomModel() {
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = -4;
                   mat.polygonOffsetUnits = -4;
-                }
-
-                if (matKey === "custom") {
-                  if (mat.metalnessMap) { mat.metalnessMap = null; }
-                  mat.metalness = 0.05;
-                  mat.roughness = 0.5;
-                  mat.color.set("#555555");
                 }
 
                 if (mat.map) {
@@ -110,7 +117,41 @@ function RoomModel() {
           }
         });
 
-        setScene(gltf.scene);
+        let loaded = 0;
+        const total = REPLACEMENT_MODELS.length;
+
+        REPLACEMENT_MODELS.forEach((cfg) => {
+          basicLoader.load(
+            cfg.url,
+            (replacementGltf) => {
+              const replacement = replacementGltf.scene;
+              replacement.position.set(...cfg.position);
+              replacement.scale.setScalar(cfg.scale);
+              if (cfg.rotationY) replacement.rotation.y = cfg.rotationY;
+
+              replacement.traverse((child) => {
+                if ((child as THREE.Mesh).isMesh) {
+                  const m = child as THREE.Mesh;
+                  m.castShadow = true;
+                  m.receiveShadow = true;
+                }
+              });
+
+              gltf.scene.add(replacement);
+              loaded++;
+              if (loaded >= total) {
+                setScene(gltf.scene);
+              }
+            },
+            undefined,
+            () => {
+              loaded++;
+              if (loaded >= total) {
+                setScene(gltf.scene);
+              }
+            }
+          );
+        });
       },
       undefined,
       (error) => {
@@ -144,7 +185,7 @@ function RoomModel() {
   const box = new THREE.Box3();
   const worldPos = new THREE.Vector3();
   scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
+    if ((child as THREE.Mesh).isMesh && child.visible) {
       child.getWorldPosition(worldPos);
       if (Math.abs(worldPos.x) < 50 && Math.abs(worldPos.y) < 50 && Math.abs(worldPos.z) < 50) {
         const meshBox = new THREE.Box3().setFromObject(child);
