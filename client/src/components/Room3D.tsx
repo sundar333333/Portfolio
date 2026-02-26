@@ -9,8 +9,6 @@ let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 let materialFixesApplied = false;
 
-const WALL_MESHES = new Set(["plane", "plane.003"]);
-
 const WINDOW_FRAME_MATS = new Set([
   "border_1001", "sides_1001", "bottombase_1001", "top_1001",
   "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
@@ -26,26 +24,21 @@ function applyRoomFixes(scene: THREE.Group) {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
 
-      const meshName = mesh.name.toLowerCase();
-
-      if (WALL_MESHES.has(meshName) && mesh.material) {
-        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        materials.forEach((mat) => {
-          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-          mat.color.set("#0a0a0a");
-          mat.polygonOffset = true;
-          mat.polygonOffsetFactor = 2;
-          mat.polygonOffsetUnits = 2;
-          mat.needsUpdate = true;
-        });
-        mesh.renderOrder = 0;
-      }
-
       if (mesh.material) {
         const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         materials.forEach((mat) => {
           if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
           const matKey = mat.name.toLowerCase();
+
+          if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
+            mat.color.set("#0a0a0a");
+            mat.side = THREE.FrontSide;
+            mat.polygonOffset = true;
+            mat.polygonOffsetFactor = 4;
+            mat.polygonOffsetUnits = 4;
+            mat.needsUpdate = true;
+            mesh.renderOrder = -1;
+          }
 
           if (WINDOW_FRAME_MATS.has(matKey)) {
             mat.color.set("#f0f0f0");
