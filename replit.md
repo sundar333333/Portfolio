@@ -102,9 +102,9 @@ Preferred communication style: Simple, everyday language.
 
 ## Startup & Workflow
 
-- The workflow runs `bash start.sh` which builds the production bundle (if needed) and starts the Express production server
-- The workflow runs `npm run dev` for development with Vite HMR
-- For production: `bash start.sh` builds with `NODE_OPTIONS='--max-old-space-size=1024'` and starts Express
+- The workflow runs `bash start.sh` which: kills any existing process on port 5000, builds the production bundle (if `dist/` is missing), symlinks `room.glb`, then starts the Express production server via `exec`
+- `start.sh` uses `exec` so the Node process replaces the shell, preventing orphan processes and restart loops
+- Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
 - The 3D room model (`server/static/room.glb`, 26MB) was compressed from 576MB GitHub original using gltf-transform with meshopt compression and 1024px WebP textures
 - The Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
