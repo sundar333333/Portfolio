@@ -9,12 +9,41 @@ let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 let materialFixesApplied = false;
 
-function enableShadows(scene: THREE.Group) {
+function applyRoomFixes(scene: THREE.Group) {
+  const wallMaterialNames = new Set([
+    "palettematerial001",
+    "black painted plaster wall",
+    "beige painted plaster wall",
+    "white painted plaster wall",
+    "plaster wall",
+    "wall",
+  ]);
+
   scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+
+      if (mesh.material) {
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        materials.forEach((mat) => {
+          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+          const matKey = mat.name.toLowerCase();
+
+          const isLightWall =
+            wallMaterialNames.has(matKey) ||
+            matKey.includes("plaster") ||
+            matKey.includes("wall");
+
+          const isAlreadyDark = mat.color.r < 0.15 && mat.color.g < 0.15 && mat.color.b < 0.15;
+
+          if (isLightWall && !isAlreadyDark) {
+            mat.color.set("#0a0a0a");
+            mat.needsUpdate = true;
+          }
+        });
+      }
     }
   });
 }
@@ -28,7 +57,7 @@ export function preloadRoom3D() {
   loader.load(
     "/quit2.glb",
     (gltf) => {
-      enableShadows(gltf.scene);
+      applyRoomFixes(gltf.scene);
       cachedScene = gltf.scene;
     },
     undefined,
@@ -46,7 +75,7 @@ function RoomModel() {
   useEffect(() => {
     if (cachedScene) {
       if (!materialFixesApplied) {
-        enableShadows(cachedScene);
+        applyRoomFixes(cachedScene);
         materialFixesApplied = true;
       }
       setScene(cachedScene);
@@ -60,7 +89,7 @@ function RoomModel() {
     loader.load(
       "/quit2.glb",
       (gltf) => {
-        enableShadows(gltf.scene);
+        applyRoomFixes(gltf.scene);
 
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
