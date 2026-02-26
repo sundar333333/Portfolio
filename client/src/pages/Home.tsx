@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, Component, type ReactNode } from "react";
+import { useState, useCallback, Component, type ReactNode } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
@@ -84,15 +84,8 @@ export default function Home() {
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [showRoomOverlay, setShowRoomOverlay] = useState(false);
 
-  useEffect(() => {
-    const onHash = () => {
-      if (window.location.hash === "#room") {
-        setShowRoomOverlay(true);
-      }
-    };
-    window.addEventListener("hashchange", onHash);
-    onHash();
-    return () => window.removeEventListener("hashchange", onHash);
+  const handleRoomClick = useCallback(() => {
+    setShowRoomOverlay(true);
   }, []);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
@@ -174,21 +167,15 @@ export default function Home() {
           <AnimatePresence>
             {showRoomOverlay && (
               <RoomEnterOverlay
-                onEnter={() => {
-                  setShowRoomOverlay(false);
-                  window.location.hash = "";
-                }}
-                onClose={() => {
-                  setShowRoomOverlay(false);
-                  window.location.hash = "";
-                }}
+                onEnter={() => setShowRoomOverlay(false)}
+                onClose={() => setShowRoomOverlay(false)}
               />
             )}
           </AnimatePresence>
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
-              <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} />
+              <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} onRoomClick={handleRoomClick} />
             </div>
           )}
 

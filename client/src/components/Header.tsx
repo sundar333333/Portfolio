@@ -5,15 +5,16 @@ import { Menu, X } from "lucide-react";
 interface HeaderProps {
   onTextHover: (text: string | null) => void;
   isDarkText?: boolean;
+  onRoomClick?: () => void;
 }
 
-export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
+export function Header({ onTextHover, isDarkText = false, onRoomClick }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { label: "About Me", href: "#about" },
     { label: "Works", href: "#works" },
-    { label: "3D Room", href: "#room" },
+    { label: "3D Room", href: "#room", onClick: onRoomClick },
   ];
 
   return (
@@ -39,10 +40,16 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
           {navItems.map((item) => (
             <motion.a
               key={item.label}
-              href={item.href}
-              className={`text-sm font-medium transition-colors duration-500 ${isDarkText ? 'text-black/80 hover:text-black' : 'text-white/80 hover:text-white'}`}
+              href={item.onClick ? undefined : item.href}
+              className={`text-sm font-medium cursor-pointer transition-colors duration-500 ${isDarkText ? 'text-black/80 hover:text-black' : 'text-white/80 hover:text-white'}`}
               onMouseEnter={() => onTextHover(item.label)}
               onMouseLeave={() => onTextHover(null)}
+              onClick={(e) => {
+                if (item.onClick) {
+                  e.preventDefault();
+                  item.onClick();
+                }
+              }}
               whileHover={{ y: -2 }}
               data-testid={`link-nav-${item.label.toLowerCase().replace(" ", "-")}`}
             >
@@ -88,13 +95,19 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
             {navItems.map((item, index) => (
               <motion.a
                 key={item.label}
-                href={item.href}
-                className="font-anton text-3xl text-white"
+                href={item.onClick ? undefined : item.href}
+                className="font-anton text-3xl text-white cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setIsMobileMenuOpen(false);
+                  if (item.onClick) {
+                    e.preventDefault();
+                    item.onClick();
+                  }
+                }}
                 data-testid={`link-mobile-nav-${item.label.toLowerCase().replace(" ", "-")}`}
               >
                 {item.label}
