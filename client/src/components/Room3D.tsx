@@ -43,9 +43,30 @@ function RoomModel() {
                 mesh.renderOrder = 10;
               }
 
-              materials.forEach((mat) => {
+              materials.forEach((mat, matIdx) => {
+                const matName = mat.name?.toLowerCase() || "";
+
+                if (matName === "material_0" && mat instanceof THREE.MeshBasicMaterial) {
+                  const newMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color("#c9a84c"),
+                    metalness: 0.8,
+                    roughness: 0.2,
+                    emissive: new THREE.Color("#aa8800"),
+                    emissiveIntensity: 0.3,
+                  });
+                  if (mat.map) newMat.map = mat.map;
+                  newMat.name = mat.name;
+                  newMat.needsUpdate = true;
+                  if (Array.isArray(mesh.material)) {
+                    mesh.material[matIdx] = newMat;
+                  } else {
+                    mesh.material = newMat;
+                  }
+                  return;
+                }
+
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-                const matKey = mat.name.toLowerCase();
+                const matKey = matName;
 
                 if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
                   mat.color.set("#1a1a1a");
@@ -61,16 +82,6 @@ function RoomModel() {
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = -4;
                   mat.polygonOffsetUnits = -4;
-                }
-
-                if (matKey === "ball_triangles" || matKey === "ball_ovals") {
-                  if (mat.metalnessMap) { mat.metalnessMap = null; }
-                  if (mat.roughnessMap) { mat.roughnessMap = null; }
-                  mat.metalness = 0.15;
-                  mat.roughness = 0.25;
-                  mat.color.set("#d4a017");
-                  mat.emissive = new THREE.Color("#aa8800");
-                  mat.emissiveIntensity = 0.4;
                 }
 
                 if (matKey === "custom") {
