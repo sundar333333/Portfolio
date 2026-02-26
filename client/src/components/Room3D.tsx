@@ -18,27 +18,17 @@ function RoomModel() {
     loader.load(
       "/room.glb",
       (gltf) => {
-        const darkWallMats = new Set([
-          "palettematerial001",
-          "black painted plaster wall",
-        ]);
-
         const windowFrameMats = new Set([
           "border_1001",
           "sides_1001",
-          "bottombase_1001",
-          "top_1001",
-          "shelves_1001",
-          "trianglebottom_1001",
-          "xleft_1001",
-          "xright_1001",
         ]);
 
-        const windowGlassMats = new Set([
-          "glassa_1001",
+        const windowGlassKeepRGB = new Set([
           "glassb_1001",
           "glowleft_1001",
           "glowright_1001",
+          "xleft_1001",
+          "xright_1001",
         ]);
 
         gltf.scene.traverse((child) => {
@@ -53,10 +43,8 @@ function RoomModel() {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 const matKey = mat.name.toLowerCase();
 
-                if (darkWallMats.has(matKey)) {
+                if (matKey === "palettematerial001") {
                   mat.color.set("#333333");
-                  mat.roughness = 0.85;
-                  mat.metalness = 0.0;
                   mat.side = THREE.DoubleSide;
                 }
 
@@ -74,15 +62,17 @@ function RoomModel() {
                   mesh.renderOrder = 10;
                 }
 
-                if (windowGlassMats.has(matKey)) {
-                  if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  mat.color.set("#c8ddff");
-                  mat.roughness = 0.0;
-                  mat.metalness = 0.3;
+                if (matKey === "glassa_1001") {
+                  mat.side = THREE.DoubleSide;
                   mat.transparent = true;
-                  mat.opacity = 0.4;
-                  mat.emissive = new THREE.Color("#6688bb");
-                  mat.emissiveIntensity = 0.5;
+                  mat.opacity = 0.5;
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = -4;
+                  mat.polygonOffsetUnits = -4;
+                  mesh.renderOrder = 11;
+                }
+
+                if (windowGlassKeepRGB.has(matKey)) {
                   mat.side = THREE.DoubleSide;
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = -4;
