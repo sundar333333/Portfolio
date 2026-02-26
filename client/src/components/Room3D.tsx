@@ -10,57 +10,95 @@ let preloadStarted = false;
 let materialFixesApplied = false;
 
 function applyRoomFixes(scene: THREE.Group) {
-  const windowFrameNames = new Set([
-    "border_1001", "sides_1001", "bottombase_1001", "top_1001",
-    "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
-  ]);
-  const windowGlassNames = new Set([
-    "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
+  const wallMeshNames = new Set(["Plane", "Plane.003"]);
+
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#e8e8e8"),
+    roughness: 0.4,
+    metalness: 0.1,
+    side: THREE.DoubleSide,
+  });
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#88bbdd"),
+    emissive: new THREE.Color("#4488aa"),
+    emissiveIntensity: 0.3,
+    transparent: true,
+    opacity: 0.4,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const handleMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#888888"),
+    metalness: 0.8,
+    roughness: 0.3,
+  });
+
+  const windowGroup = scene.getObjectByName("Window_Group");
+  if (windowGroup) {
+    windowGroup.traverse((child) => {
+      if (!(child as THREE.Mesh).isMesh) return;
+      const mesh = child as THREE.Mesh;
+      const name = mesh.name;
+
+      if (name === "CTRL_Hole") {
+        mesh.visible = false;
+        return;
+      }
+
+      if (name === "Handle" || name === "Handle.001") {
+        mesh.material = handleMat;
+      } else if (name === "Windows_Sill") {
+        mesh.material = frameMat;
+      } else {
+        if (mesh.parent?.name === "Window.L" || mesh.parent?.name === "Window.R") {
+          const mats = [frameMat, glassMat];
+          if (Array.isArray(mesh.material) && mesh.material.length === 2) {
+            mesh.material = mats;
+          } else {
+            mesh.material = glassMat;
+          }
+        } else {
+          mesh.material = frameMat;
+        }
+      }
+      mesh.visible = true;
+      mesh.renderOrder = 5;
+    });
+  }
+
+  const defaultMatNodes = new Set([
+    "defaultMaterial", "defaultMaterial.001", "defaultMaterial.002",
+    "defaultMaterial.003", "defaultMaterial.004", "defaultMaterial.005",
+    "defaultMaterial.006", "defaultMaterial.007", "defaultMaterial.008",
+    "defaultMaterial.009", "defaultMaterial.010", "defaultMaterial.011",
+    "defaultMaterial.012", "defaultMaterial.013", "defaultMaterial.014",
+    "defaultMaterial.015",
   ]);
 
   scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+    if (!(child as THREE.Mesh).isMesh) return;
+    const mesh = child as THREE.Mesh;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      mats.forEach((mat) => {
-        if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-        const matKey = mat.name.toLowerCase();
-
-        if (matKey.includes("plaster wall") || matKey.includes("painted plaster")) {
-          if (mesh.name === "Plane" || mesh.name === "Plane.003") {
-            const cloned = mat.clone();
-            cloned.color.set("#111111");
-            if (cloned.map) { cloned.map = null; }
-            cloned.side = THREE.DoubleSide;
-            cloned.needsUpdate = true;
-            mesh.material = cloned;
-          }
-        }
-
-        if (windowFrameNames.has(matKey)) {
-          mat.color.set("#e0e0e0");
-          mat.emissive = new THREE.Color("#ffffff");
-          mat.emissiveIntensity = 0.2;
-          mat.metalness = 0.1;
-          mat.roughness = 0.4;
-          mat.side = THREE.DoubleSide;
-          mat.needsUpdate = true;
-        }
-
-        if (windowGlassNames.has(matKey)) {
-          mat.color.set("#88bbdd");
-          mat.emissive = new THREE.Color("#4488aa");
-          mat.emissiveIntensity = 0.3;
-          mat.transparent = true;
-          mat.opacity = 0.4;
-          mat.side = THREE.DoubleSide;
-          mat.depthWrite = false;
-          mat.needsUpdate = true;
-        }
+    if (wallMeshNames.has(mesh.name)) {
+      mesh.material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#111111"),
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        metalness: 0.0,
       });
+    }
+
+    if (defaultMatNodes.has(mesh.name)) {
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const hasWindowMat = mats.some((m: any) => {
+        const n = (m.name || "").toLowerCase();
+        return n.includes("_1001") || n.includes("border") || n.includes("glass") || n.includes("glow") || n.includes("shelves") || n.includes("sides") || n.includes("top_") || n.includes("bottom") || n.includes("triangle") || n.includes("xleft") || n.includes("xright");
+      });
+      if (hasWindowMat) {
+        mesh.visible = false;
+      }
     }
   });
 }
