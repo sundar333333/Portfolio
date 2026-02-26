@@ -9,29 +9,58 @@ let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 let materialFixesApplied = false;
 
-const WALL_MESH_NAMES = new Set(["Plane", "Plane.003"]);
-
 function applyRoomFixes(scene: THREE.Group) {
+  const windowFrameNames = new Set([
+    "border_1001", "sides_1001", "bottombase_1001", "top_1001",
+    "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
+  ]);
+  const windowGlassNames = new Set([
+    "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
+  ]);
+
   scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
 
-      if (WALL_MESH_NAMES.has(mesh.name) && mesh.material) {
-        const origMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        const clonedMats = origMats.map((mat) => {
-          if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      mats.forEach((mat) => {
+        if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+        const matKey = mat.name.toLowerCase();
+
+        if (matKey.includes("plaster wall") || matKey.includes("painted plaster")) {
+          if (mesh.name === "Plane" || mesh.name === "Plane.003") {
             const cloned = mat.clone();
-            cloned.color.set("#1a1a1a");
+            cloned.color.set("#111111");
+            if (cloned.map) { cloned.map = null; }
             cloned.side = THREE.DoubleSide;
             cloned.needsUpdate = true;
-            return cloned;
+            mesh.material = cloned;
           }
-          return mat;
-        });
-        mesh.material = clonedMats.length === 1 ? clonedMats[0] : clonedMats;
-      }
+        }
+
+        if (windowFrameNames.has(matKey)) {
+          mat.color.set("#e0e0e0");
+          mat.emissive = new THREE.Color("#ffffff");
+          mat.emissiveIntensity = 0.2;
+          mat.metalness = 0.1;
+          mat.roughness = 0.4;
+          mat.side = THREE.DoubleSide;
+          mat.needsUpdate = true;
+        }
+
+        if (windowGlassNames.has(matKey)) {
+          mat.color.set("#88bbdd");
+          mat.emissive = new THREE.Color("#4488aa");
+          mat.emissiveIntensity = 0.3;
+          mat.transparent = true;
+          mat.opacity = 0.4;
+          mat.side = THREE.DoubleSide;
+          mat.depthWrite = false;
+          mat.needsUpdate = true;
+        }
+      });
     }
   });
 }
