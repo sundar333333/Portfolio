@@ -30,7 +30,23 @@ function RoomModel() {
                   const matName = mat.name.toLowerCase();
                   const meshName = mesh.name.toLowerCase();
 
-                  if (matName.includes("black painted plaster wall") || matName.includes("black_painted_plaster")) {
+                  if (matName.includes("black painted plaster wall")) {
+                    if (mat.map) {
+                      mat.map.dispose();
+                      mat.map = null;
+                    }
+                    if (mat.normalMap) {
+                      mat.normalMap.dispose();
+                      mat.normalMap = null;
+                    }
+                    if (mat.roughnessMap) {
+                      mat.roughnessMap.dispose();
+                      mat.roughnessMap = null;
+                    }
+                    if (mat.metalnessMap) {
+                      mat.metalnessMap.dispose();
+                      mat.metalnessMap = null;
+                    }
                     mat.color.set("#1a1a1a");
                     mat.roughness = 0.85;
                     mat.metalness = 0.0;
@@ -40,11 +56,9 @@ function RoomModel() {
                   if (matName.startsWith("defaultmaterial")) {
                     mat.side = THREE.DoubleSide;
                     mat.visible = true;
-                    if (!mat.map) {
-                      mat.color.set("#666666");
-                      mat.roughness = 0.5;
-                      mat.metalness = 0.1;
-                    }
+                    mat.color.set("#e8e8e8");
+                    mat.roughness = 0.4;
+                    mat.metalness = 0.0;
                   }
 
                   if (mat.map) {
@@ -176,18 +190,18 @@ export function Room3D({ visible }: Room3DProps) {
         <SceneCleanup />
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.4} />
+          <ambientLight intensity={0.5} />
           <directionalLight
             position={[-3.79, 8.13, 4.43]}
-            intensity={1.8}
+            intensity={2.2}
             color="#ffffff"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
             shadow-bias={-0.0001}
           />
-          <hemisphereLight args={["#ffffff", "#333333", 0.5]} />
-          <pointLight position={[0, 3, 0]} intensity={0.3} color="#ffeedd" />
+          <hemisphereLight args={["#ffffff", "#444444", 0.6]} />
+          <pointLight position={[0, 3, 0]} intensity={0.4} color="#ffeedd" />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
