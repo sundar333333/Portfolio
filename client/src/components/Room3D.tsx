@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
@@ -29,32 +29,6 @@ function RoomModel() {
                 if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
                   const matName = mat.name.toLowerCase();
 
-                  const darkWallMaterials = [
-                    "phong1",
-                    "palettematerial001",
-                    "black painted plaster wall",
-                  ];
-
-                  const isDarkWall = darkWallMaterials.some(w => matName === w);
-                  if (isDarkWall) {
-                    if (mat.map) {
-                      mat.map.dispose();
-                      mat.map = null;
-                    }
-                    if (mat.roughnessMap) {
-                      mat.roughnessMap.dispose();
-                      mat.roughnessMap = null;
-                    }
-                    if (mat.metalnessMap) {
-                      mat.metalnessMap.dispose();
-                      mat.metalnessMap = null;
-                    }
-                    mat.color.set("#1a1a1a");
-                    mat.roughness = 0.85;
-                    mat.metalness = 0.0;
-                    mat.side = THREE.DoubleSide;
-                  }
-
                   const windowFrameParts = [
                     "border_1001",
                     "sides_1001",
@@ -80,6 +54,8 @@ function RoomModel() {
                     mat.opacity = 0.3;
                     mat.side = THREE.DoubleSide;
                   }
+
+                  mat.side = mat.side || THREE.DoubleSide;
 
                   if (mat.map) {
                     mat.map.anisotropy = maxAnisotropy;
@@ -210,18 +186,19 @@ export function Room3D({ visible }: Room3DProps) {
         <SceneCleanup />
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.55} />
+          <Environment preset="apartment" environmentIntensity={0.4} />
+          <ambientLight intensity={0.6} />
           <directionalLight
-            position={[-3.79, 8.13, 4.43]}
-            intensity={2.2}
+            position={[3, 5, 4]}
+            intensity={1.5}
             color="#ffffff"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
             shadow-bias={-0.0001}
           />
-          <hemisphereLight args={["#ffffff", "#444444", 0.6]} />
-          <pointLight position={[0, 3, 0]} intensity={0.4} color="#ffeedd" />
+          <hemisphereLight args={["#ffffff", "#333333", 0.4]} />
+          <pointLight position={[0, 3, 0]} intensity={0.3} color="#ffeedd" />
           <OrbitControls
             enableZoom={true}
             enablePan={false}

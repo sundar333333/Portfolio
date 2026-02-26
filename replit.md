@@ -109,9 +109,10 @@ Preferred communication style: Simple, everyday language.
 - The Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
 - GLB material mapping (important for future material fixes):
   - Walls: `phong1` (back wall via Object_1.002), `PaletteMaterial001` (right wall via Plane.003), `Black Painted Plaster Wall` (tiny accent Plane)
+  - IMPORTANT: `phong1` is a baked texture atlas containing BOTH dark walls AND furniture (desk, chair, shelves, etc.) — DO NOT strip its texture or everything goes black
   - Cupboard/bookshelf (IKEA Skruvby): `Beige Painted Plaster Wall` — DO NOT darken, keep original beige texture
   - Window frame: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`
   - Window glass: `GlassA_1001`, `GlassB_1001`
-  - Room3D.tsx strips wall baseColorTextures and forces dark color (#1a1a1a), sets window frame to white, glass to transparent
+  - Room3D.tsx sets window frame to white, glass to transparent; leaves all other materials untouched (Blender textures already correct)
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build
