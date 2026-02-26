@@ -108,11 +108,13 @@ Preferred communication style: Simple, everyday language.
 - The 3D room model (`server/static/room.glb`, 26MB) was compressed from 576MB GitHub original using gltf-transform with meshopt compression and 1024px WebP textures
 - The Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
 - GLB material mapping (important for future material fixes):
-  - Walls darkened: `phong1` (back wall via Object_1.002), `PaletteMaterial001` (right wall via Plane.003), `Black Painted Plaster Wall` (tiny accent Plane) — all have textures stripped, set to #1a1a1a
-  - Cupboard/bookshelf (IKEA Skruvby): `Beige Painted Plaster Wall` — left untouched, keeps original beige texture
+  - CRITICAL: `phong1` (node 123, Object_1.002, 76K verts) is a Blender baked texture atlas containing BOTH wall AND furniture colors (desk, chair, shelves, Ballon d'Or). NEVER strip its texture or everything goes black. Leave it completely untouched.
+  - Walls tinted dark: `PaletteMaterial001` (Plane.003, room shell), `Black Painted Plaster Wall` (tiny accent Plane) — mat.color set to #333333 which multiplies with existing texture to darken. Textures NOT stripped.
+  - Cupboard/bookshelf (IKEA Skruvby, node 118): `Beige Painted Plaster Wall` — left untouched, keeps original beige texture
   - Window frame materials: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`, `TriangleBottom_1001`, `XLeft_1001`, `XRight_1001` — set to white (#f0f0f0) with emissive glow
   - Window glass materials: `GlassA_1001`, `GlassB_1001`, `GlowLeft_1001`, `GlowRight_1001` — translucent blue with emissive
   - Window meshes use polygonOffset and renderOrder to prevent z-fighting with wall geometry
   - Materials are matched by material name (lowercased), not mesh node name
+  - CRITICAL: Three outlier book meshes (nodes 95-97) at positions ~(-2900, 5600, -10600) with scale ~524 blow up Box3.setFromObject. Bounding box computation filters out meshes with world position > 50 units from origin.
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build

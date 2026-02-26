@@ -41,8 +41,6 @@ function RoomModel() {
           "glowright_1001",
         ]);
 
-        const windowMeshes: THREE.Object3D[] = [];
-
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
@@ -56,24 +54,14 @@ function RoomModel() {
                 const matKey = mat.name.toLowerCase();
 
                 if (darkWallMats.has(matKey)) {
-                  if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
-                  if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
-                  mat.color.set("#1a1a1a");
+                  mat.color.set("#333333");
                   mat.roughness = 0.85;
                   mat.metalness = 0.0;
                   mat.side = THREE.DoubleSide;
                 }
 
-                const isWindowFrame = windowFrameMats.has(matKey);
-                const isWindowGlass = windowGlassMats.has(matKey);
-
-                if (isWindowFrame) {
-                  windowMeshes.push(mesh);
+                if (windowFrameMats.has(matKey)) {
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
-                  if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
-                  if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
                   mat.color.set("#f0f0f0");
                   mat.roughness = 0.3;
                   mat.metalness = 0.0;
@@ -86,12 +74,8 @@ function RoomModel() {
                   mesh.renderOrder = 10;
                 }
 
-                if (isWindowGlass) {
-                  windowMeshes.push(mesh);
+                if (windowGlassMats.has(matKey)) {
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
-                  if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
-                  if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
                   mat.color.set("#c8ddff");
                   mat.roughness = 0.0;
                   mat.metalness = 0.3;
@@ -106,47 +90,24 @@ function RoomModel() {
                   mesh.renderOrder = 11;
                 }
 
-                if (!darkWallMats.has(matKey) && !isWindowFrame && !isWindowGlass) {
-                  if (mat.map) {
-                    mat.map.anisotropy = maxAnisotropy;
-                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
-                    mat.map.magFilter = THREE.LinearFilter;
-                    mat.map.generateMipmaps = true;
-                    mat.map.needsUpdate = true;
-                  }
-                  if (mat.normalMap) {
-                    mat.normalMap.anisotropy = maxAnisotropy;
-                  }
-                  if (mat.roughnessMap) {
-                    mat.roughnessMap.anisotropy = maxAnisotropy;
-                  }
+                if (mat.map) {
+                  mat.map.anisotropy = maxAnisotropy;
+                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                  mat.map.magFilter = THREE.LinearFilter;
+                  mat.map.generateMipmaps = true;
+                  mat.map.needsUpdate = true;
+                }
+                if (mat.normalMap) {
+                  mat.normalMap.anisotropy = maxAnisotropy;
+                }
+                if (mat.roughnessMap) {
+                  mat.roughnessMap.anisotropy = maxAnisotropy;
                 }
                 mat.needsUpdate = true;
               });
             }
           }
         });
-
-        if (windowMeshes.length > 0) {
-          const center = new THREE.Vector3();
-          windowMeshes.forEach(m => center.add(m.position));
-          center.divideScalar(windowMeshes.length);
-
-          const windowGroup = new THREE.Group();
-          windowGroup.name = "WindowGroup";
-
-          const meshesToMove = [...windowMeshes];
-          meshesToMove.forEach(m => {
-            const localPos = m.position.clone().sub(center);
-            if (m.parent) m.parent.remove(m);
-            m.position.copy(localPos);
-            windowGroup.add(m);
-          });
-
-          gltf.scene.add(windowGroup);
-          windowGroup.position.set(-1.497, 1.477, -4.130);
-          windowGroup.scale.set(1.733, 2.001, 1.761);
-        }
 
         setScene(gltf.scene);
       },
@@ -179,7 +140,21 @@ function RoomModel() {
 
   if (!scene) return <LoadingIndicator />;
 
-  const box = new THREE.Box3().setFromObject(scene);
+  const box = new THREE.Box3();
+  const worldPos = new THREE.Vector3();
+  scene.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      child.getWorldPosition(worldPos);
+      if (Math.abs(worldPos.x) < 50 && Math.abs(worldPos.y) < 50 && Math.abs(worldPos.z) < 50) {
+        const meshBox = new THREE.Box3().setFromObject(child);
+        box.union(meshBox);
+      }
+    }
+  });
+  if (box.isEmpty()) {
+    box.setFromObject(scene);
+  }
+
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
