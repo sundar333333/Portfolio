@@ -386,27 +386,26 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         >
           {zoomProgress >= 0.85 && (
             <button
-              className="relative w-40 h-40 md:w-52 md:h-52 rounded-full border-[3px] border-white/30 bg-white/5 flex items-center justify-center cursor-pointer group"
+              className="relative w-44 h-44 md:w-56 md:h-56 rounded-full border-[5px] border-white/40 bg-white/5 flex items-center justify-center cursor-pointer group hover:w-52 hover:h-52 md:hover:w-64 md:hover:h-64 hover:border-[6px] hover:border-white/60 transition-all duration-500 ease-out"
               style={{
                 opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
-                transform: `scale(${0.8 + 0.2 * Math.min(1, (zoomProgress - 0.85) / 0.15)})`,
-                transition: 'transform 0.4s ease-out',
+                transition: 'width 0.5s ease-out, height 0.5s ease-out, border 0.5s ease-out, opacity 0.3s ease-out',
               }}
               data-testid="button-enter-room"
             >
               <div
-                className="absolute inset-0 rounded-full border-[2px] border-white/10"
+                className="absolute -inset-3 group-hover:-inset-5 rounded-full border-[3px] border-white/15 group-hover:border-white/25 transition-all duration-500"
                 style={{
                   animation: 'pulseRing 2.5s ease-in-out infinite',
                 }}
               />
               <div
-                className="absolute inset-0 rounded-full border border-white/5"
+                className="absolute -inset-6 group-hover:-inset-9 rounded-full border-[2px] border-white/8 group-hover:border-white/15 transition-all duration-500"
                 style={{
                   animation: 'pulseRing 3s ease-in-out infinite 0.5s',
                 }}
               />
-              <span className="font-anton text-white text-2xl md:text-3xl tracking-[0.2em] uppercase group-hover:text-white/90 transition-colors">
+              <span className="font-anton text-white text-2xl md:text-3xl group-hover:text-4xl md:group-hover:text-5xl tracking-[0.2em] uppercase transition-all duration-500">
                 ENTER
               </span>
             </button>
