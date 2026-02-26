@@ -28,6 +28,7 @@ fi
 mkdir -p dist/static
 ln -sf "$WORKSPACE/server/static/room.glb" dist/static/room.glb
 ln -sf "$WORKSPACE/server/static/render3d.glb" dist/static/render3d.glb
+ln -sf "$WORKSPACE/server/static/quit2.glb" dist/static/quit2.glb
 ln -sf "$WORKSPACE/server/static/ballon_dor.glb" dist/static/ballon_dor.glb
 ln -sf "$WORKSPACE/server/static/corner_shelves.glb" dist/static/corner_shelves.glb
 ln -sf "$WORKSPACE/server/static/table.glb" dist/static/table.glb

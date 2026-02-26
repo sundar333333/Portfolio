@@ -108,7 +108,7 @@ export function preloadRoom3D() {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   loader.load(
-    "/render3d.glb",
+    "/quit2.glb",
     (gltf) => {
       applyMaterialFixes(gltf.scene);
       cachedScene = gltf.scene;
@@ -140,7 +140,7 @@ function RoomModel() {
     const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
 
     loader.load(
-      "/render3d.glb",
+      "/quit2.glb",
       (gltf) => {
         applyMaterialFixes(gltf.scene);
 
