@@ -1,211 +1,91 @@
 import { Suspense, useRef, useState, useEffect } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
-const HIDE_NODES = new Set([
-  "object_4.003",
-  "object_23_custom_0",
-  "object_1_custom (1)_0",
-  "skruvby",
-]);
+let cachedScene: THREE.Group | null = null;
+let preloadStarted = false;
 
-const REPLACEMENT_MODELS = [
-  {
-    url: "/ballon_dor.glb",
-    position: [-3.44, 1.89, 2.69] as [number, number, number],
-    scale: 0.15,
-    rotationY: 0,
-  },
-  {
-    url: "/corner_shelves.glb",
-    position: [-3.60, 0.05, 2.51] as [number, number, number],
-    scale: 0.27,
-    rotationY: Math.PI / 2,
-  },
-  {
-    url: "/table.glb",
-    position: [-3.80, 0.05, -0.61] as [number, number, number],
-    scale: 0.75,
-    rotationY: 0,
-  },
-];
+export function preloadRoom3D() {
+  if (preloadStarted) return;
+  preloadStarted = true;
+
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  loader.load(
+    "/render3d.glb",
+    (gltf) => {
+      gltf.scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
+      });
+      cachedScene = gltf.scene;
+    },
+    undefined,
+    (error) => {
+      console.error("Failed to preload room model:", error);
+      preloadStarted = false;
+    }
+  );
+}
 
 function RoomModel() {
-  const [scene, setScene] = useState<THREE.Group | null>(null);
+  const [scene, setScene] = useState<THREE.Group | null>(cachedScene);
   const { gl } = useThree();
 
   useEffect(() => {
+    if (cachedScene) {
+      setScene(cachedScene);
+      return;
+    }
+
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
-    const basicLoader = new GLTFLoader();
-
     const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
 
     loader.load(
-      "/room.glb",
+      "/render3d.glb",
       (gltf) => {
-        const windowFrameMats = new Set([
-          "border_1001", "sides_1001", "bottombase_1001", "top_1001",
-          "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
-        ]);
-        const windowGlassMats = new Set([
-          "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
-        ]);
-        const allWindowMats = new Set([...windowFrameMats, ...windowGlassMats]);
-
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
             mesh.castShadow = true;
             mesh.receiveShadow = true;
 
-            const nodeName = (mesh.name || "").toLowerCase();
-            if (HIDE_NODES.has(nodeName)) {
-              mesh.visible = false;
-              return;
-            }
-
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-              const hasWindowMat = materials.some((mat) => {
-                const name = (mat as THREE.MeshStandardMaterial).name?.toLowerCase() || "";
-                return allWindowMats.has(name);
-              });
-
-              if (hasWindowMat) {
-                mesh.position.x += (mesh.position.x < -3) ? 0.12 : 0;
-                mesh.position.z += (mesh.position.z < -3) ? 0.12 : 0;
-                mesh.renderOrder = 10;
-              }
-
               materials.forEach((mat) => {
-                if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-                const matKey = mat.name.toLowerCase();
-
-                if (matKey === "phong1") return;
-
-                if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
-                  mat.color.set("#333333");
-                  mat.side = THREE.DoubleSide;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = 2;
-                  mat.polygonOffsetUnits = 2;
+                if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+                  if (mat.map) {
+                    mat.map.anisotropy = maxAnisotropy;
+                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                    mat.map.magFilter = THREE.LinearFilter;
+                    mat.map.generateMipmaps = true;
+                    mat.map.needsUpdate = true;
+                  }
+                  mat.needsUpdate = true;
                 }
-
-                if (windowFrameMats.has(matKey)) {
-                  mat.color.set("#f0f0f0");
-                  mat.emissive.set("#f0f0f0");
-                  mat.emissiveIntensity = 0.15;
-                  mat.metalness = 0.1;
-                  mat.roughness = 0.4;
-                  mat.side = THREE.DoubleSide;
-                  mat.depthWrite = true;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -4;
-                  mat.polygonOffsetUnits = -4;
-                }
-
-                if (windowGlassMats.has(matKey)) {
-                  mat.color.set("#a0c4e8");
-                  mat.emissive.set("#6090c0");
-                  mat.emissiveIntensity = 0.3;
-                  mat.transparent = true;
-                  mat.opacity = 0.35;
-                  mat.metalness = 0.0;
-                  mat.roughness = 0.1;
-                  mat.side = THREE.DoubleSide;
-                  mat.depthWrite = false;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -4;
-                  mat.polygonOffsetUnits = -4;
-                }
-
-                if (mat.map) {
-                  mat.map.anisotropy = maxAnisotropy;
-                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
-                  mat.map.magFilter = THREE.LinearFilter;
-                  mat.map.generateMipmaps = true;
-                  mat.map.needsUpdate = true;
-                }
-                if (mat.normalMap) {
-                  mat.normalMap.anisotropy = maxAnisotropy;
-                }
-                if (mat.roughnessMap) {
-                  mat.roughnessMap.anisotropy = maxAnisotropy;
-                }
-                mat.needsUpdate = true;
               });
             }
           }
         });
 
-        let loaded = 0;
-        const total = REPLACEMENT_MODELS.length;
-
-        REPLACEMENT_MODELS.forEach((cfg) => {
-          basicLoader.load(
-            cfg.url,
-            (replacementGltf) => {
-              const replacement = replacementGltf.scene;
-              replacement.position.set(...cfg.position);
-              replacement.scale.setScalar(cfg.scale);
-              if (cfg.rotationY) replacement.rotation.y = cfg.rotationY;
-
-              replacement.traverse((child) => {
-                if ((child as THREE.Mesh).isMesh) {
-                  const m = child as THREE.Mesh;
-                  m.castShadow = true;
-                  m.receiveShadow = true;
-                }
-              });
-
-              gltf.scene.add(replacement);
-              loaded++;
-              if (loaded >= total) {
-                setScene(gltf.scene);
-              }
-            },
-            undefined,
-            () => {
-              loaded++;
-              if (loaded >= total) {
-                setScene(gltf.scene);
-              }
-            }
-          );
-        });
+        cachedScene = gltf.scene;
+        setScene(gltf.scene);
       },
       undefined,
       (error) => {
         console.error("Failed to load room model:", error);
       }
     );
-
-    return () => {
-      if (scene) {
-        scene.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            const mesh = child as THREE.Mesh;
-            mesh.geometry?.dispose();
-            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-            materials.forEach((mat) => {
-              if (mat instanceof THREE.Material) {
-                Object.values(mat).forEach((val) => {
-                  if (val instanceof THREE.Texture) val.dispose();
-                });
-                mat.dispose();
-              }
-            });
-          }
-        });
-      }
-    };
   }, []);
 
-  if (!scene) return <LoadingIndicator />;
+  if (!scene) return <LoadingSpinner />;
 
   const box = new THREE.Box3();
   const worldPos = new THREE.Vector3();
@@ -236,14 +116,21 @@ function RoomModel() {
   );
 }
 
-function LoadingIndicator() {
+function LoadingSpinner() {
   const meshRef = useRef<THREE.Mesh>(null);
+
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 2;
+      meshRef.current.rotation.x += delta * 0.5;
+    }
+  });
 
   return (
     <group>
       <mesh ref={meshRef}>
-        <boxGeometry args={[0.3, 0.3, 0.3]} />
-        <meshStandardMaterial color="#444" wireframe />
+        <torusGeometry args={[0.4, 0.05, 16, 32]} />
+        <meshStandardMaterial color="#999" />
       </mesh>
       <ambientLight intensity={0.5} />
     </group>
@@ -281,7 +168,7 @@ export function Room3D({ visible }: Room3DProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[31]"
+      className="w-full h-full"
       data-testid="room-3d-container"
     >
       <Canvas
@@ -290,15 +177,16 @@ export function Room3D({ visible }: Room3DProps) {
         camera={{ position: [3, 2.5, 5], fov: 45 }}
         gl={{
           antialias: true,
-          alpha: true,
+          alpha: false,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.1,
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 2]}
-        style={{ background: "transparent" }}
+        style={{ background: "#ffffff" }}
         onCreated={({ gl }) => {
+          gl.setClearColor("#ffffff");
           gl.domElement.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
             setHasError(true);
@@ -306,7 +194,7 @@ export function Room3D({ visible }: Room3DProps) {
         }}
       >
         <SceneCleanup />
-        <Suspense fallback={<LoadingIndicator />}>
+        <Suspense fallback={<LoadingSpinner />}>
           <RoomModel />
           <Environment preset="apartment" environmentIntensity={0.4} />
           <ambientLight intensity={0.55} />
@@ -324,12 +212,14 @@ export function Room3D({ visible }: Room3DProps) {
           <OrbitControls
             enableZoom={true}
             enablePan={false}
-            minDistance={2}
-            maxDistance={10}
+            minDistance={1}
+            maxDistance={12}
             minPolarAngle={Math.PI / 6}
             maxPolarAngle={Math.PI / 2.2}
             autoRotate={false}
             target={[0, 0.5, 0]}
+            enableDamping={true}
+            dampingFactor={0.05}
           />
         </Suspense>
       </Canvas>

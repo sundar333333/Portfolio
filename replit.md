@@ -105,9 +105,13 @@ Preferred communication style: Simple, everyday language.
 - The workflow runs `bash start.sh` which: kills any existing process on port 5000, builds the production bundle (if `dist/` is missing), symlinks `room.glb`, then starts the Express production server via `exec`
 - `start.sh` uses `exec` so the Node process replaces the shell, preventing orphan processes and restart loops
 - Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
-- The 3D room model (`server/static/room.glb`, 26MB) was compressed from 576MB GitHub original using gltf-transform with meshopt compression and 1024px WebP textures
-- The Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
-- GLB material mapping (important for future material fixes):
+- Two 3D room models exist:
+  - `server/static/room.glb` (26MB) — old compressed room, used by Scene3D TV environment (not currently rendered)
+  - `server/static/render3d.glb` (26MB) — new Blender render from user's GitHub (`render 3d.glb`), compressed from 576MB with meshopt + WebP 1024px textures. Displayed in the interactive Room3D viewer after clicking ENTER on the black screen
+- Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
+- Room3D preloads the GLB when zoom progress > 0.3 (before user clicks ENTER) via `preloadRoom3D()`
+- Room3D supports scroll zoom (in/out) and left-click drag rotation (360 degrees) via OrbitControls
+- GLB material mapping for room.glb (important for future material fixes):
   - CRITICAL: `phong1` (node 123, Object_1.002, 76K verts) is a Blender baked texture atlas containing BOTH wall AND furniture colors (desk, chair, shelves, Ballon d'Or). NEVER strip its texture or everything goes black. Leave it completely untouched.
   - Walls tinted dark: `PaletteMaterial001` (Plane.003, room shell), `Black Painted Plaster Wall` (tiny accent Plane) — mat.color set to #333333 which multiplies with existing texture to darken. Textures NOT stripped.
   - Cupboard/bookshelf (IKEA Skruvby, node 118): `Beige Painted Plaster Wall` — left untouched, keeps original beige texture

@@ -1,4 +1,4 @@
-import { useState, useCallback, Component, type ReactNode } from "react";
+import { useState, useCallback, useEffect, Component, type ReactNode } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
@@ -9,6 +9,7 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
+import { Room3D, preloadRoom3D } from "@/components/Room3D";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -67,6 +68,9 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
+    if (progress > 0.3) {
+      preloadRoom3D();
+    }
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -129,8 +133,11 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 data-testid="room-white-screen"
               >
+                <WebGLErrorBoundary>
+                  <Room3D visible={isRoomEntered} />
+                </WebGLErrorBoundary>
                 <motion.button
-                  className="fixed top-6 right-6 z-[71] w-12 h-12 flex items-center justify-center rounded-full border border-black/20 bg-transparent hover:bg-black/5 transition-colors"
+                  className="fixed top-6 right-6 z-[71] w-12 h-12 flex items-center justify-center rounded-full border border-black/20 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors"
                   onClick={handleExitRoom}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
