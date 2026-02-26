@@ -63,6 +63,18 @@ function RoomModel() {
                   mat.polygonOffsetUnits = -4;
                 }
 
+                if (matKey === "ball_triangles" || matKey === "ball_ovals") {
+                  mat.metalness = 0.15;
+                  mat.roughness = 0.25;
+                  mat.emissive = new THREE.Color("#aa8800");
+                  mat.emissiveIntensity = 0.3;
+                }
+
+                if (matKey === "custom") {
+                  mat.metalness = 0.05;
+                  mat.roughness = 0.5;
+                }
+
                 if (mat.map) {
                   mat.map.anisotropy = maxAnisotropy;
                   mat.map.minFilter = THREE.LinearMipmapLinearFilter;
