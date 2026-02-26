@@ -33,6 +33,15 @@ function applyWindowMaterials(scene: THREE.Group) {
         });
         if (hasWindowMat) {
           mesh.renderOrder = 10;
+          const wx = mesh.position.x;
+          const wz = mesh.position.z;
+          if (wx < -3 && wz < -3) {
+            const dx = wx - (-3.6);
+            const dz = wz - (-3.6);
+            const len = Math.sqrt(dx * dx + dz * dz) || 1;
+            mesh.position.x += (dx / len) * 0.15;
+            mesh.position.z += (dz / len) * 0.15;
+          }
         }
 
         materials.forEach((mat) => {
@@ -40,31 +49,37 @@ function applyWindowMaterials(scene: THREE.Group) {
           const matKey = mat.name.toLowerCase();
 
           if (WINDOW_FRAME_MATS.has(matKey)) {
-            mat.color.set("#d0d0d0");
+            mat.color.set("#c0c0c0");
             mat.emissive.set("#ffffff");
-            mat.emissiveIntensity = 0.1;
-            mat.metalness = 0.3;
-            mat.roughness = 0.4;
+            mat.emissiveIntensity = 0.15;
+            mat.metalness = 0.4;
+            mat.roughness = 0.3;
             mat.side = THREE.DoubleSide;
             mat.depthWrite = true;
             mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -4;
-            mat.polygonOffsetUnits = -4;
+            mat.polygonOffsetFactor = -6;
+            mat.polygonOffsetUnits = -6;
           }
 
           if (WINDOW_GLASS_MATS.has(matKey)) {
-            mat.color.set("#7090c0");
-            mat.emissive.set("#4060a0");
-            mat.emissiveIntensity = 0.25;
+            mat.color.set("#6688bb");
+            mat.emissive.set("#4466aa");
+            mat.emissiveIntensity = 0.3;
             mat.transparent = true;
-            mat.opacity = 0.45;
-            mat.metalness = 0.0;
+            mat.opacity = 0.4;
+            mat.metalness = 0.1;
             mat.roughness = 0.05;
             mat.side = THREE.DoubleSide;
             mat.depthWrite = false;
             mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -4;
-            mat.polygonOffsetUnits = -4;
+            mat.polygonOffsetFactor = -8;
+            mat.polygonOffsetUnits = -8;
+          }
+
+          if (matKey === "palettematerial001") {
+            mat.polygonOffset = true;
+            mat.polygonOffsetFactor = 4;
+            mat.polygonOffsetUnits = 4;
           }
 
           mat.needsUpdate = true;
