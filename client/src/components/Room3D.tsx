@@ -47,11 +47,14 @@ function RoomModel() {
     loader.load(
       "/room.glb",
       (gltf) => {
-        const allWindowMats = new Set([
+        const windowFrameMats = new Set([
           "border_1001", "sides_1001", "bottombase_1001", "top_1001",
           "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
+        ]);
+        const windowGlassMats = new Set([
           "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
         ]);
+        const allWindowMats = new Set([...windowFrameMats, ...windowGlassMats]);
 
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
@@ -82,17 +85,39 @@ function RoomModel() {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 const matKey = mat.name.toLowerCase();
 
+                if (matKey === "phong1") return;
+
                 if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
-                  mat.color.set("#1a1a1a");
+                  mat.color.set("#333333");
                   mat.side = THREE.DoubleSide;
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = 2;
                   mat.polygonOffsetUnits = 2;
                 }
 
-                if (allWindowMats.has(matKey)) {
+                if (windowFrameMats.has(matKey)) {
+                  mat.color.set("#f0f0f0");
+                  mat.emissive.set("#f0f0f0");
+                  mat.emissiveIntensity = 0.15;
+                  mat.metalness = 0.1;
+                  mat.roughness = 0.4;
                   mat.side = THREE.DoubleSide;
                   mat.depthWrite = true;
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = -4;
+                  mat.polygonOffsetUnits = -4;
+                }
+
+                if (windowGlassMats.has(matKey)) {
+                  mat.color.set("#a0c4e8");
+                  mat.emissive.set("#6090c0");
+                  mat.emissiveIntensity = 0.3;
+                  mat.transparent = true;
+                  mat.opacity = 0.35;
+                  mat.metalness = 0.0;
+                  mat.roughness = 0.1;
+                  mat.side = THREE.DoubleSide;
+                  mat.depthWrite = false;
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = -4;
                   mat.polygonOffsetUnits = -4;
