@@ -9,69 +9,12 @@ let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 let materialFixesApplied = false;
 
-const WINDOW_FRAME_MATS = new Set([
-  "border_1001", "sides_1001", "bottombase_1001", "top_1001",
-  "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
-]);
-const WINDOW_GLASS_MATS = new Set([
-  "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
-]);
-
 function applyRoomFixes(scene: THREE.Group) {
   scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-
-      if (mesh.material) {
-        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        let isWindowPart = false;
-
-        materials.forEach((mat) => {
-          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-          const matKey = mat.name.toLowerCase();
-
-          if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
-            mat.color.set("#0a0a0a");
-            mat.needsUpdate = true;
-          }
-
-          if (WINDOW_FRAME_MATS.has(matKey)) {
-            isWindowPart = true;
-            mat.color.set("#f0f0f0");
-            mat.emissive.set("#f0f0f0");
-            mat.emissiveIntensity = 0.15;
-            mat.metalness = 0.1;
-            mat.roughness = 0.4;
-            mat.side = THREE.DoubleSide;
-            mat.depthWrite = true;
-            mat.needsUpdate = true;
-          }
-
-          if (WINDOW_GLASS_MATS.has(matKey)) {
-            isWindowPart = true;
-            mat.color.set("#a0c4e8");
-            mat.emissive.set("#6090c0");
-            mat.emissiveIntensity = 0.3;
-            mat.transparent = true;
-            mat.opacity = 0.5;
-            mat.metalness = 0.0;
-            mat.roughness = 0.1;
-            mat.side = THREE.DoubleSide;
-            mat.depthWrite = false;
-            mat.needsUpdate = true;
-          }
-        });
-
-        if (isWindowPart) {
-          const wp = mesh.position;
-          const dx = wp.x < -3 ? 0.15 : 0;
-          const dz = wp.z < -3 ? 0.15 : 0;
-          mesh.position.set(wp.x + dx, wp.y, wp.z + dz);
-          mesh.renderOrder = 10;
-        }
-      }
     }
   });
 }
