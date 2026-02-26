@@ -18,17 +18,10 @@ function RoomModel() {
     loader.load(
       "/room.glb",
       (gltf) => {
-        const windowFrameMats = new Set([
-          "border_1001",
-          "sides_1001",
-        ]);
-
-        const windowGlassKeepRGB = new Set([
-          "glassb_1001",
-          "glowleft_1001",
-          "glowright_1001",
-          "xleft_1001",
-          "xright_1001",
+        const allWindowMats = new Set([
+          "border_1001", "sides_1001", "bottombase_1001", "top_1001",
+          "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
+          "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
         ]);
 
         gltf.scene.traverse((child) => {
@@ -39,45 +32,35 @@ function RoomModel() {
 
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+              const hasWindowMat = materials.some((mat) => {
+                const name = (mat as THREE.MeshStandardMaterial).name?.toLowerCase() || "";
+                return allWindowMats.has(name);
+              });
+
+              if (hasWindowMat) {
+                mesh.position.x += (mesh.position.x < -3) ? 0.12 : 0;
+                mesh.position.z += (mesh.position.z < -3) ? 0.12 : 0;
+                mesh.renderOrder = 10;
+              }
+
               materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 const matKey = mat.name.toLowerCase();
 
-                if (matKey === "palettematerial001") {
-                  mat.color.set("#333333");
+                if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
+                  mat.color.set("#1a1a1a");
                   mat.side = THREE.DoubleSide;
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = 2;
+                  mat.polygonOffsetUnits = 2;
                 }
 
-                if (windowFrameMats.has(matKey)) {
-                  if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  mat.color.set("#f0f0f0");
-                  mat.roughness = 0.3;
-                  mat.metalness = 0.0;
-                  mat.emissive = new THREE.Color("#aaaaaa");
-                  mat.emissiveIntensity = 0.5;
+                if (allWindowMats.has(matKey)) {
                   mat.side = THREE.DoubleSide;
+                  mat.depthWrite = true;
                   mat.polygonOffset = true;
                   mat.polygonOffsetFactor = -4;
                   mat.polygonOffsetUnits = -4;
-                  mesh.renderOrder = 10;
-                }
-
-                if (matKey === "glassa_1001") {
-                  mat.side = THREE.DoubleSide;
-                  mat.transparent = true;
-                  mat.opacity = 0.5;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -4;
-                  mat.polygonOffsetUnits = -4;
-                  mesh.renderOrder = 11;
-                }
-
-                if (windowGlassKeepRGB.has(matKey)) {
-                  mat.side = THREE.DoubleSide;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -4;
-                  mat.polygonOffsetUnits = -4;
-                  mesh.renderOrder = 11;
                 }
 
                 if (mat.map) {
