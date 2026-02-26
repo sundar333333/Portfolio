@@ -29,6 +29,25 @@ function RoomModel() {
                 if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
                   const matName = mat.name.toLowerCase();
 
+                  if (matName === "palettematerial001") {
+                    if (mat.map) {
+                      mat.map.dispose();
+                      mat.map = null;
+                    }
+                    if (mat.roughnessMap) {
+                      mat.roughnessMap.dispose();
+                      mat.roughnessMap = null;
+                    }
+                    if (mat.metalnessMap) {
+                      mat.metalnessMap.dispose();
+                      mat.metalnessMap = null;
+                    }
+                    mat.color.set("#1a1a1a");
+                    mat.roughness = 0.85;
+                    mat.metalness = 0.0;
+                    mat.side = THREE.DoubleSide;
+                  }
+
                   const windowFrameParts = [
                     "border_1001",
                     "sides_1001",
@@ -38,21 +57,24 @@ function RoomModel() {
                   ];
                   const isWindowFrame = windowFrameParts.some(w => matName === w);
                   if (isWindowFrame) {
-                    mat.color.set("#f0f0f0");
-                    mat.roughness = 0.3;
+                    mat.color.set("#ffffff");
+                    mat.roughness = 0.2;
                     mat.metalness = 0.0;
                     mat.side = THREE.DoubleSide;
+                    mat.emissive = new THREE.Color("#222222");
                   }
 
                   const windowGlassParts = ["glassa_1001", "glassb_1001"];
                   const isWindowGlass = windowGlassParts.some(w => matName === w);
                   if (isWindowGlass) {
-                    mat.color.set("#c8daf0");
-                    mat.roughness = 0.05;
-                    mat.metalness = 0.5;
+                    mat.color.set("#e0eeff");
+                    mat.roughness = 0.0;
+                    mat.metalness = 0.3;
                     mat.transparent = true;
-                    mat.opacity = 0.3;
+                    mat.opacity = 0.4;
                     mat.side = THREE.DoubleSide;
+                    mat.emissive = new THREE.Color("#334466");
+                    mat.emissiveIntensity = 0.3;
                   }
 
                   mat.side = mat.side || THREE.DoubleSide;
