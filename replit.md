@@ -107,7 +107,7 @@ Preferred communication style: Simple, everyday language.
 - Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
 - Two 3D room models exist:
   - `server/static/room.glb` (26MB) — old compressed room, used by Scene3D TV environment (not currently rendered)
-  - `server/static/render3d.glb` (26MB) — new Blender render from user's GitHub (`render 3d.glb`), compressed from 576MB with meshopt + WebP 1024px textures. Displayed in the interactive Room3D viewer after clicking ENTER on the black screen
+  - `server/static/quit2.glb` (20MB) — user's Blender room from GitHub (`quit2.glb`), compressed from 436MB with meshopt + WebP 1024px textures. Displayed in the interactive Room3D viewer after clicking ENTER on the black screen
 - Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
 - Room3D preloads the GLB when zoom progress > 0.3 (before user clicks ENTER) via `preloadRoom3D()`
 - Room3D supports scroll zoom (in/out) and left-click drag rotation (360 degrees) via OrbitControls
