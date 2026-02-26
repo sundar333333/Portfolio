@@ -33,7 +33,6 @@ function RoomModel() {
                     "phong1",
                     "palettematerial001",
                     "black painted plaster wall",
-                    "beige painted plaster wall",
                   ];
 
                   const isDarkWall = darkWallMaterials.some(w => matName === w);
