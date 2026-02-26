@@ -162,7 +162,6 @@ function SceneCleanup() {
   useEffect(() => {
     return () => {
       gl.dispose();
-      gl.forceContextLoss();
     };
   }, [gl]);
 
@@ -175,6 +174,14 @@ interface Room3DProps {
 
 export function Room3D({ visible }: Room3DProps) {
   const [hasError, setHasError] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
+
+  useEffect(() => {
+    if (visible && hasError) {
+      setHasError(false);
+      setCanvasKey((k) => k + 1);
+    }
+  }, [visible]);
 
   if (!visible || hasError) return null;
 
@@ -184,6 +191,7 @@ export function Room3D({ visible }: Room3DProps) {
       data-testid="room-3d-container"
     >
       <Canvas
+        key={canvasKey}
         shadows
         camera={{ position: [3, 2.5, 5], fov: 45 }}
         gl={{
