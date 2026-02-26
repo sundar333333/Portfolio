@@ -1,20 +1,14 @@
-import { Suspense, useRef, useState, useEffect, useCallback } from "react";
+import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { useGLTF, OrbitControls } from "@react-three/drei";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
-
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
-dracoLoader.setDecoderConfig({ type: "js" });
 
 function RoomModel() {
   const [scene, setScene] = useState<THREE.Group | null>(null);
 
   useEffect(() => {
     const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
 
     loader.load(
       "/room.glb",
@@ -28,11 +22,24 @@ function RoomModel() {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
                 if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+                  if (mat.map) {
+                    mat.map.anisotropy = 16;
+                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                    mat.map.magFilter = THREE.LinearFilter;
+                    mat.map.generateMipmaps = true;
+                    mat.map.needsUpdate = true;
+                  }
+                  if (mat.normalMap) {
+                    mat.normalMap.anisotropy = 16;
+                  }
+                  if (mat.roughnessMap) {
+                    mat.roughnessMap.anisotropy = 16;
+                  }
                   const name = mat.name.toLowerCase();
                   if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
                     mat.color.set("#0a0a0a");
-                    mat.needsUpdate = true;
                   }
+                  mat.needsUpdate = true;
                 }
               });
             }
@@ -129,14 +136,14 @@ export function Room3D({ visible }: Room3DProps) {
         shadows
         camera={{ position: [3, 2.5, 5], fov: 45 }}
         gl={{
-          antialias: false,
+          antialias: true,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
+          toneMappingExposure: 1.2,
           failIfMajorPerformanceCaveat: false,
         }}
-        dpr={[1, 1]}
+        dpr={[1, 2]}
         style={{ background: "transparent" }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (e) => {
@@ -148,16 +155,18 @@ export function Room3D({ visible }: Room3DProps) {
         <SceneCleanup />
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
-          <ambientLight intensity={0.4} />
+          <ambientLight intensity={0.5} />
           <directionalLight
             position={[-3.79, 8.13, 4.43]}
-            intensity={1.8}
+            intensity={2.0}
             color="#ffffff"
             castShadow
-            shadow-mapSize-width={512}
-            shadow-mapSize-height={512}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0001}
           />
-          <hemisphereLight args={["#ffffff", "#333333", 0.5]} />
+          <hemisphereLight args={["#ffffff", "#333333", 0.6]} />
+          <pointLight position={[2, 3, 1]} intensity={0.3} color="#ffeedd" />
           <OrbitControls
             enableZoom={true}
             enablePan={false}
