@@ -114,5 +114,6 @@ Preferred communication style: Simple, everyday language.
   - Window frame: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`
   - Window glass: `GlassA_1001`, `GlassB_1001`
   - Room3D.tsx sets window frame to white, glass to transparent; leaves all other materials untouched (Blender textures already correct)
+  - Window meshes use polygonOffset and renderOrder to prevent z-fighting with wall geometry
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build

@@ -18,63 +18,60 @@ function RoomModel() {
     loader.load(
       "/room.glb",
       (gltf) => {
+        const windowFrameNodes = new Set([
+          "defaultMaterial", "defaultMaterial.010", "defaultMaterial.006",
+          "defaultMaterial.011", "defaultMaterial.012", "defaultMaterial.008",
+          "defaultMaterial.005", "defaultMaterial.009",
+        ]);
+        const windowGlassNodes = new Set([
+          "defaultMaterial.004", "defaultMaterial.003",
+          "defaultMaterial.002", "defaultMaterial.001",
+        ]);
+
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
             mesh.castShadow = true;
             mesh.receiveShadow = true;
+
+            const nodeName = mesh.name;
+            const isFrame = windowFrameNodes.has(nodeName);
+            const isGlass = windowGlassNodes.has(nodeName);
+
+            if (isFrame || isGlass) {
+              mesh.renderOrder = 10;
+            }
+
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
                 if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-                  const matName = mat.name.toLowerCase();
 
-                  if (matName === "palettematerial001") {
-                    if (mat.map) {
-                      mat.map.dispose();
-                      mat.map = null;
-                    }
-                    if (mat.roughnessMap) {
-                      mat.roughnessMap.dispose();
-                      mat.roughnessMap = null;
-                    }
-                    if (mat.metalnessMap) {
-                      mat.metalnessMap.dispose();
-                      mat.metalnessMap = null;
-                    }
-                    mat.color.set("#1a1a1a");
-                    mat.roughness = 0.85;
-                    mat.metalness = 0.0;
-                    mat.side = THREE.DoubleSide;
-                  }
-
-                  const windowFrameParts = [
-                    "border_1001",
-                    "sides_1001",
-                    "bottombase_1001",
-                    "top_1001",
-                    "shelves_1001",
-                  ];
-                  const isWindowFrame = windowFrameParts.some(w => matName === w);
-                  if (isWindowFrame) {
+                  if (isFrame) {
                     mat.color.set("#ffffff");
                     mat.roughness = 0.2;
                     mat.metalness = 0.0;
                     mat.side = THREE.DoubleSide;
-                    mat.emissive = new THREE.Color("#222222");
+                    mat.emissive = new THREE.Color("#333333");
+                    mat.depthTest = true;
+                    mat.polygonOffset = true;
+                    mat.polygonOffsetFactor = -1;
+                    mat.polygonOffsetUnits = -1;
                   }
 
-                  const windowGlassParts = ["glassa_1001", "glassb_1001"];
-                  const isWindowGlass = windowGlassParts.some(w => matName === w);
-                  if (isWindowGlass) {
-                    mat.color.set("#e0eeff");
+                  if (isGlass) {
+                    mat.color.set("#ddeeff");
                     mat.roughness = 0.0;
                     mat.metalness = 0.3;
                     mat.transparent = true;
                     mat.opacity = 0.4;
                     mat.side = THREE.DoubleSide;
-                    mat.emissive = new THREE.Color("#334466");
-                    mat.emissiveIntensity = 0.3;
+                    mat.emissive = new THREE.Color("#445566");
+                    mat.emissiveIntensity = 0.4;
+                    mat.depthTest = true;
+                    mat.polygonOffset = true;
+                    mat.polygonOffsetFactor = -2;
+                    mat.polygonOffsetUnits = -2;
                   }
 
                   mat.side = mat.side || THREE.DoubleSide;
