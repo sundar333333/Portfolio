@@ -111,15 +111,14 @@ Preferred communication style: Simple, everyday language.
 - Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
 - Room3D preloads the GLB when zoom progress > 0.3 (before user clicks ENTER) via `preloadRoom3D()`
 - Room3D supports scroll zoom (in/out) and left-click drag rotation (360 degrees) via OrbitControls
-- GLB material mapping for render3d.glb (important for future material fixes):
-  - CRITICAL: `phong1` is a Blender baked texture atlas containing BOTH wall AND furniture colors (desk, chair, shelves, Ballon d'Or). NEVER touch it — no color, texture, or property changes. The `applyMaterials()` function explicitly skips it.
+- GLB material mapping for room.glb (important for future material fixes):
+  - CRITICAL: `phong1` (node 123, Object_1.002, 76K verts) is a Blender baked texture atlas containing BOTH wall AND furniture colors (desk, chair, shelves, Ballon d'Or). NEVER strip its texture or everything goes black. Leave it completely untouched.
   - Walls tinted dark: `PaletteMaterial001` (Plane.003, room shell), `Black Painted Plaster Wall` (tiny accent Plane) — mat.color set to #333333 which multiplies with existing texture to darken. Textures NOT stripped.
-  - Cupboard/bookshelf: `Beige Painted Plaster Wall` — left untouched, keeps original beige texture
-  - Window frame materials: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`, `TriangleBottom_1001`, `XLeft_1001`, `XRight_1001` — set to white (#f0f0f0) with emissive glow, polygonOffset for z-fighting
-  - Window glass materials: `GlassA_1001`, `GlassB_1001`, `GlowLeft_1001`, `GlowRight_1001` — translucent blue (#88aadd) with emissive, opacity 0.45
-  - Window meshes at nodes 66-77, positioned at corner (-3.6, ~3.0, -3.6). renderOrder=10 to draw in front of wall.
-  - NEVER reparent, reposition, or regroup window meshes — leave at original Blender positions. Previous reparenting broke the cupboard and other furniture.
-  - Materials matched by lowercased material name, not mesh node name
-  - CRITICAL: Three outlier book meshes (nodes 95-97) at positions ~(-2900, 5600, -10600) with scale ~524 blow up Box3.setFromObject. `computeRoomBoundingBox()` filters out meshes with world position > 50 units from origin.
+  - Cupboard/bookshelf (IKEA Skruvby, node 118): `Beige Painted Plaster Wall` — left untouched, keeps original beige texture
+  - Window frame materials: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`, `TriangleBottom_1001`, `XLeft_1001`, `XRight_1001` — set to white (#f0f0f0) with emissive glow
+  - Window glass materials: `GlassA_1001`, `GlassB_1001`, `GlowLeft_1001`, `GlowRight_1001` — translucent blue with emissive
+  - Window meshes use polygonOffset and renderOrder to prevent z-fighting with wall geometry
+  - Materials are matched by material name (lowercased), not mesh node name
+  - CRITICAL: Three outlier book meshes (nodes 95-97) at positions ~(-2900, 5600, -10600) with scale ~524 blow up Box3.setFromObject. Bounding box computation filters out meshes with world position > 50 units from origin.
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build
