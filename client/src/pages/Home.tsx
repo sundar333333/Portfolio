@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense, Component, type ReactNode } from "react";
+import { useState, useCallback, Component, type ReactNode } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
@@ -22,8 +22,6 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: Rea
   }
 }
 
-const LazyRoom3D = lazy(() => import("@/components/Room3D").then(m => ({ default: m.Room3D })));
-
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredText, setHoveredText] = useState<string | null>(null);
@@ -34,7 +32,6 @@ export default function Home() {
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
-  const [showRoom, setShowRoom] = useState(false);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
@@ -61,9 +58,6 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
-    if (progress >= 0.95) {
-      setShowRoom(true);
-    }
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -98,33 +92,23 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          {!showRoom && (
-            <WebGLErrorBoundary>
-              <Scene3D
-                hoveredText={hoveredText}
-                onTVClick={handleTVClick}
-                isVideoPlaying={isVideoPlaying}
-                onWorkSectionChange={handleWorkSectionChange}
-                onScrollProgress={handleScrollProgress}
-                onWhiteSectionProgress={handleWhiteSectionProgress}
-                onCircleProgress={handleCircleProgress}
-              />
-            </WebGLErrorBoundary>
-          )}
+          <WebGLErrorBoundary>
+            <Scene3D
+              hoveredText={hoveredText}
+              onTVClick={handleTVClick}
+              isVideoPlaying={isVideoPlaying}
+              onWorkSectionChange={handleWorkSectionChange}
+              onScrollProgress={handleScrollProgress}
+              onWhiteSectionProgress={handleWhiteSectionProgress}
+              onCircleProgress={handleCircleProgress}
+            />
+          </WebGLErrorBoundary>
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
-
-          {showRoom && (
-            <WebGLErrorBoundary>
-              <Suspense fallback={null}>
-                <LazyRoom3D visible={showRoom} />
-              </Suspense>
-            </WebGLErrorBoundary>
-          )}
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
