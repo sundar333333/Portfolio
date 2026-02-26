@@ -26,21 +26,19 @@ function applyRoomFixes(scene: THREE.Group) {
 
       if (mesh.material) {
         const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        let isWindowPart = false;
+
         materials.forEach((mat) => {
           if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
           const matKey = mat.name.toLowerCase();
 
           if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
             mat.color.set("#0a0a0a");
-            mat.side = THREE.FrontSide;
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = 4;
-            mat.polygonOffsetUnits = 4;
             mat.needsUpdate = true;
-            mesh.renderOrder = -1;
           }
 
           if (WINDOW_FRAME_MATS.has(matKey)) {
+            isWindowPart = true;
             mat.color.set("#f0f0f0");
             mat.emissive.set("#f0f0f0");
             mat.emissiveIntensity = 0.15;
@@ -48,14 +46,11 @@ function applyRoomFixes(scene: THREE.Group) {
             mat.roughness = 0.4;
             mat.side = THREE.DoubleSide;
             mat.depthWrite = true;
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -4;
-            mat.polygonOffsetUnits = -4;
             mat.needsUpdate = true;
-            mesh.renderOrder = 10;
           }
 
           if (WINDOW_GLASS_MATS.has(matKey)) {
+            isWindowPart = true;
             mat.color.set("#a0c4e8");
             mat.emissive.set("#6090c0");
             mat.emissiveIntensity = 0.3;
@@ -65,13 +60,17 @@ function applyRoomFixes(scene: THREE.Group) {
             mat.roughness = 0.1;
             mat.side = THREE.DoubleSide;
             mat.depthWrite = false;
-            mat.polygonOffset = true;
-            mat.polygonOffsetFactor = -4;
-            mat.polygonOffsetUnits = -4;
             mat.needsUpdate = true;
-            mesh.renderOrder = 10;
           }
         });
+
+        if (isWindowPart) {
+          const wp = mesh.position;
+          const dx = wp.x < -3 ? 0.15 : 0;
+          const dz = wp.z < -3 ? 0.15 : 0;
+          mesh.position.set(wp.x + dx, wp.y, wp.z + dz);
+          mesh.renderOrder = 10;
+        }
       }
     }
   });
