@@ -1,4 +1,4 @@
-import { Suspense, useRef, useState, useEffect } from "react";
+import { Suspense, useRef, useState, useEffect, useMemo } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -103,33 +103,42 @@ function RoomModel() {
     );
   }, []);
 
-  if (!scene) return <LoadingSpinner />;
+  const { scale, position } = useMemo(() => {
+    if (!scene) return { scale: 1, position: [0, 0, 0] as [number, number, number] };
 
-  const box = new THREE.Box3();
-  const worldPos = new THREE.Vector3();
-  scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh && child.visible) {
-      child.getWorldPosition(worldPos);
-      if (Math.abs(worldPos.x) < 50 && Math.abs(worldPos.y) < 50 && Math.abs(worldPos.z) < 50) {
-        const meshBox = new THREE.Box3().setFromObject(child);
-        box.union(meshBox);
+    const box = new THREE.Box3();
+    const worldPos = new THREE.Vector3();
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh && child.visible) {
+        child.getWorldPosition(worldPos);
+        if (Math.abs(worldPos.x) < 50 && Math.abs(worldPos.y) < 50 && Math.abs(worldPos.z) < 50) {
+          const meshBox = new THREE.Box3().setFromObject(child);
+          box.union(meshBox);
+        }
       }
+    });
+    if (box.isEmpty()) {
+      box.setFromObject(scene);
     }
-  });
-  if (box.isEmpty()) {
-    box.setFromObject(scene);
-  }
 
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const scale = 4 / maxDim;
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const s = 4 / maxDim;
+
+    return {
+      scale: s,
+      position: [-center.x * s, -center.y * s + 0.5, -center.z * s] as [number, number, number],
+    };
+  }, [scene]);
+
+  if (!scene) return <LoadingSpinner />;
 
   return (
     <primitive
       object={scene}
       scale={scale}
-      position={[-center.x * scale, -center.y * scale + 0.5, -center.z * scale]}
+      position={position}
     />
   );
 }
@@ -230,14 +239,15 @@ export function Room3D({ visible }: Room3DProps) {
           <OrbitControls
             enableZoom={true}
             enablePan={false}
-            minDistance={1}
-            maxDistance={12}
+            minDistance={2}
+            maxDistance={10}
             minPolarAngle={Math.PI / 6}
             maxPolarAngle={Math.PI / 2.2}
             autoRotate={false}
             target={[0, 0.5, 0]}
             enableDamping={true}
-            dampingFactor={0.05}
+            dampingFactor={0.12}
+            zoomSpeed={0.8}
           />
         </Suspense>
       </Canvas>
