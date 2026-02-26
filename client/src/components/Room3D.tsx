@@ -64,15 +64,20 @@ function RoomModel() {
                 }
 
                 if (matKey === "ball_triangles" || matKey === "ball_ovals") {
+                  if (mat.metalnessMap) { mat.metalnessMap = null; }
+                  if (mat.roughnessMap) { mat.roughnessMap = null; }
                   mat.metalness = 0.15;
                   mat.roughness = 0.25;
+                  mat.color.set("#d4a017");
                   mat.emissive = new THREE.Color("#aa8800");
-                  mat.emissiveIntensity = 0.3;
+                  mat.emissiveIntensity = 0.4;
                 }
 
                 if (matKey === "custom") {
+                  if (mat.metalnessMap) { mat.metalnessMap = null; }
                   mat.metalness = 0.05;
                   mat.roughness = 0.5;
+                  mat.color.set("#555555");
                 }
 
                 if (mat.map) {
