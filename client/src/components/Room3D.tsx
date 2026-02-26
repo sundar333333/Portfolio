@@ -19,7 +19,6 @@ function RoomModel() {
       "/room.glb",
       (gltf) => {
         const darkWallMats = new Set([
-          "phong1",
           "palettematerial001",
           "black painted plaster wall",
         ]);
@@ -42,9 +41,7 @@ function RoomModel() {
           "glowright_1001",
         ]);
 
-        const processedMats = new Set<string>();
-        let windowFrameCount = 0;
-        let windowGlassCount = 0;
+        const windowMeshes: THREE.Object3D[] = [];
 
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
@@ -68,43 +65,48 @@ function RoomModel() {
                   mat.side = THREE.DoubleSide;
                 }
 
-                if (windowFrameMats.has(matKey)) {
-                  windowFrameCount++;
+                const isWindowFrame = windowFrameMats.has(matKey);
+                const isWindowGlass = windowGlassMats.has(matKey);
+
+                if (isWindowFrame) {
+                  windowMeshes.push(mesh);
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
                   if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
                   if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
                   if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
-                  mat.color.set("#ffffff");
+                  mat.color.set("#f0f0f0");
                   mat.roughness = 0.3;
                   mat.metalness = 0.0;
-                  mat.emissive = new THREE.Color("#ffffff");
-                  mat.emissiveIntensity = 0.8;
+                  mat.emissive = new THREE.Color("#aaaaaa");
+                  mat.emissiveIntensity = 0.5;
                   mat.side = THREE.DoubleSide;
-                  mat.depthTest = false;
-                  mat.depthWrite = false;
-                  mesh.renderOrder = 999;
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = -4;
+                  mat.polygonOffsetUnits = -4;
+                  mesh.renderOrder = 10;
                 }
 
-                if (windowGlassMats.has(matKey)) {
-                  windowGlassCount++;
+                if (isWindowGlass) {
+                  windowMeshes.push(mesh);
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
                   if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
                   if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
                   if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
-                  mat.color.set("#88bbff");
+                  mat.color.set("#c8ddff");
                   mat.roughness = 0.0;
-                  mat.metalness = 0.1;
+                  mat.metalness = 0.3;
                   mat.transparent = true;
-                  mat.opacity = 0.6;
-                  mat.emissive = new THREE.Color("#6699ff");
-                  mat.emissiveIntensity = 1.0;
+                  mat.opacity = 0.4;
+                  mat.emissive = new THREE.Color("#6688bb");
+                  mat.emissiveIntensity = 0.5;
                   mat.side = THREE.DoubleSide;
-                  mat.depthTest = false;
-                  mat.depthWrite = false;
-                  mesh.renderOrder = 998;
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = -4;
+                  mat.polygonOffsetUnits = -4;
+                  mesh.renderOrder = 11;
                 }
 
-                if (!darkWallMats.has(matKey) && !windowFrameMats.has(matKey) && !windowGlassMats.has(matKey)) {
+                if (!darkWallMats.has(matKey) && !isWindowFrame && !isWindowGlass) {
                   if (mat.map) {
                     mat.map.anisotropy = maxAnisotropy;
                     mat.map.minFilter = THREE.LinearMipmapLinearFilter;
@@ -124,7 +126,28 @@ function RoomModel() {
             }
           }
         });
-        console.log('[ROOM3D] Window frame materials matched:', windowFrameCount, '| glass:', windowGlassCount);
+
+        if (windowMeshes.length > 0) {
+          const center = new THREE.Vector3();
+          windowMeshes.forEach(m => center.add(m.position));
+          center.divideScalar(windowMeshes.length);
+
+          const windowGroup = new THREE.Group();
+          windowGroup.name = "WindowGroup";
+
+          const meshesToMove = [...windowMeshes];
+          meshesToMove.forEach(m => {
+            const localPos = m.position.clone().sub(center);
+            if (m.parent) m.parent.remove(m);
+            m.position.copy(localPos);
+            windowGroup.add(m);
+          });
+
+          gltf.scene.add(windowGroup);
+          windowGroup.position.set(-1.497, 1.477, -4.130);
+          windowGroup.scale.set(1.733, 2.001, 1.761);
+        }
+
         setScene(gltf.scene);
       },
       undefined,
