@@ -50,16 +50,21 @@ function applyRoomFixes(scene: THREE.Group) {
       } else if (name === "Windows_Sill") {
         mesh.material = frameMat;
       } else {
-        if (mesh.parent?.name === "Window.L" || mesh.parent?.name === "Window.R") {
-          const mats = [frameMat, glassMat];
-          if (Array.isArray(mesh.material) && mesh.material.length === 2) {
-            mesh.material = mats;
-          } else {
-            mesh.material = glassMat;
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const newMats = mats.map((mat: any) => {
+          const matName = (mat.name || "").toLowerCase();
+          if (matName.includes("glass_material")) {
+            return glassMat;
           }
-        } else {
-          mesh.material = frameMat;
-        }
+          if (matName === "hidden_material") {
+            return frameMat;
+          }
+          if (matName.includes("procedural wood")) {
+            return frameMat;
+          }
+          return frameMat;
+        });
+        mesh.material = newMats.length === 1 ? newMats[0] : newMats;
       }
       mesh.visible = true;
       mesh.renderOrder = 5;
