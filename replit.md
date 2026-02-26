@@ -99,3 +99,12 @@ Preferred communication style: Simple, everyday language.
 ### Fonts
 - Google Fonts loaded via CDN in `client/index.html`
 - Anton, Archivo Black (brand), Inter, DM Sans (UI)
+
+## Startup & Workflow
+
+- The workflow runs `bash start.sh` which builds the production bundle (if needed) and starts the Express production server
+- Vite dev server (`npm run dev`) must NOT be used in the workflow — it crashes under memory pressure with Three.js
+- The production build is done with `NODE_OPTIONS='--max-old-space-size=1024'`
+- The 3D room model (`server/static/room.glb`, 30MB) is symlinked into `dist/static/` at startup
+- `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
+- After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build
