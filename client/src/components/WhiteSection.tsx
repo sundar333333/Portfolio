@@ -20,6 +20,7 @@ interface WhiteSectionProps {
   circleProgress: number;
   onCaseStudyChange?: (isOpen: boolean) => void;
   onZoomProgress?: (progress: number) => void;
+  onEnterRoom?: () => void;
 }
 
 const projectLogos: Record<string, string> = {
@@ -38,7 +39,7 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onEnterRoom }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -391,6 +392,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
                 transition: 'width 0.5s ease-out, height 0.5s ease-out, border 0.5s ease-out, opacity 0.3s ease-out',
               }}
+              onClick={() => onEnterRoom?.()}
               data-testid="button-enter-room"
             >
               <div
