@@ -8,6 +8,45 @@ import * as THREE from "three";
 let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 
+function applyMaterialFixes(scene: THREE.Group) {
+  scene.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      if (mesh.material) {
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        materials.forEach((mat) => {
+          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+          const matKey = mat.name.toLowerCase();
+
+          if (matKey === "palettematerial001" || matKey === "black painted plaster wall") {
+            mat.color.set("#888888");
+          }
+
+          if (matKey === "material.074_32") {
+            mat.color.set("#1a1a1a");
+          }
+          if (matKey === "material.074_37" || matKey === "material.023") {
+            mat.color.set("#111111");
+          }
+
+          if (matKey === "ball_triangles" || matKey === "ball_ovals") {
+            mat.color.set("#d4a017");
+            mat.metalness = 0.9;
+            mat.roughness = 0.2;
+            mat.emissive.set("#8b6914");
+            mat.emissiveIntensity = 0.15;
+          }
+
+          mat.needsUpdate = true;
+        });
+      }
+    }
+  });
+}
+
 export function preloadRoom3D() {
   if (preloadStarted) return;
   preloadStarted = true;
@@ -17,13 +56,7 @@ export function preloadRoom3D() {
   loader.load(
     "/render3d.glb",
     (gltf) => {
-      gltf.scene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
-      });
+      applyMaterialFixes(gltf.scene);
       cachedScene = gltf.scene;
     },
     undefined,
@@ -51,24 +84,21 @@ function RoomModel() {
     loader.load(
       "/render3d.glb",
       (gltf) => {
+        applyMaterialFixes(gltf.scene);
+
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
-                if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-                  if (mat.map) {
-                    mat.map.anisotropy = maxAnisotropy;
-                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
-                    mat.map.magFilter = THREE.LinearFilter;
-                    mat.map.generateMipmaps = true;
-                    mat.map.needsUpdate = true;
-                  }
-                  mat.needsUpdate = true;
+                if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+                if (mat.map) {
+                  mat.map.anisotropy = maxAnisotropy;
+                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                  mat.map.magFilter = THREE.LinearFilter;
+                  mat.map.generateMipmaps = true;
+                  mat.map.needsUpdate = true;
                 }
               });
             }
