@@ -87,7 +87,7 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          <div style={{ display: showRoom ? 'none' : undefined }}>
+          {!showRoom && (
             <Scene3D
               hoveredText={hoveredText}
               onTVClick={handleTVClick}
@@ -97,7 +97,7 @@ export default function Home() {
               onWhiteSectionProgress={handleWhiteSectionProgress}
               onCircleProgress={handleCircleProgress}
             />
-          </div>
+          )}
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
