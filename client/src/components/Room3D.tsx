@@ -43,6 +43,8 @@ function RoomModel() {
         ]);
 
         const processedMats = new Set<string>();
+        let windowFrameCount = 0;
+        let windowGlassCount = 0;
 
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
@@ -55,8 +57,6 @@ function RoomModel() {
               materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 const matKey = mat.name.toLowerCase();
-                if (processedMats.has(mat.uuid)) return;
-                processedMats.add(mat.uuid);
 
                 if (darkWallMats.has(matKey)) {
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
@@ -69,53 +69,62 @@ function RoomModel() {
                 }
 
                 if (windowFrameMats.has(matKey)) {
+                  windowFrameCount++;
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  mat.color.set("#f0f0f0");
+                  if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
+                  if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
+                  if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
+                  mat.color.set("#ffffff");
                   mat.roughness = 0.3;
                   mat.metalness = 0.0;
-                  mat.emissive = new THREE.Color("#444444");
-                  mat.emissiveIntensity = 1.0;
+                  mat.emissive = new THREE.Color("#ffffff");
+                  mat.emissiveIntensity = 0.8;
                   mat.side = THREE.DoubleSide;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -1;
-                  mat.polygonOffsetUnits = -1;
-                  mesh.renderOrder = 10;
+                  mat.depthTest = false;
+                  mat.depthWrite = false;
+                  mesh.renderOrder = 999;
                 }
 
                 if (windowGlassMats.has(matKey)) {
+                  windowGlassCount++;
                   if (mat.map) { mat.map.dispose(); mat.map = null; }
-                  mat.color.set("#c8d8f0");
-                  mat.roughness = 0.05;
-                  mat.metalness = 0.5;
+                  if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
+                  if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
+                  if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
+                  mat.color.set("#88bbff");
+                  mat.roughness = 0.0;
+                  mat.metalness = 0.1;
                   mat.transparent = true;
-                  mat.opacity = 0.3;
-                  mat.emissive = new THREE.Color("#667799");
-                  mat.emissiveIntensity = 0.5;
+                  mat.opacity = 0.6;
+                  mat.emissive = new THREE.Color("#6699ff");
+                  mat.emissiveIntensity = 1.0;
                   mat.side = THREE.DoubleSide;
-                  mat.polygonOffset = true;
-                  mat.polygonOffsetFactor = -2;
-                  mat.polygonOffsetUnits = -2;
-                  mesh.renderOrder = 11;
+                  mat.depthTest = false;
+                  mat.depthWrite = false;
+                  mesh.renderOrder = 998;
                 }
 
-                if (mat.map) {
-                  mat.map.anisotropy = maxAnisotropy;
-                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
-                  mat.map.magFilter = THREE.LinearFilter;
-                  mat.map.generateMipmaps = true;
-                  mat.map.needsUpdate = true;
-                }
-                if (mat.normalMap) {
-                  mat.normalMap.anisotropy = maxAnisotropy;
-                }
-                if (mat.roughnessMap) {
-                  mat.roughnessMap.anisotropy = maxAnisotropy;
+                if (!darkWallMats.has(matKey) && !windowFrameMats.has(matKey) && !windowGlassMats.has(matKey)) {
+                  if (mat.map) {
+                    mat.map.anisotropy = maxAnisotropy;
+                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                    mat.map.magFilter = THREE.LinearFilter;
+                    mat.map.generateMipmaps = true;
+                    mat.map.needsUpdate = true;
+                  }
+                  if (mat.normalMap) {
+                    mat.normalMap.anisotropy = maxAnisotropy;
+                  }
+                  if (mat.roughnessMap) {
+                    mat.roughnessMap.anisotropy = maxAnisotropy;
+                  }
                 }
                 mat.needsUpdate = true;
               });
             }
           }
         });
+        console.log('[ROOM3D] Window frame materials matched:', windowFrameCount, '| glass:', windowGlassCount);
         setScene(gltf.scene);
       },
       undefined,
