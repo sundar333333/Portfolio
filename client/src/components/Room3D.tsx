@@ -9,12 +9,29 @@ let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 let materialFixesApplied = false;
 
+const WALL_MESH_NAMES = new Set(["Plane", "Plane.003"]);
+
 function applyRoomFixes(scene: THREE.Group) {
   scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+
+      if (WALL_MESH_NAMES.has(mesh.name) && mesh.material) {
+        const origMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const clonedMats = origMats.map((mat) => {
+          if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+            const cloned = mat.clone();
+            cloned.color.set("#1a1a1a");
+            cloned.side = THREE.DoubleSide;
+            cloned.needsUpdate = true;
+            return cloned;
+          }
+          return mat;
+        });
+        mesh.material = clonedMats.length === 1 ? clonedMats[0] : clonedMats;
+      }
     }
   });
 }
@@ -199,9 +216,9 @@ export function Room3D({ visible }: Room3DProps) {
           failIfMajorPerformanceCaveat: false,
         }}
         dpr={[1, 2]}
-        style={{ background: "#ffffff" }}
+        style={{ background: "#87CEEB" }}
         onCreated={({ gl }) => {
-          gl.setClearColor("#ffffff");
+          gl.setClearColor("#87CEEB");
           gl.domElement.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
             setHasError(true);
