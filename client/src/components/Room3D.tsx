@@ -8,6 +8,72 @@ import * as THREE from "three";
 let cachedScene: THREE.Group | null = null;
 let preloadStarted = false;
 
+const WINDOW_FRAME_MATS = new Set([
+  "border_1001", "sides_1001", "bottombase_1001", "top_1001",
+  "shelves_1001", "trianglebottom_1001", "xleft_1001", "xright_1001",
+]);
+const WINDOW_GLASS_MATS = new Set([
+  "glassa_1001", "glassb_1001", "glowleft_1001", "glowright_1001",
+]);
+const ALL_WINDOW_MATS = new Set([...WINDOW_FRAME_MATS, ...WINDOW_GLASS_MATS]);
+
+function applyWindowMaterials(scene: THREE.Group) {
+  scene.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      if (mesh.material) {
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+        const hasWindowMat = materials.some((mat) => {
+          const name = (mat as THREE.MeshStandardMaterial).name?.toLowerCase() || "";
+          return ALL_WINDOW_MATS.has(name);
+        });
+        if (hasWindowMat) {
+          mesh.renderOrder = 10;
+        }
+
+        materials.forEach((mat) => {
+          if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+          const matKey = mat.name.toLowerCase();
+
+          if (WINDOW_FRAME_MATS.has(matKey)) {
+            mat.color.set("#d0d0d0");
+            mat.emissive.set("#ffffff");
+            mat.emissiveIntensity = 0.1;
+            mat.metalness = 0.3;
+            mat.roughness = 0.4;
+            mat.side = THREE.DoubleSide;
+            mat.depthWrite = true;
+            mat.polygonOffset = true;
+            mat.polygonOffsetFactor = -4;
+            mat.polygonOffsetUnits = -4;
+          }
+
+          if (WINDOW_GLASS_MATS.has(matKey)) {
+            mat.color.set("#7090c0");
+            mat.emissive.set("#4060a0");
+            mat.emissiveIntensity = 0.25;
+            mat.transparent = true;
+            mat.opacity = 0.45;
+            mat.metalness = 0.0;
+            mat.roughness = 0.05;
+            mat.side = THREE.DoubleSide;
+            mat.depthWrite = false;
+            mat.polygonOffset = true;
+            mat.polygonOffsetFactor = -4;
+            mat.polygonOffsetUnits = -4;
+          }
+
+          mat.needsUpdate = true;
+        });
+      }
+    }
+  });
+}
+
 export function preloadRoom3D() {
   if (preloadStarted) return;
   preloadStarted = true;
@@ -17,13 +83,7 @@ export function preloadRoom3D() {
   loader.load(
     "/render3d.glb",
     (gltf) => {
-      gltf.scene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
-      });
+      applyWindowMaterials(gltf.scene);
       cachedScene = gltf.scene;
     },
     undefined,
@@ -51,24 +111,20 @@ function RoomModel() {
     loader.load(
       "/render3d.glb",
       (gltf) => {
+        applyWindowMaterials(gltf.scene);
+
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
-                if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-                  if (mat.map) {
-                    mat.map.anisotropy = maxAnisotropy;
-                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
-                    mat.map.magFilter = THREE.LinearFilter;
-                    mat.map.generateMipmaps = true;
-                    mat.map.needsUpdate = true;
-                  }
-                  mat.needsUpdate = true;
+                if ((mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) && mat.map) {
+                  mat.map.anisotropy = maxAnisotropy;
+                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                  mat.map.magFilter = THREE.LinearFilter;
+                  mat.map.generateMipmaps = true;
+                  mat.map.needsUpdate = true;
                 }
               });
             }
