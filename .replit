@@ -34,10 +34,10 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "NODE_OPTIONS='--max-old-space-size=4096' npm run dev"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_OPTIONS='--max-old-space-size=4096' npm run build && mkdir -p dist/static && ln -sf $(pwd)/server/static/room.glb dist/static/room.glb && npm run start"
+waitForPort = 5000

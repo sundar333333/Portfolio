@@ -1,32 +1,73 @@
-import { Suspense, useRef, useState, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useRef, useState, useEffect, useCallback } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { useGLTF, OrbitControls } from "@react-three/drei";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+dracoLoader.setDecoderConfig({ type: "js" });
+
 function RoomModel() {
-  const { scene } = useGLTF("/room.glb", true);
+  const [scene, setScene] = useState<THREE.Group | null>(null);
 
   useEffect(() => {
-    scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        if (mesh.material) {
-          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          materials.forEach((mat) => {
-            if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
-              const name = mat.name.toLowerCase();
-              if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
-                mat.color.set("#0a0a0a");
-                mat.needsUpdate = true;
-              }
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.load(
+      "/room.glb",
+      (gltf) => {
+        gltf.scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            if (mesh.material) {
+              const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+              materials.forEach((mat) => {
+                if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+                  const name = mat.name.toLowerCase();
+                  if (name.includes("black") && name.includes("plaster") && name.includes("wall") && !mat.map) {
+                    mat.color.set("#0a0a0a");
+                    mat.needsUpdate = true;
+                  }
+                }
+              });
             }
-          });
-        }
+          }
+        });
+        setScene(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error("Failed to load room model:", error);
       }
-    });
-  }, [scene]);
+    );
+
+    return () => {
+      if (scene) {
+        scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.geometry?.dispose();
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            materials.forEach((mat) => {
+              if (mat instanceof THREE.Material) {
+                Object.values(mat).forEach((val) => {
+                  if (val instanceof THREE.Texture) val.dispose();
+                });
+                mat.dispose();
+              }
+            });
+          }
+        });
+      }
+    };
+  }, []);
+
+  if (!scene) return <LoadingIndicator />;
 
   const box = new THREE.Box3().setFromObject(scene);
   const size = box.getSize(new THREE.Vector3());
@@ -57,6 +98,19 @@ function LoadingIndicator() {
   );
 }
 
+function SceneCleanup() {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    return () => {
+      gl.dispose();
+      gl.forceContextLoss();
+    };
+  }, [gl]);
+
+  return null;
+}
+
 interface Room3DProps {
   visible: boolean;
 }
@@ -75,14 +129,14 @@ export function Room3D({ visible }: Room3DProps) {
         shadows
         camera={{ position: [3, 2.5, 5], fov: 45 }}
         gl={{
-          antialias: true,
+          antialias: false,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
           failIfMajorPerformanceCaveat: false,
         }}
-        dpr={[1, 1.5]}
+        dpr={[1, 1]}
         style={{ background: "transparent" }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (e) => {
@@ -91,6 +145,7 @@ export function Room3D({ visible }: Room3DProps) {
           });
         }}
       >
+        <SceneCleanup />
         <Suspense fallback={<LoadingIndicator />}>
           <RoomModel />
           <ambientLight intensity={0.4} />
@@ -99,8 +154,8 @@ export function Room3D({ visible }: Room3DProps) {
             intensity={1.8}
             color="#ffffff"
             castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
+            shadow-mapSize-width={512}
+            shadow-mapSize-height={512}
           />
           <hemisphereLight args={["#ffffff", "#333333", 0.5]} />
           <OrbitControls

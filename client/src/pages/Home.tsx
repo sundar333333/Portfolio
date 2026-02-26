@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { CustomCursor } from "@/components/CustomCursor";
@@ -9,9 +9,10 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
-import { Room3D } from "@/components/Room3D";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
+
+const LazyRoom3D = lazy(() => import("@/components/Room3D").then(m => ({ default: m.Room3D })));
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -105,7 +106,11 @@ export default function Home() {
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
 
-          <Room3D visible={showRoom} />
+          {showRoom && (
+            <Suspense fallback={null}>
+              <LazyRoom3D visible={showRoom} />
+            </Suspense>
+          )}
 
           {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
