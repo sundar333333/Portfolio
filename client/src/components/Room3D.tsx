@@ -10,7 +10,7 @@ let preloadStarted = false;
 let materialFixesApplied = false;
 
 function applyRoomFixes(scene: THREE.Group) {
-  const wallMeshNames = new Set(["Plane", "Plane.003"]);
+  const wallMeshNames = new Set(["Plane", "Plane.003", "10M"]);
 
   const windowGroup = scene.getObjectByName("Window_Group");
   if (windowGroup) {
@@ -24,6 +24,16 @@ function applyRoomFixes(scene: THREE.Group) {
     mesh.receiveShadow = true;
 
     if (wallMeshNames.has(mesh.name)) {
+      mesh.visible = false;
+      return;
+    }
+
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const isWallMat = mats.some((m: any) => {
+      const n = (m.name || "").toLowerCase();
+      return n.includes("plaster wall") || n.includes("painted plaster");
+    });
+    if (isWallMat && mesh.name !== "skruvby") {
       mesh.visible = false;
     }
   });
