@@ -637,6 +637,22 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
       const startScrollTop = el.scrollTop;
       const distance = targetScrollTop - startScrollTop;
+
+      if (Math.abs(distance) < 5) {
+        if (section === 'contact' || section === 'room') {
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
+          }, 100);
+        }
+        if (section === 'works') {
+          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+        }
+        if (section === 'landing' || section === 'about') {
+          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+        }
+        return;
+      }
+
       const duration = Math.min(3000, Math.max(1200, Math.abs(distance) * 0.8));
       const startTime = performance.now();
 
@@ -657,6 +673,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
             }, 200);
+          }
+          if (section === 'works') {
+            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
           }
           if (section === 'landing' || section === 'about') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
