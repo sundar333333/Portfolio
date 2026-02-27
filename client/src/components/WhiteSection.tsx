@@ -476,14 +476,14 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           >
                             Let's connect and create<br />meaningful digital experiences.
                           </h2>
-                          <img 
-                            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
-                            alt="Creative animation"
-                            className="w-64 md:w-80 lg:w-96 object-contain rounded-lg"
-                            data-testid="img-contact-gif"
-                          />
-                        </div>
-                        <div className="group/mail pointer-events-auto mt-6">
+                          <div className="flex items-center gap-6 flex-wrap">
+                            <img 
+                              src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
+                              alt="Creative animation"
+                              className="w-64 md:w-80 lg:w-96 object-contain rounded-lg"
+                              data-testid="img-contact-gif"
+                            />
+                            <div className="group/mail pointer-events-auto">
                           <div className="flex items-center gap-3">
                             <div className="relative w-8 h-6 md:w-10 md:h-7 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
                               <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
@@ -511,6 +511,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                                 leosr1033@gmail.com
                                 <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/mail:scale-x-100 transition-transform duration-300 ease-out" />
                               </a>
+                            </div>
+                          </div>
                             </div>
                           </div>
                         </div>
