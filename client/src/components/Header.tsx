@@ -34,6 +34,7 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
           className={`font-anton text-xl md:text-3xl tracking-wide cursor-pointer transition-colors duration-500 ${isDarkText ? 'text-black' : 'text-white'}`}
           onMouseEnter={() => onTextHover("SUNDAR RAM")}
           onMouseLeave={() => onTextHover(null)}
+          onClick={() => handleNavClick('landing')}
           whileHover={{ scale: 1.02 }}
           data-testid="text-brand-name"
         >

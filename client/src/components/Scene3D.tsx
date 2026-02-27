@@ -619,8 +619,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       if (!section) return;
 
       const targetOffsets: Record<string, number> = {
-        about: 0.15,
-        works: 0.94,
+        landing: 0,
+        about: 0.20,
+        works: 1.0,
         room: 1.0,
         contact: 1.0,
       };
@@ -654,6 +655,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         } else {
           if (section === 'contact' || section === 'room') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
+          }
+          if (section === 'landing' || section === 'about') {
+            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
           }
         }
       };

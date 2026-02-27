@@ -77,17 +77,31 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   useEffect(() => {
     const handleNavigateWhiteSection = (e: Event) => {
       const section = (e as CustomEvent).detail?.section;
-      if (section !== 'contact') return;
+      if (!section) return;
 
       const freeScrollThreshold = 800;
       const zoomThreshold = 2000;
-      const contactTarget = freeScrollThreshold + zoomThreshold + 2400;
+      const postZoomThreshold = 4000;
+
+      let accTarget = 0;
+      if (section === 'reset') {
+        zoomScrollAccumulator.current = 0;
+        targetZoom.current = 0;
+        targetPostZoom.current = 0;
+        return;
+      } else if (section === 'room') {
+        accTarget = freeScrollThreshold + zoomThreshold;
+      } else if (section === 'contact') {
+        accTarget = freeScrollThreshold + zoomThreshold + 2400;
+      } else {
+        return;
+      }
 
       cancelAnimationFrame(navAnimFrame.current);
 
       const startVal = zoomScrollAccumulator.current;
-      const distance = contactTarget - startVal;
-      const duration = 2000;
+      const distance = accTarget - startVal;
+      const duration = Math.min(2500, Math.max(1200, Math.abs(distance) * 0.5));
       const startTime = performance.now();
 
       const easeInOutCubic = (t: number) =>
@@ -105,7 +119,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
 
         const postStart = Math.max(0, newVal - freeScrollThreshold - zoomThreshold);
-        targetPostZoom.current = Math.min(1, postStart / 4000);
+        targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
 
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animate);
