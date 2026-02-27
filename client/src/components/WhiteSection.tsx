@@ -486,7 +486,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         className="absolute left-8 md:left-16 lg:left-24"
                         style={{ 
                           opacity: mailOpacity,
-                          top: `calc(50% + ${40 - headingShift * 0.3}px)`,
+                          top: `calc(50% + ${10 - headingShift * 0.3}px)`,
                         }}
                       >
                         <img 
