@@ -1,6 +1,6 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll, Html } from "@react-three/drei";
+import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -157,43 +157,6 @@ function useWoodTexture() {
   return texture;
 }
 
-function TVVideo({ isMuted }: { isMuted: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
-    }
-  }, [isMuted]);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.play().then(() => {
-        if (!isMuted) {
-          setTimeout(() => { if (videoRef.current) videoRef.current.muted = false; }, 100);
-        }
-      }).catch(() => {});
-    }
-  }, []);
-
-  return (
-    <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden' }}>
-      <video
-        ref={videoRef}
-        loop
-        playsInline
-        width={340}
-        height={250}
-        style={{ width: '340px', height: '250px', objectFit: 'cover', display: 'block' }}
-        data-testid="tv-video-player"
-      >
-        <source src="/static/tribute.mp4" type="video/mp4" />
-      </video>
-    </div>
-  );
-}
-
 interface VintageTVProps {
   hoveredText: string | null;
   onClick: () => void;
@@ -211,6 +174,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
   const frameRef = useRef(0);
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
@@ -230,11 +194,43 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     const videoTex = new THREE.CanvasTexture(videoCanvas);
     videoTextureRef.current = videoTex;
 
+    const video = document.createElement("video");
+    video.src = "/static/tribute.mp4";
+    video.crossOrigin = "anonymous";
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.muted = true;
+    videoElRef.current = video;
+
     return () => {
       tex.dispose();
       videoTex.dispose();
+      video.pause();
+      video.src = "";
+      videoElRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const video = videoElRef.current;
+    if (!video) return;
+    if (isVideoPlaying) {
+      video.muted = true;
+      video.play().then(() => {
+        setTimeout(() => { if (videoElRef.current) videoElRef.current.muted = isMuted; }, 100);
+      }).catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isVideoPlaying]);
+
+  useEffect(() => {
+    if (videoElRef.current) {
+      videoElRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   useFrame((state) => {
     if (!visible) return;
@@ -255,12 +251,17 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
 
-    if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current) {
+    if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
       const canvas = videoCanvasRef.current;
       const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const video = videoElRef.current;
+      if (ctx && video.readyState >= 2) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        for (let y = 0; y < canvas.height; y += 3) {
+          ctx.fillStyle = `rgba(0, 0, 0, ${0.03 + Math.sin(y * 0.5 + frameRef.current * 0.1) * 0.02})`;
+          ctx.fillRect(0, y, canvas.width, 1);
+        }
+        frameRef.current += 1;
         videoTextureRef.current.needsUpdate = true;
       }
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
@@ -420,21 +421,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         />
       </mesh>
 
-      {isVideoPlaying && (
-        <Html
-          position={[-0.08, 0.02, 0.31]}
-          transform
-          occlude={false}
-          style={{
-            width: '340px',
-            height: '250px',
-            pointerEvents: 'none',
-          }}
-          distanceFactor={0.62}
-        >
-          <TVVideo isMuted={isMuted} />
-        </Html>
-      )}
 
       <group position={[0.32, 0, 0.28]}>
         <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
