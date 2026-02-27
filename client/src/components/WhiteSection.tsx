@@ -75,6 +75,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     window.location.reload();
   }, []);
 
+  const handleFooterNav = useCallback((section: string) => {
+    window.dispatchEvent(new CustomEvent('navigateTo', { detail: { section } }));
+  }, []);
+
   useEffect(() => {
     const handleNavigateWhiteSection = (e: Event) => {
       const section = (e as CustomEvent).detail?.section;
@@ -703,9 +707,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative flex justify-between" style={{ height: '50vh', paddingTop: '12vh' }}>
                       <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
                         <div className="flex flex-col gap-4">
-                          <a href="#about" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="#works" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="#3droom" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <button onClick={() => handleFooterNav('about')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
+                          <button onClick={() => handleFooterNav('works')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
+                          <button onClick={() => handleFooterNav('room')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
                         </div>
                         <div className="flex flex-col gap-4">
                           <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-twitter">Twitter<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
@@ -759,7 +763,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         >
                           SUNDAR RAM
                         </h1>
-                        <p className="text-white/30 text-xs mt-8 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
+                        <p className="text-white/30 text-xs mt-14 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
                           Built & designed by Sundar Ram • © 2026
                         </p>
                       </div>
