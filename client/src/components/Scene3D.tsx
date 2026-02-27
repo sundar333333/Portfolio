@@ -189,14 +189,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     canvasTextureRef.current = tex;
 
     const videoCanvas = document.createElement("canvas");
-    videoCanvas.width = 640;
-    videoCanvas.height = 480;
+    videoCanvas.width = 1024;
+    videoCanvas.height = 768;
     videoCanvasRef.current = videoCanvas;
     const videoTex = new THREE.CanvasTexture(videoCanvas);
     videoTextureRef.current = videoTex;
 
     const video = document.createElement("video");
-    video.src = "/static/tribute.mp4";
+    video.src = "/static/tribute.mp4?v=2";
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.playsInline = true;
@@ -258,11 +258,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        for (let y = 0; y < canvas.height; y += 3) {
-          ctx.fillStyle = `rgba(0, 0, 0, ${0.03 + Math.sin(y * 0.5 + frameRef.current * 0.1) * 0.02})`;
-          ctx.fillRect(0, y, canvas.width, 1);
-        }
-        frameRef.current += 1;
         videoTextureRef.current.needsUpdate = true;
       }
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
