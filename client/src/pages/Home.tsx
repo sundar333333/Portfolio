@@ -191,21 +191,6 @@ export default function Home() {
                 />
               </motion.div>
 
-              {scrollProgress < 0.02 && (
-                <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 px-4 w-full max-w-md">
-                  <motion.div
-                    className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-white/40 text-xs text-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 2 }}
-                    data-testid="text-interaction-hint"
-                  >
-                    <span>Hover over text to see it on the TV</span>
-                    <span className="hidden sm:block w-1 h-1 bg-white/40 rounded-full" />
-                    <span>Click TV for a special tribute</span>
-                  </motion.div>
-                </div>
-              )}
             </>
           )}
         </>
