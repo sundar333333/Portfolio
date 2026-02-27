@@ -479,7 +479,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <img 
                             src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
                             alt="Creative animation"
-                            className="w-full max-w-lg object-contain rounded-lg mb-4"
+                            className="w-full max-w-lg object-contain rounded-lg mb-6"
                             data-testid="img-contact-gif"
                           />
                           <div className="group/mail pointer-events-auto">
@@ -501,10 +501,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                                 </div>
                               </div>
                               <div>
-                                <span className="text-white/50 text-sm md:text-base">Mail : </span>
+                                <span className="text-white/50 text-base md:text-lg">Mail : </span>
                                 <a
                                   href="mailto:leosr1033@gmail.com"
-                                  className="relative text-white text-sm md:text-base"
+                                  className="relative text-white text-base md:text-lg"
                                   data-testid="link-email"
                                 >
                                   leosr1033@gmail.com
