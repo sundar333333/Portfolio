@@ -184,29 +184,50 @@ export default function Home() {
               zoomProgress * phase3Weight +
               postZoomProgress * phase4Weight;
             const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
-            const trackColor = isDark ? 'bg-black/10' : 'bg-white/10';
-            const thumbColor = isDark ? 'bg-black/50' : 'bg-white/50';
-            const dotColor = isDark ? 'bg-black/30' : 'bg-white/30';
-            const activeDotColor = isDark ? 'bg-black/70' : 'bg-white/70';
-            const sections = [0, 0.35, 0.60, 0.85];
+            const lineColor = isDark ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)';
+            const activeLineColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+            const dotBorder = isDark ? 'border-black/20' : 'border-white/20';
+            const dotActiveBorder = isDark ? 'border-black/60' : 'border-white/60';
+            const dotBg = isDark ? 'bg-black/60' : 'bg-white/60';
+            const labels = ['Home', 'About', 'Works', 'Contact'];
+            const positions = [0, 0.35, 0.60, 0.85];
             return (
               <div
-                className="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-0"
+                className="fixed right-5 top-1/2 -translate-y-1/2 z-40 flex items-center gap-3"
                 data-testid="scroll-tracker"
               >
-                <div className={`relative w-[3px] h-[100px] rounded-full ${trackColor}`}>
-                  <motion.div
-                    className={`absolute top-0 left-0 w-full rounded-full ${thumbColor}`}
-                    style={{ height: `${Math.max(8, totalProgress * 100)}%` }}
-                    transition={{ duration: 0.15, ease: "linear" }}
+                <div className="relative" style={{ width: '2px', height: '160px' }}>
+                  <div className="absolute inset-0 rounded-full" style={{ backgroundColor: lineColor }} />
+                  <div
+                    className="absolute top-0 left-0 w-full rounded-full transition-all duration-200 ease-out"
+                    style={{ height: `${Math.max(4, totalProgress * 100)}%`, backgroundColor: activeLineColor }}
                   />
-                  {sections.map((pos, i) => (
-                    <div
-                      key={i}
-                      className={`absolute left-1/2 -translate-x-1/2 w-[7px] h-[7px] rounded-full transition-all duration-300 ${totalProgress >= pos ? activeDotColor : dotColor}`}
-                      style={{ top: `${pos * 100}%`, marginTop: '-3px' }}
-                    />
-                  ))}
+                  {positions.map((pos, i) => {
+                    const isActive = totalProgress >= pos;
+                    const isCurrent = i === 0 ? totalProgress < positions[1] :
+                      i < positions.length - 1 ? totalProgress >= pos && totalProgress < positions[i + 1] :
+                      totalProgress >= pos;
+                    return (
+                      <div
+                        key={i}
+                        className="absolute flex items-center"
+                        style={{ top: `${pos * 100}%`, left: '50%', transform: 'translate(-50%, -50%)' }}
+                      >
+                        <div
+                          className={`rounded-full border-2 transition-all duration-300 ${isActive ? dotActiveBorder : dotBorder} ${isCurrent ? dotBg : 'bg-transparent'}`}
+                          style={{ width: isCurrent ? '10px' : '8px', height: isCurrent ? '10px' : '8px' }}
+                        />
+                        {isCurrent && (
+                          <span
+                            className={`absolute right-5 text-[10px] font-medium tracking-wider uppercase whitespace-nowrap transition-opacity duration-300 ${isDark ? 'text-black/40' : 'text-white/40'}`}
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                          >
+                            {labels[i]}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

@@ -197,6 +197,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
+      if (isNavigating.current) return;
       
       const isScrollingUp = e.deltaY < 0;
       if (isScrollingUp && zoomScrollAccumulator.current <= 0) {
