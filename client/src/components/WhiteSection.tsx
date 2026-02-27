@@ -462,8 +462,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
             >
               {(() => {
                 const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
-                const scrollPast = Math.max(0, (postZoomProgress - 0.7) / 0.3);
-                const translateY = 100 - slideUp * 100 - scrollPast * 60;
+                const scrollPast = Math.min(1, Math.max(0, (postZoomProgress - 0.7) / 0.3));
+                const translateY = 100 - slideUp * 100 - scrollPast * 40;
                 
                 return (
                   <div
@@ -619,7 +619,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     </div>
                     <div className="w-full bg-black px-8 md:px-16 lg:px-24 pt-10 pb-24 flex items-center justify-center" style={{ minHeight: '40vh' }}>
                       <h1
-                        className="text-white font-black leading-none select-none whitespace-nowrap text-center"
+                        className="text-white font-black leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out group/sr"
                         style={{
                           fontFamily: "'Anton', sans-serif",
                           fontWeight: 400,
@@ -628,6 +628,18 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           lineHeight: 0.9,
                         }}
                         data-testid="text-footer-name"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)';
+                          e.currentTarget.style.webkitBackgroundClip = 'text';
+                          e.currentTarget.style.webkitTextFillColor = 'transparent';
+                          e.currentTarget.style.backgroundClip = 'text';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'none';
+                          e.currentTarget.style.webkitBackgroundClip = 'unset';
+                          e.currentTarget.style.webkitTextFillColor = 'white';
+                          e.currentTarget.style.backgroundClip = 'unset';
+                        }}
                       >
                         SR
                       </h1>
