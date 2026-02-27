@@ -12,73 +12,10 @@ let materialFixesApplied = false;
 function applyRoomFixes(scene: THREE.Group) {
   const wallMeshNames = new Set(["Plane", "Plane.003"]);
 
-  const frameMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#e8e8e8"),
-    roughness: 0.4,
-    metalness: 0.1,
-    side: THREE.DoubleSide,
-  });
-  const glassMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#88bbdd"),
-    emissive: new THREE.Color("#4488aa"),
-    emissiveIntensity: 0.3,
-    transparent: true,
-    opacity: 0.4,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-  });
-  const handleMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#888888"),
-    metalness: 0.8,
-    roughness: 0.3,
-  });
-
   const windowGroup = scene.getObjectByName("Window_Group");
   if (windowGroup) {
-    windowGroup.traverse((child) => {
-      if (!(child as THREE.Mesh).isMesh) return;
-      const mesh = child as THREE.Mesh;
-      const name = mesh.name;
-
-      if (name === "CTRL_Hole") {
-        mesh.visible = false;
-        return;
-      }
-
-      if (name === "Handle" || name === "Handle.001") {
-        mesh.material = handleMat;
-      } else if (name === "Windows_Sill") {
-        mesh.material = frameMat;
-      } else {
-        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        const newMats = mats.map((mat: any) => {
-          const matName = (mat.name || "").toLowerCase();
-          if (matName.includes("glass_material")) {
-            return glassMat;
-          }
-          if (matName === "hidden_material") {
-            return frameMat;
-          }
-          if (matName.includes("procedural wood")) {
-            return frameMat;
-          }
-          return frameMat;
-        });
-        mesh.material = newMats.length === 1 ? newMats[0] : newMats;
-      }
-      mesh.visible = true;
-      mesh.renderOrder = 5;
-    });
+    windowGroup.visible = false;
   }
-
-  const defaultMatNodes = new Set([
-    "defaultMaterial", "defaultMaterial.001", "defaultMaterial.002",
-    "defaultMaterial.003", "defaultMaterial.004", "defaultMaterial.005",
-    "defaultMaterial.006", "defaultMaterial.007", "defaultMaterial.008",
-    "defaultMaterial.009", "defaultMaterial.010", "defaultMaterial.011",
-    "defaultMaterial.012", "defaultMaterial.013", "defaultMaterial.014",
-    "defaultMaterial.015",
-  ]);
 
   scene.traverse((child) => {
     if (!(child as THREE.Mesh).isMesh) return;
@@ -93,17 +30,6 @@ function applyRoomFixes(scene: THREE.Group) {
         roughness: 0.9,
         metalness: 0.0,
       });
-    }
-
-    if (defaultMatNodes.has(mesh.name)) {
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const hasWindowMat = mats.some((m: any) => {
-        const n = (m.name || "").toLowerCase();
-        return n.includes("_1001") || n.includes("border") || n.includes("glass") || n.includes("glow") || n.includes("shelves") || n.includes("sides") || n.includes("top_") || n.includes("bottom") || n.includes("triangle") || n.includes("xleft") || n.includes("xright");
-      });
-      if (hasWindowMat) {
-        mesh.visible = false;
-      }
     }
   });
 }
