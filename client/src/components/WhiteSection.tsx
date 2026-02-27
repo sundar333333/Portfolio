@@ -483,35 +483,38 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     
                     {contactPhase > 0 && (
                       <div
-                        className="absolute left-8 md:left-16 lg:left-24"
-                        style={{ 
-                          opacity: mailOpacity,
-                          top: `calc(50% + ${10 - headingShift * 0.3}px)`,
-                        }}
-                      >
-                        <img 
-                          src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
-                          alt="Creative animation"
-                          className="w-80 md:w-[28rem] lg:w-[32rem] object-contain rounded-lg"
-                          data-testid="img-contact-gif"
-                        />
-                      </div>
-                    )}
-
-                    {contactPhase > 0 && (
-                      <div
-                        className="absolute left-8 md:left-16 lg:left-24 bottom-12 md:bottom-16"
+                        className="absolute left-8 md:left-16 lg:left-24 bottom-12 md:bottom-16 group/mail pointer-events-auto"
                         style={{ opacity: mailOpacity }}
                       >
-                        <span className="text-white/50 text-sm md:text-base">Mail : </span>
-                        <a
-                          href="mailto:leosr1033@gmail.com"
-                          className="group relative text-white text-sm md:text-base pointer-events-auto"
-                          data-testid="link-email"
-                        >
-                          leosr1033@gmail.com
-                          <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
-                        </a>
+                        <div className="flex items-end gap-4">
+                          <div className="relative w-16 h-12 md:w-20 md:h-14" data-testid="envelope-icon">
+                            <div className="absolute inset-0 bg-white/90 rounded-sm" />
+                            <div 
+                              className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out group-hover/mail:[transform:rotateX(180deg)]"
+                              style={{ transformStyle: 'preserve-3d', perspective: '200px' }}
+                            >
+                              <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
+                                <polygon points="0,0 50,55 100,0" fill="rgba(255,255,255,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
+                              </svg>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 h-[55%]">
+                              <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
+                                <polygon points="0,55 50,0 100,55" fill="rgba(230,230,230,0.9)" stroke="rgba(200,200,200,0.3)" strokeWidth="1" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-white/50 text-sm md:text-base">Mail : </span>
+                            <a
+                              href="mailto:leosr1033@gmail.com"
+                              className="relative text-white text-sm md:text-base"
+                              data-testid="link-email"
+                            >
+                              leosr1033@gmail.com
+                              <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/mail:scale-x-100 transition-transform duration-300 ease-out" />
+                            </a>
+                          </div>
+                        </div>
                       </div>
                     )}
                     
