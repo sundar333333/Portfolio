@@ -391,7 +391,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               style={{
                 opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
               }}
-              onClick={() => onEnter?.()}
+              onClick={() => { window.location.href = "/room"; }}
               data-testid="button-enter"
             >
               <div className="absolute w-44 h-44 md:w-56 md:h-56 rounded-full border border-white/10 group-hover:border-white/30 group-hover:scale-110 transition-all duration-700 ease-out" />

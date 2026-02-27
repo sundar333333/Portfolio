@@ -9,7 +9,6 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
-import { Room3D } from "@/components/Room3D";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -45,18 +44,8 @@ export default function Home() {
   const [zoomProgress, setZoomProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [isEntered, setIsEntered] = useState(false);
-  const [roomReady, setRoomReady] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
-
-  useEffect(() => {
-    if (isEntered) {
-      const timer = setTimeout(() => setRoomReady(true), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setRoomReady(false);
-    }
-  }, [isEntered]);
 
   const handleWorkSectionChange = useCallback((visible: boolean) => {
     setShowWorkSection(visible);
@@ -118,7 +107,7 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          {webglSupported && !isEntered && (
+          {webglSupported && (
             <WebGLErrorBoundary>
               <Scene3D
                 hoveredText={hoveredText}
@@ -142,32 +131,6 @@ export default function Home() {
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} isEntered={isEntered} />
-
-          <AnimatePresence>
-            {isEntered && (
-              <motion.div
-                className="fixed inset-0 z-[70] bg-white"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-                data-testid="room-white-screen"
-              >
-                {webglSupported && roomReady ? (
-                  <WebGLErrorBoundary>
-                    <Room3D visible={true} />
-                  </WebGLErrorBoundary>
-                ) : !webglSupported ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-black/40 text-sm">Open in a browser tab to view the 3D room</p>
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-black/30 text-xs animate-pulse">Loading room...</p>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {!isCaseStudyOpen && !isEntered && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
