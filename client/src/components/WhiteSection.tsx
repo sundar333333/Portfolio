@@ -105,8 +105,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
     const postZoomThreshold = 4000; // Scroll distance after zoom for contact section
-    const footerThreshold = 2000; // Scroll distance for footer name reveal
-    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold + footerThreshold;
+    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
@@ -126,9 +125,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       
       const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
       targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
-      
-      const footerStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold - postZoomThreshold);
-      targetFooter.current = Math.min(1, footerStart / footerThreshold);
     };
     
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -142,11 +138,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       setPostZoomProgress(prev => {
         const next = lerp(prev, targetPostZoom.current, 0.12);
         if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
-        return next;
-      });
-      setFooterProgress(prev => {
-        const next = lerp(prev, targetFooter.current, 0.12);
-        if (Math.abs(next - targetFooter.current) < 0.001) return targetFooter.current;
         return next;
       });
       onZoomProgress?.(targetZoom.current);
@@ -470,7 +461,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               {(() => {
                 const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
                 const translateY = 100 - slideUp * 100;
-                const contactScrollUp = footerProgress * 100;
                 
                 return (
                   <div
@@ -482,10 +472,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                   >
                     <div
                       className="w-full min-h-full flex flex-col justify-between px-8 md:px-16 lg:px-24 py-16 md:py-20"
-                      style={{
-                        transform: `translateY(-${contactScrollUp}%)`,
-                        transition: 'transform 0.1s ease-out',
-                      }}
                     >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
@@ -626,13 +612,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full mt-12">
                       <hr className="border-white/20" />
                     </div>
-                    </div>
                     <div
-                      className="w-full min-h-[50vh]"
+                      className="w-full min-h-[40vh] rounded-t-lg"
                       style={{
                         background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
                       }}
                     />
+                    </div>
                   </div>
                 );
               })()}
