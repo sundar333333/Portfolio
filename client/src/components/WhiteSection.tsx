@@ -618,10 +618,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <hr className="border-white/20" />
                     </div>
                     <div className="w-full bg-black px-8 md:px-16 lg:px-24 flex items-start" style={{ height: '50vh', paddingTop: '12vh' }}>
-                      <div className="flex flex-col gap-4 pointer-events-auto" data-testid="footer-nav">
-                        <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
-                        <a href="#works" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works</a>
-                        <a href="#3droom" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room</a>
+                      <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
+                        <div className="flex flex-col gap-4">
+                          <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
+                          <a href="#works" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works</a>
+                          <a href="#3droom" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room</a>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-twitter">Twitter</a>
+                          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-github">GitHub</a>
+                          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-linkedin">LinkedIn</a>
+                          <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-reddit">Reddit</a>
+                          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
+                        </div>
                       </div>
                       <div className="flex-1 flex justify-center">
                         <h1
