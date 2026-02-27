@@ -454,10 +454,18 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           )}
           {postZoomProgress > 0.3 && !isEntered && (
             <div 
-              className="fixed inset-0 z-40 bg-black overflow-hidden"
+              className="fixed inset-0 z-40 overflow-hidden"
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             >
+              <div className="absolute inset-0 bg-black" />
+              <div
+                className="absolute bottom-0 left-0 right-0"
+                style={{
+                  height: '35vh',
+                  background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
+                }}
+              />
               {(() => {
                 const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
                 const translateY = 100 - slideUp * 100;
@@ -471,7 +479,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     }}
                   >
                     <div
-                      className="w-full min-h-full flex flex-col justify-between px-8 md:px-16 lg:px-24 py-16 md:py-20"
+                      className="w-full min-h-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20"
                     >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
@@ -613,16 +621,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <hr className="border-white/20" />
                     </div>
                     </div>
-                    <div
-                      className="min-h-[60vh]"
-                      style={{
-                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
-                        marginLeft: '-8rem',
-                        marginRight: '-8rem',
-                        marginBottom: '-5rem',
-                        paddingBottom: '5rem',
-                      }}
-                    />
                   </div>
                 );
               })()}
