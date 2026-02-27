@@ -470,49 +470,47 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <div className="flex flex-col justify-between flex-1 h-full max-w-xl">
                         <div>
                           <h2
-                            className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-8"
+                            className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-6"
                             style={{ fontFamily: "'Anton', sans-serif" }}
                             data-testid="text-contact-heading"
                           >
                             Let's connect and create<br />meaningful digital experiences.
                           </h2>
-                          <div className="flex items-center gap-6 flex-wrap">
-                            <img 
-                              src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
-                              alt="Creative animation"
-                              className="w-64 md:w-80 lg:w-96 object-contain rounded-lg"
-                              data-testid="img-contact-gif"
-                            />
-                            <div className="group/mail pointer-events-auto">
-                          <div className="flex items-center gap-3">
-                            <div className="relative w-8 h-6 md:w-10 md:h-7 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
-                              <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
-                              <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
-                                <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                  <polygon points="0,55 50,0 100,55" fill="rgba(220,220,220,0.95)" stroke="rgba(180,180,180,0.3)" strokeWidth="1" />
-                                </svg>
+                          <img 
+                            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
+                            alt="Creative animation"
+                            className="w-full max-w-lg object-contain rounded-lg mb-4"
+                            data-testid="img-contact-gif"
+                          />
+                          <div className="group/mail pointer-events-auto">
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-8 h-6 md:w-10 md:h-7 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
+                                <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
+                                <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
+                                  <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
+                                    <polygon points="0,55 50,0 100,55" fill="rgba(220,220,220,0.95)" stroke="rgba(180,180,180,0.3)" strokeWidth="1" />
+                                  </svg>
+                                </div>
+                                <div 
+                                  className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out z-20 group-hover/mail:[transform:rotateX(180deg)]"
+                                  style={{ transformStyle: 'preserve-3d' }}
+                                >
+                                  <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
+                                    <polygon points="0,0 50,55 100,0" fill="rgba(240,240,240,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
+                                  </svg>
+                                </div>
                               </div>
-                              <div 
-                                className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out z-20 group-hover/mail:[transform:rotateX(180deg)]"
-                                style={{ transformStyle: 'preserve-3d' }}
-                              >
-                                <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                  <polygon points="0,0 50,55 100,0" fill="rgba(240,240,240,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
-                                </svg>
+                              <div>
+                                <span className="text-white/50 text-sm md:text-base">Mail : </span>
+                                <a
+                                  href="mailto:leosr1033@gmail.com"
+                                  className="relative text-white text-sm md:text-base"
+                                  data-testid="link-email"
+                                >
+                                  leosr1033@gmail.com
+                                  <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/mail:scale-x-100 transition-transform duration-300 ease-out" />
+                                </a>
                               </div>
-                            </div>
-                            <div>
-                              <span className="text-white/50 text-sm md:text-base">Mail : </span>
-                              <a
-                                href="mailto:leosr1033@gmail.com"
-                                className="relative text-white text-sm md:text-base"
-                                data-testid="link-email"
-                              >
-                                leosr1033@gmail.com
-                                <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/mail:scale-x-100 transition-transform duration-300 ease-out" />
-                              </a>
-                            </div>
-                          </div>
                             </div>
                           </div>
                         </div>
