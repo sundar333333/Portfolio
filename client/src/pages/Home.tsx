@@ -117,6 +117,7 @@ export default function Home() {
                 hoveredText={hoveredText}
                 onTVClick={handleTVClick}
                 isVideoPlaying={isVideoPlaying}
+                isMuted={isMuted}
                 onWorkSectionChange={handleWorkSectionChange}
                 onScrollProgress={handleScrollProgress}
                 onWhiteSectionProgress={handleWhiteSectionProgress}

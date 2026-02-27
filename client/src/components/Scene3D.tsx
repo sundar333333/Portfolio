@@ -8,6 +8,7 @@ interface Scene3DProps {
   hoveredText: string | null;
   onTVClick: () => void;
   isVideoPlaying: boolean;
+  isMuted: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
@@ -156,15 +157,53 @@ function useWoodTexture() {
   return texture;
 }
 
+function TVVideo({ isMuted }: { isMuted: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.play().then(() => {
+        if (!isMuted) {
+          setTimeout(() => { if (videoRef.current) videoRef.current.muted = false; }, 100);
+        }
+      }).catch(() => {});
+    }
+  }, []);
+
+  return (
+    <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden' }}>
+      <video
+        ref={videoRef}
+        loop
+        playsInline
+        width={340}
+        height={250}
+        style={{ width: '340px', height: '250px', objectFit: 'cover', display: 'block' }}
+        data-testid="tv-video-player"
+      >
+        <source src="/static/tribute.mp4" type="video/mp4" />
+      </video>
+    </div>
+  );
+}
+
 interface VintageTVProps {
   hoveredText: string | null;
   onClick: () => void;
   isVideoPlaying: boolean;
+  isMuted: boolean;
   visible: boolean;
   glitchIntensity: number;
 }
 
-function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntensity }: VintageTVProps) {
+function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { texture: staticTexture, updateTexture } = useStaticTexture();
   const woodTexture = useWoodTexture();
@@ -393,26 +432,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
           }}
           distanceFactor={0.62}
         >
-          <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden' }}>
-            <video
-              ref={(el) => {
-                if (el) {
-                  el.muted = true;
-                  el.play().then(() => {
-                    setTimeout(() => { el.muted = false; }, 100);
-                  }).catch(() => {});
-                }
-              }}
-              loop
-              playsInline
-              width={340}
-              height={250}
-              style={{ width: '340px', height: '250px', objectFit: 'cover', display: 'block' }}
-              data-testid="tv-video-player"
-            >
-              <source src="/static/tribute.mp4" type="video/mp4" />
-            </video>
-          </div>
+          <TVVideo isMuted={isMuted} />
         </Html>
       )}
 
@@ -555,13 +575,14 @@ interface ScrollSceneProps {
   hoveredText: string | null;
   onTVClick: () => void;
   isVideoPlaying: boolean;
+  isMuted: boolean;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
   onCircleProgress?: (progress: number) => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
@@ -693,6 +714,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
         hoveredText={hoveredText}
         onClick={onTVClick}
         isVideoPlaying={isVideoPlaying}
+        isMuted={isMuted}
         visible={showLandingTV}
         glitchIntensity={glitchIntensity}
       />
@@ -704,7 +726,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, onWorkSect
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -733,6 +755,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, onWorkSectionC
               hoveredText={hoveredText}
               onTVClick={onTVClick}
               isVideoPlaying={isVideoPlaying}
+              isMuted={isMuted}
               onWorkSectionChange={onWorkSectionChange}
               onScrollProgress={onScrollProgress}
               onWhiteSectionProgress={onWhiteSectionProgress}
