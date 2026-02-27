@@ -514,34 +514,54 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
             </button>
           )}
           {zoomProgress >= 0.85 && !isEntered && postZoomProgress < 0.5 && (
-            <button
-              className="group relative flex items-center justify-center cursor-pointer"
+            <div
+              className="flex flex-col items-center gap-8"
               style={{
                 opacity: postZoomProgress > 0.3 
                   ? Math.max(0, 1 - (postZoomProgress - 0.3) / 0.2)
                   : Math.min(1, (zoomProgress - 0.85) / 0.15),
               }}
-              onClick={() => onEnter?.()}
-              data-testid="button-enter"
             >
-              <div className="absolute w-44 h-44 md:w-56 md:h-56 rounded-full border border-white/10 group-hover:border-white/30 group-hover:scale-110 transition-all duration-700 ease-out" />
-              <div className="absolute w-52 h-52 md:w-64 md:h-64 rounded-full border border-white/5 group-hover:border-white/15 group-hover:scale-105 transition-all duration-1000 ease-out"
-                style={{ animation: 'pulseRing 3s ease-in-out infinite' }}
-              />
-              <div className="absolute w-60 h-60 md:w-72 md:h-72 rounded-full border border-white/[0.03] group-hover:border-white/10 group-hover:scale-105 transition-all duration-1000 ease-out"
-                style={{ animation: 'pulseRing 4s ease-in-out infinite 1s' }}
-              />
-              <div className="relative flex flex-col items-center gap-2">
-                <span className="font-anton text-white/90 text-3xl md:text-5xl tracking-[0.35em] uppercase group-hover:tracking-[0.5em] group-hover:text-white transition-all duration-500 ease-out"
-                  style={{ textShadow: '0 0 30px rgba(255,255,255,0.15)' }}
-                >
-                  ENTER
-                </span>
-                <span className="text-white/20 text-[10px] md:text-xs tracking-[0.3em] uppercase group-hover:text-white/40 transition-all duration-500">
-                  explore
-                </span>
-              </div>
-            </button>
+              <button
+                className="group relative flex items-center justify-center cursor-pointer w-64 h-64 md:w-80 md:h-80"
+                onClick={() => onEnter?.()}
+                data-testid="button-enter"
+              >
+                <div className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-white/50 transition-all duration-500 ease-out"
+                  style={{ animation: 'enterSpin 12s linear infinite' }}
+                />
+                <div className="absolute rounded-full border border-white/10 group-hover:border-white/25 transition-all duration-700"
+                  style={{
+                    inset: '-16px',
+                    animation: 'enterSpin 18s linear infinite reverse',
+                  }}
+                />
+                <div className="absolute rounded-full border border-dashed border-white/[0.06] group-hover:border-white/15 transition-all duration-1000"
+                  style={{
+                    inset: '-36px',
+                    animation: 'enterSpin 25s linear infinite',
+                  }}
+                />
+                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%)' }}
+                />
+                <div className="relative flex flex-col items-center gap-3">
+                  <span className="font-anton text-white/90 text-5xl md:text-7xl tracking-[0.3em] uppercase group-hover:tracking-[0.45em] group-hover:text-white transition-all duration-500 ease-out"
+                    style={{ textShadow: '0 0 40px rgba(255,255,255,0.2), 0 0 80px rgba(255,255,255,0.05)' }}
+                  >
+                    ENTER
+                  </span>
+                  <span className="text-white/25 text-xs md:text-sm tracking-[0.4em] uppercase group-hover:text-white/50 transition-all duration-500">
+                    explore
+                  </span>
+                </div>
+              </button>
+              <p className="text-white/30 text-xs md:text-sm tracking-wider text-center"
+                style={{ animation: 'enterFadeInUp 1s ease-out 0.5s both' }}
+              >
+                Click enter to explore the 3D room or scroll to continue
+              </p>
+            </div>
           )}
           {postZoomProgress > 0.3 && !isEntered && (
             <div 
