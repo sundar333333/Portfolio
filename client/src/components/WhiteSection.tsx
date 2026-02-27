@@ -104,7 +104,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
-    const postZoomThreshold = 4000; // Scroll distance after zoom for contact section
+    const postZoomThreshold = 5000; // Scroll distance after zoom for contact section
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -612,13 +612,17 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full mt-12">
                       <hr className="border-white/20" />
                     </div>
+                    </div>
                     <div
-                      className="w-full min-h-[40vh] rounded-t-lg"
+                      className="min-h-[60vh]"
                       style={{
                         background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
+                        marginLeft: '-8rem',
+                        marginRight: '-8rem',
+                        marginBottom: '-5rem',
+                        paddingBottom: '5rem',
                       }}
                     />
-                    </div>
                   </div>
                 );
               })()}
