@@ -459,8 +459,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               data-testid="post-zoom-section"
             >
               {(() => {
-                const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
-                const translateY = 100 - slideUp * 100;
+                const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
+                const scrollPast = Math.max(0, (postZoomProgress - 0.7) / 0.3);
+                const translateY = 100 - slideUp * 100 - scrollPast * 60;
                 
                 return (
                   <div
@@ -613,6 +614,22 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     </div>
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
+                    </div>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 py-20 flex items-center justify-center" style={{ minHeight: '60vh' }}>
+                      <h1
+                        className="text-white font-black leading-none select-none whitespace-nowrap text-center"
+                        style={{
+                          fontFamily: "'Anton', sans-serif",
+                          fontSize: '12vw',
+                          letterSpacing: '0.15em',
+                          lineHeight: 0.9,
+                          transform: 'scaleX(1.15)',
+                          transformOrigin: 'center',
+                        }}
+                        data-testid="text-footer-name"
+                      >
+                        SUNDAR RAM
+                      </h1>
                     </div>
                   </div>
                 );
