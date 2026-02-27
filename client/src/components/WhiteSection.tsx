@@ -483,23 +483,40 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     
                     {contactPhase > 0 && (
                       <div
+                        className="absolute left-8 md:left-16 lg:left-24"
+                        style={{ 
+                          opacity: mailOpacity,
+                          top: `calc(50% + ${10 - headingShift * 0.3}px)`,
+                        }}
+                      >
+                        <img 
+                          src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
+                          alt="Creative animation"
+                          className="w-80 md:w-[28rem] lg:w-[32rem] object-contain rounded-lg"
+                          data-testid="img-contact-gif"
+                        />
+                      </div>
+                    )}
+
+                    {contactPhase > 0 && (
+                      <div
                         className="absolute left-8 md:left-16 lg:left-24 bottom-12 md:bottom-16 group/mail pointer-events-auto"
                         style={{ opacity: mailOpacity }}
                       >
-                        <div className="flex items-end gap-4">
-                          <div className="relative w-16 h-12 md:w-20 md:h-14" data-testid="envelope-icon">
-                            <div className="absolute inset-0 bg-white/90 rounded-sm" />
-                            <div 
-                              className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out group-hover/mail:[transform:rotateX(180deg)]"
-                              style={{ transformStyle: 'preserve-3d', perspective: '200px' }}
-                            >
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-8 h-6 md:w-10 md:h-7 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
+                            <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
+                            <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
                               <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                <polygon points="0,0 50,55 100,0" fill="rgba(255,255,255,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
+                                <polygon points="0,55 50,0 100,55" fill="rgba(220,220,220,0.95)" stroke="rgba(180,180,180,0.3)" strokeWidth="1" />
                               </svg>
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 h-[55%]">
+                            <div 
+                              className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out z-20 group-hover/mail:[transform:rotateX(180deg)]"
+                              style={{ transformStyle: 'preserve-3d' }}
+                            >
                               <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                <polygon points="0,55 50,0 100,55" fill="rgba(230,230,230,0.9)" stroke="rgba(200,200,200,0.3)" strokeWidth="1" />
+                                <polygon points="0,0 50,55 100,0" fill="rgba(240,240,240,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
                               </svg>
                             </div>
                           </div>
