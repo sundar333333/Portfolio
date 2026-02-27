@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, Component, type ReactNode } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
@@ -145,6 +145,7 @@ export default function RoomViewer() {
           <directionalLight position={[5, 8, 5]} intensity={1.0} />
           <directionalLight position={[-3, 5, -3]} intensity={0.4} />
           <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
+          <Environment preset="apartment" background={false} />
 
           <RoomModel onLoaded={handleLoaded} />
 
