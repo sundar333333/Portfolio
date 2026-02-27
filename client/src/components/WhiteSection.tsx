@@ -68,6 +68,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const zoomScrollAccumulator = useRef(0);
 
   const navAnimFrame = useRef<number>(0);
+  const isNavigating = useRef(false);
 
   const handleBackToTop = useCallback(() => {
     sessionStorage.setItem('skipLoading', 'true');
@@ -85,9 +86,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
       let accTarget = 0;
       if (section === 'reset') {
+        isNavigating.current = false;
         zoomScrollAccumulator.current = 0;
         targetZoom.current = 0;
         targetPostZoom.current = 0;
+        setZoomProgress(0);
+        setPostZoomProgress(0);
         return;
       } else if (section === 'room') {
         accTarget = freeScrollThreshold + zoomThreshold;
@@ -97,6 +101,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         return;
       }
 
+      isNavigating.current = true;
       cancelAnimationFrame(navAnimFrame.current);
 
       const startVal = zoomScrollAccumulator.current;
@@ -117,12 +122,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
         const zoomStart = Math.max(0, newVal - freeScrollThreshold);
         targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
+        setZoomProgress(targetZoom.current);
 
         const postStart = Math.max(0, newVal - freeScrollThreshold - zoomThreshold);
         targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
+        setPostZoomProgress(targetPostZoom.current);
+
+        onZoomProgress?.(targetZoom.current);
+        onPostZoomProgress?.(targetPostZoom.current);
 
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animate);
+        } else {
+          isNavigating.current = false;
         }
       };
 
@@ -160,8 +172,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     };
   }, [openCaseStudy, onCaseStudyChange]);
 
-  // Reset zoom when leaving works screen or opening case study
   useEffect(() => {
+    if (isNavigating.current) return;
     if (!isWorksScreenVisible || openCaseStudy !== null) {
       zoomScrollAccumulator.current = 0;
       setZoomProgress(0);

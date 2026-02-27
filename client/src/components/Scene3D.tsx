@@ -654,7 +654,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           navAnimFrame.current = requestAnimationFrame(animateScroll);
         } else {
           if (section === 'contact' || section === 'room') {
-            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
+            }, 200);
           }
           if (section === 'landing' || section === 'about') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
