@@ -173,34 +173,28 @@ export default function Home() {
           )}
 
           {!isCaseStudyOpen && !isEntered && (() => {
-            const sceneOffset = showWorkSection ? (scrollProgress * 0.9 + whiteSectionProgress * 0.1) : 0;
-            const totalProgress =
-              Math.min(1, sceneOffset) * 0.35 +
-              circleProgress * 0.25 +
-              zoomProgress * 0.25 +
-              postZoomProgress * 0.15;
             const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
             const c = isDark ? '0,0,0' : '255,255,255';
-            const positions = [0, 0.20, 0.45, 0.65, 0.85];
+            let activeIndex = 0;
+            if (postZoomProgress > 0.3) activeIndex = 4;
+            else if (zoomProgress > 0.5) activeIndex = 3;
+            else if (circleProgress > 0.3) activeIndex = 2;
+            else if (showWorkSection && scrollProgress > 0.02) activeIndex = 1;
+            else activeIndex = 0;
             return (
-              <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40" data-testid="scroll-tracker">
-                <div className="flex flex-col items-end gap-[10px]">
-                  {positions.map((pos, i) => {
-                    const isCurrent = i === 0 ? totalProgress < positions[1] :
-                      i < positions.length - 1 ? totalProgress >= pos && totalProgress < positions[i + 1] :
-                      totalProgress >= pos;
-                    return (
-                      <div
-                        key={i}
-                        className="transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-full"
-                        style={{
-                          width: isCurrent ? '32px' : '16px',
-                          height: '3px',
-                          backgroundColor: isCurrent ? `rgba(${c},0.9)` : `rgba(${c},0.2)`,
-                        }}
-                      />
-                    );
-                  })}
+              <div className="fixed right-7 top-1/2 -translate-y-1/2 z-40" data-testid="scroll-tracker">
+                <div className="flex flex-col items-end gap-[14px]">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-full transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
+                      style={{
+                        width: activeIndex === i ? '40px' : '18px',
+                        height: '3.5px',
+                        backgroundColor: activeIndex === i ? `rgba(${c},0.9)` : `rgba(${c},0.2)`,
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
             );
