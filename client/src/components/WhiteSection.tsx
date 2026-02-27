@@ -67,9 +67,59 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const zoomScrollAccumulator = useRef(0);
 
+  const navAnimFrame = useRef<number>(0);
+
   const handleBackToTop = useCallback(() => {
     sessionStorage.setItem('skipLoading', 'true');
     window.location.reload();
+  }, []);
+
+  useEffect(() => {
+    const handleNavigateWhiteSection = (e: Event) => {
+      const section = (e as CustomEvent).detail?.section;
+      if (section !== 'contact') return;
+
+      const freeScrollThreshold = 800;
+      const zoomThreshold = 2000;
+      const contactTarget = freeScrollThreshold + zoomThreshold + 2400;
+
+      cancelAnimationFrame(navAnimFrame.current);
+
+      const startVal = zoomScrollAccumulator.current;
+      const distance = contactTarget - startVal;
+      const duration = 2000;
+      const startTime = performance.now();
+
+      const easeInOutCubic = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const animate = (now: number) => {
+        const elapsed = now - startTime;
+        const rawProgress = Math.min(1, elapsed / duration);
+        const easedProgress = easeInOutCubic(rawProgress);
+
+        const newVal = startVal + distance * easedProgress;
+        zoomScrollAccumulator.current = newVal;
+
+        const zoomStart = Math.max(0, newVal - freeScrollThreshold);
+        targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
+
+        const postStart = Math.max(0, newVal - freeScrollThreshold - zoomThreshold);
+        targetPostZoom.current = Math.min(1, postStart / 4000);
+
+        if (rawProgress < 1) {
+          navAnimFrame.current = requestAnimationFrame(animate);
+        }
+      };
+
+      navAnimFrame.current = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('navigateWhiteSection', handleNavigateWhiteSection);
+    return () => {
+      window.removeEventListener('navigateWhiteSection', handleNavigateWhiteSection);
+      cancelAnimationFrame(navAnimFrame.current);
+    };
   }, []);
 
   const isFullyExpanded = circleProgress >= 1;

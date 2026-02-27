@@ -594,6 +594,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   onStopVideoRef.current = onStopVideo;
   const isVideoPlayingRef = useRef(isVideoPlaying);
   isVideoPlayingRef.current = isVideoPlaying;
+  const navAnimFrame = useRef<number>(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -613,13 +614,63 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       }
     };
 
+    const handleNavigateTo = (e: Event) => {
+      const section = (e as CustomEvent).detail?.section;
+      if (!section) return;
+
+      const targetOffsets: Record<string, number> = {
+        about: 0.15,
+        works: 0.94,
+        room: 1.0,
+        contact: 1.0,
+      };
+
+      const targetOffset = targetOffsets[section];
+      if (targetOffset === undefined) return;
+
+      const el = scroll.el;
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      const targetScrollTop = targetOffset * maxScroll;
+
+      cancelAnimationFrame(navAnimFrame.current);
+
+      const startScrollTop = el.scrollTop;
+      const distance = targetScrollTop - startScrollTop;
+      const duration = Math.min(3000, Math.max(1200, Math.abs(distance) * 0.8));
+      const startTime = performance.now();
+
+      const easeInOutCubic = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const animateScroll = (now: number) => {
+        const elapsed = now - startTime;
+        const rawProgress = Math.min(1, elapsed / duration);
+        const easedProgress = easeInOutCubic(rawProgress);
+
+        el.scrollTop = startScrollTop + distance * easedProgress;
+
+        if (rawProgress < 1) {
+          navAnimFrame.current = requestAnimationFrame(animateScroll);
+        } else {
+          if (section === 'contact' || section === 'room') {
+            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
+          }
+        }
+      };
+
+      navAnimFrame.current = requestAnimationFrame(animateScroll);
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("wheel", handleWheel, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("navigateTo", handleNavigateTo);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("navigateTo", handleNavigateTo);
+      cancelAnimationFrame(navAnimFrame.current);
     };
   }, []);
 

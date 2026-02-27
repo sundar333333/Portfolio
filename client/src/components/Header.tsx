@@ -11,10 +11,15 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "About Me", href: "#about" },
-    { label: "Works", href: "#works" },
-    { label: "3D Room", href: "#room" },
+    { label: "About Me", section: "about" },
+    { label: "Works", section: "works" },
+    { label: "3D Room", section: "room" },
   ];
+
+  const handleNavClick = (section: string) => {
+    window.dispatchEvent(new CustomEvent('navigateTo', { detail: { section } }));
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <>
@@ -37,32 +42,32 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
 
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
-            <motion.a
+            <motion.button
               key={item.label}
-              href={item.href}
-              className={`text-sm font-medium transition-colors duration-500 ${isDarkText ? 'text-black/80 hover:text-black' : 'text-white/80 hover:text-white'}`}
+              className={`text-sm font-medium transition-colors duration-500 bg-transparent border-none cursor-pointer ${isDarkText ? 'text-black/80 hover:text-black' : 'text-white/80 hover:text-white'}`}
               onMouseEnter={() => onTextHover(item.label)}
               onMouseLeave={() => onTextHover(null)}
+              onClick={() => handleNavClick(item.section)}
               whileHover={{ y: -2 }}
               data-testid={`link-nav-${item.label.toLowerCase().replace(" ", "-")}`}
             >
               {item.label}
-            </motion.a>
+            </motion.button>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
-          <motion.a
-            href="#contact"
-            className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-full transition-colors duration-500 ${isDarkText ? 'text-white bg-black hover:bg-black/90' : 'text-black bg-white hover:bg-white/90'}`}
+          <motion.button
+            className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-full transition-colors duration-500 border-none cursor-pointer ${isDarkText ? 'text-white bg-black hover:bg-black/90' : 'text-black bg-white hover:bg-white/90'}`}
             onMouseEnter={() => onTextHover("Contact / Recruit Me")}
             onMouseLeave={() => onTextHover(null)}
+            onClick={() => handleNavClick('contact')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
             data-testid="button-contact"
           >
             Contact / Recruit Me
-          </motion.a>
+          </motion.button>
 
           <motion.button
             className={`md:hidden flex items-center justify-center w-10 h-10 transition-colors duration-500 ${isDarkText ? 'text-black' : 'text-white'}`}
@@ -86,32 +91,30 @@ export function Header({ onTextHover, isDarkText = false }: HeaderProps) {
             data-testid="mobile-menu"
           >
             {navItems.map((item, index) => (
-              <motion.a
+              <motion.button
                 key={item.label}
-                href={item.href}
-                className="font-anton text-3xl text-white"
+                className="font-anton text-3xl text-white bg-transparent border-none cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => handleNavClick(item.section)}
                 data-testid={`link-mobile-nav-${item.label.toLowerCase().replace(" ", "-")}`}
               >
                 {item.label}
-              </motion.a>
+              </motion.button>
             ))}
-            <motion.a
-              href="#contact"
-              className="mt-4 px-6 py-3 text-lg font-medium text-black bg-white rounded-full"
+            <motion.button
+              className="mt-4 px-6 py-3 text-lg font-medium text-black bg-white rounded-full border-none cursor-pointer"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.3 }}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => handleNavClick('contact')}
               data-testid="button-mobile-contact"
             >
               Contact / Recruit Me
-            </motion.a>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
