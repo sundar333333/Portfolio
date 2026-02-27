@@ -463,8 +463,11 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           )}
           {postZoomProgress > 0.3 && !isEntered && (
             <div 
-              className="fixed inset-0 z-40 bg-black overflow-hidden"
-              style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
+              className="fixed inset-0 z-40 overflow-hidden"
+              style={{ 
+                opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3),
+                background: 'linear-gradient(to bottom, #000000 0%, #000000 70%, #1a2a6c 80%, #4a1942 90%, #b21f1f 100%)',
+              }}
               data-testid="post-zoom-section"
             >
               {(() => {
@@ -625,15 +628,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
                     <div className="w-full mt-12">
                       <hr className="border-white/20" />
-                    </div>
-                    <div
-                      className="w-full py-16 -mx-8 md:-mx-16 lg:-mx-24 px-8 md:px-16 lg:px-24"
-                      style={{
-                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
-                        marginBottom: '-5rem',
-                        paddingBottom: '5rem',
-                      }}
-                    >
                     </div>
                     </div>
                   </div>
