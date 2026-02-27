@@ -628,10 +628,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center"
                         style={{
                           fontFamily: "'Anton', sans-serif",
-                          fontSize: '14vw',
-                          letterSpacing: '0.08em',
+                          fontSize: '12vw',
+                          letterSpacing: '0.15em',
                           lineHeight: 0.9,
-                          transform: 'scaleX(1.35)',
+                          transform: 'scaleX(1.15)',
                           transformOrigin: 'center',
                         }}
                       >
