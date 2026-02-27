@@ -68,6 +68,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const zoomScrollAccumulator = useRef(0);
 
   const handleBackToTop = useCallback(() => {
+    sessionStorage.setItem('skipLoading', 'true');
     window.location.reload();
   }, []);
 
@@ -682,7 +683,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         >
                           SUNDAR RAM
                         </h1>
-                        <p className="text-white/30 text-xs mt-4 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
+                        <p className="text-white/30 text-xs mt-8 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
                           Built & designed by Sundar Ram • © 2026
                         </p>
                       </div>

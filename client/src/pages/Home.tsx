@@ -32,7 +32,14 @@ function hasWebGL(): boolean {
 }
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    const skip = sessionStorage.getItem('skipLoading');
+    if (skip === 'true') {
+      sessionStorage.removeItem('skipLoading');
+      return false;
+    }
+    return true;
+  });
   const [webglSupported] = useState(() => hasWebGL());
   const [hoveredText, setHoveredText] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
