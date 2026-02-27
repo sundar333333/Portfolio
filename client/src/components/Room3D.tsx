@@ -10,35 +10,26 @@ let preloadStarted = false;
 let materialFixesApplied = false;
 
 function applyRoomFixes(scene: THREE.Group) {
-  const wallMeshNames = new Set(["Plane", "Plane003"]);
+  const wallMeshNames = new Set(["Plane", "Plane.003"]);
 
   const windowGroup = scene.getObjectByName("Window_Group");
   if (windowGroup) {
     windowGroup.visible = false;
   }
 
-  const darkWallMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#111111"),
-    side: THREE.DoubleSide,
-    roughness: 0.9,
-    metalness: 0.0,
-  });
-
   scene.traverse((child) => {
-    const obj = child as any;
+    if (!(child as THREE.Mesh).isMesh) return;
+    const mesh = child as THREE.Mesh;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-    if (obj.name && obj.name.startsWith("defaultMaterial")) {
-      obj.visible = false;
-      return;
-    }
-
-    if (obj.isMesh) {
-      obj.castShadow = true;
-      obj.receiveShadow = true;
-    }
-
-    if (wallMeshNames.has(obj.name) && obj.material) {
-      obj.material = darkWallMat;
+    if (wallMeshNames.has(mesh.name)) {
+      mesh.material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#111111"),
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        metalness: 0.0,
+      });
     }
   });
 }
