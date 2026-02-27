@@ -56,8 +56,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const [postZoomProgress, setPostZoomProgress] = useState(0);
   const [contactForm, setContactForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [footerProgress, setFooterProgress] = useState(0);
   const targetZoom = useRef(0);
   const targetPostZoom = useRef(0);
+  const targetFooter = useRef(0);
   const smoothAnimFrame = useRef<number>(0);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
@@ -103,7 +105,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
     const postZoomThreshold = 4000; // Scroll distance after zoom for contact section
-    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
+    const footerThreshold = 2000; // Scroll distance for footer name reveal
+    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold + footerThreshold;
     
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
@@ -123,6 +126,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       
       const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
       targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
+      
+      const footerStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold - postZoomThreshold);
+      targetFooter.current = Math.min(1, footerStart / footerThreshold);
     };
     
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -136,6 +142,11 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       setPostZoomProgress(prev => {
         const next = lerp(prev, targetPostZoom.current, 0.12);
         if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
+        return next;
+      });
+      setFooterProgress(prev => {
+        const next = lerp(prev, targetFooter.current, 0.12);
+        if (Math.abs(next - targetFooter.current) < 0.001) return targetFooter.current;
         return next;
       });
       onZoomProgress?.(targetZoom.current);
@@ -459,15 +470,23 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               {(() => {
                 const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
                 const translateY = 100 - slideUp * 100;
+                const contactScrollUp = footerProgress * 100;
                 
                 return (
                   <div
-                    className="absolute inset-0 flex flex-col justify-between px-8 md:px-16 lg:px-24 py-16 md:py-20"
+                    className="absolute inset-0 overflow-hidden"
                     style={{
                       transform: `translateY(${translateY}%)`,
                       transition: 'transform 0.1s ease-out',
                     }}
                   >
+                    <div
+                      className="w-full min-h-full flex flex-col justify-between px-8 md:px-16 lg:px-24 py-16 md:py-20"
+                      style={{
+                        transform: `translateY(-${contactScrollUp}%)`,
+                        transition: 'transform 0.1s ease-out',
+                      }}
+                    >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-1 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
                         <div>
@@ -603,8 +622,16 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         </form>
                       </div>
                     </div>
+                    </div>
 
-                    <div className="w-full overflow-hidden mt-auto pb-4" data-testid="text-footer-name">
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 flex items-end justify-center overflow-hidden px-4 md:px-8"
+                      style={{
+                        opacity: Math.min(1, footerProgress / 0.3),
+                        height: '40vh',
+                      }}
+                      data-testid="text-footer-name"
+                    >
                       <h1
                         className="text-white font-black leading-none whitespace-nowrap select-none"
                         style={{
@@ -612,6 +639,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           fontSize: 'clamp(6rem, 18vw, 22rem)',
                           letterSpacing: '-0.02em',
                           lineHeight: 0.85,
+                          transform: `translateY(${(1 - footerProgress) * 50}%)`,
+                          transition: 'transform 0.1s ease-out',
+                          paddingBottom: '2vh',
                         }}
                       >
                         SUNDAR RAM
