@@ -184,46 +184,65 @@ export default function Home() {
               zoomProgress * phase3Weight +
               postZoomProgress * phase4Weight;
             const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
-            const lineColor = isDark ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)';
-            const activeLineColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
-            const dotBorder = isDark ? 'border-black/20' : 'border-white/20';
-            const dotActiveBorder = isDark ? 'border-black/60' : 'border-white/60';
-            const dotBg = isDark ? 'bg-black/60' : 'bg-white/60';
             const labels = ['Home', 'About', 'Works', 'Contact'];
-            const positions = [0, 0.35, 0.60, 0.85];
+            const positions = [0, 0.33, 0.60, 0.85];
+            const baseColor = isDark ? '0,0,0' : '255,255,255';
             return (
               <div
-                className="fixed right-5 top-1/2 -translate-y-1/2 z-40 flex items-center gap-3"
+                className="fixed right-6 top-1/2 -translate-y-1/2 z-40"
                 data-testid="scroll-tracker"
               >
-                <div className="relative" style={{ width: '2px', height: '160px' }}>
-                  <div className="absolute inset-0 rounded-full" style={{ backgroundColor: lineColor }} />
-                  <div
-                    className="absolute top-0 left-0 w-full rounded-full transition-all duration-200 ease-out"
-                    style={{ height: `${Math.max(4, totalProgress * 100)}%`, backgroundColor: activeLineColor }}
-                  />
+                <div className="flex flex-col items-end gap-0">
                   {positions.map((pos, i) => {
                     const isActive = totalProgress >= pos;
                     const isCurrent = i === 0 ? totalProgress < positions[1] :
                       i < positions.length - 1 ? totalProgress >= pos && totalProgress < positions[i + 1] :
                       totalProgress >= pos;
+                    const segmentProgress = i < positions.length - 1
+                      ? Math.max(0, Math.min(1, (totalProgress - pos) / (positions[i + 1] - pos)))
+                      : totalProgress >= pos ? 1 : 0;
                     return (
-                      <div
-                        key={i}
-                        className="absolute flex items-center"
-                        style={{ top: `${pos * 100}%`, left: '50%', transform: 'translate(-50%, -50%)' }}
-                      >
-                        <div
-                          className={`rounded-full border-2 transition-all duration-300 ${isActive ? dotActiveBorder : dotBorder} ${isCurrent ? dotBg : 'bg-transparent'}`}
-                          style={{ width: isCurrent ? '10px' : '8px', height: isCurrent ? '10px' : '8px' }}
-                        />
-                        {isCurrent && (
+                      <div key={i} className="flex flex-col items-end">
+                        <div className="flex items-center gap-3">
                           <span
-                            className={`absolute right-5 text-[10px] font-medium tracking-wider uppercase whitespace-nowrap transition-opacity duration-300 ${isDark ? 'text-black/40' : 'text-white/40'}`}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            className="text-[10px] font-medium tracking-[0.15em] uppercase whitespace-nowrap transition-all duration-500"
+                            style={{
+                              fontFamily: "'Inter', sans-serif",
+                              color: isCurrent ? `rgba(${baseColor},0.7)` : `rgba(${baseColor},0.2)`,
+                              transform: isCurrent ? 'translateX(0)' : 'translateX(4px)',
+                            }}
                           >
                             {labels[i]}
                           </span>
+                          <div
+                            className="rounded-full transition-all duration-400 ease-out"
+                            style={{
+                              width: isCurrent ? '12px' : '6px',
+                              height: isCurrent ? '12px' : '6px',
+                              backgroundColor: isActive ? `rgba(${baseColor},${isCurrent ? 0.8 : 0.35})` : `rgba(${baseColor},0.12)`,
+                              boxShadow: isCurrent ? `0 0 8px rgba(${baseColor},0.3)` : 'none',
+                            }}
+                          />
+                        </div>
+                        {i < positions.length - 1 && (
+                          <div className="flex justify-end" style={{ width: '6px', marginRight: isCurrent ? '3px' : '0px' }}>
+                            <div
+                              className="relative overflow-hidden rounded-full my-1"
+                              style={{
+                                width: '2px',
+                                height: '32px',
+                                backgroundColor: `rgba(${baseColor},0.08)`,
+                              }}
+                            >
+                              <div
+                                className="absolute top-0 left-0 w-full rounded-full transition-all duration-300 ease-out"
+                                style={{
+                                  height: `${segmentProgress * 100}%`,
+                                  backgroundColor: `rgba(${baseColor},0.35)`,
+                                }}
+                              />
+                            </div>
+                          </div>
                         )}
                       </div>
                     );
