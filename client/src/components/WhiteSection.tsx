@@ -459,8 +459,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               data-testid="post-zoom-section"
             >
               {(() => {
-                const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
-                const translateY = 100 - slideUp * 100;
+                const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
+                const scrollFurther = Math.max(0, (postZoomProgress - 0.7) / 0.3);
+                const translateY = 100 - slideUp * 100 - scrollFurther * 100;
                 
                 return (
                   <div
@@ -472,11 +473,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     }}
                   >
                     <div
-                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20"
-                      style={{
-                        minHeight: '100vh',
-                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
-                      }}
+                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20 bg-black"
+                      style={{ minHeight: '100vh' }}
                     >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
@@ -618,6 +616,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <hr className="border-white/20" />
                     </div>
                     </div>
+                    <div
+                      style={{
+                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
+                        height: '100vh',
+                        width: '100%',
+                      }}
+                    />
                   </div>
                 );
               })()}
