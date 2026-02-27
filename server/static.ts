@@ -12,6 +12,14 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
+  const staticAssetsPath = path.resolve(distPath, "..", "static");
+  if (fs.existsSync(staticAssetsPath)) {
+    app.use("/static", express.static(staticAssetsPath, {
+      maxAge: '1d',
+      immutable: true,
+    }));
+  }
+
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
