@@ -468,7 +468,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       transition: 'transform 0.1s ease-out',
                     }}
                   >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-1">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-1 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
                         <div>
                           <h2
@@ -602,6 +602,20 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           </button>
                         </form>
                       </div>
+                    </div>
+
+                    <div className="w-full overflow-hidden mt-auto pb-4" data-testid="text-footer-name">
+                      <h1
+                        className="text-white font-black leading-none whitespace-nowrap select-none"
+                        style={{
+                          fontFamily: "'Anton', sans-serif",
+                          fontSize: 'clamp(6rem, 18vw, 22rem)',
+                          letterSpacing: '-0.02em',
+                          lineHeight: 0.85,
+                        }}
+                      >
+                        SUNDAR RAM
+                      </h1>
                     </div>
                   </div>
                 );
