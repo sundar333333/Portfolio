@@ -629,7 +629,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         style={{
                           fontFamily: "'Anton', sans-serif",
                           fontSize: '17.5vw',
-                          letterSpacing: '-0.02em',
+                          letterSpacing: '0.08em',
                           lineHeight: 0.9,
                         }}
                       >
