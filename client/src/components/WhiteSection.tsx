@@ -623,7 +623,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       </div>
                     </div>
 
-                    <div className="w-full mt-24 pb-4 overflow-hidden" data-testid="text-footer-name">
+                    <div className="w-full mt-24 mb-8">
+                      <hr className="border-white/20" />
+                    </div>
+                    <div className="w-full pb-4 overflow-hidden" data-testid="text-footer-name">
                       <h1
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center"
                         style={{
