@@ -617,7 +617,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 flex items-start" style={{ height: '50vh', paddingTop: '12vh' }}>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative" style={{ height: '50vh', paddingTop: '12vh' }}>
                       <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
                         <div className="flex flex-col gap-4">
                           <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
@@ -632,13 +632,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
                         </div>
                       </div>
-                      <div className="flex-1 flex justify-center">
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <h1
-                          className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
+                          className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out pointer-events-auto"
                           style={{
                             fontFamily: "'Anton', sans-serif",
                             fontWeight: 400,
-                            fontSize: '5vw',
+                            fontSize: '7vw',
                             letterSpacing: '0.05em',
                             lineHeight: 1,
                           }}
