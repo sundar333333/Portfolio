@@ -35,17 +35,21 @@ function RoomModel({ onLoaded }: { onLoaded: () => void }) {
     loader.load(
       "/myroom.glb",
       (gltf) => {
+        const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 if (mat.map) {
-                  mat.map.generateMipmaps = false;
-                  mat.map.minFilter = THREE.LinearFilter;
+                  mat.map.anisotropy = maxAnisotropy;
+                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
                   mat.map.magFilter = THREE.LinearFilter;
+                  mat.map.generateMipmaps = true;
                   mat.map.needsUpdate = true;
                 }
               });
@@ -130,22 +134,22 @@ export default function RoomViewer() {
 
       <WebGLErrorBoundary>
         <Canvas
+          shadows
           camera={{ fov: 45, near: 0.1, far: 200 }}
           style={{ background: "#ffffff" }}
           gl={{
-            antialias: false,
+            antialias: true,
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: 1.2,
             powerPreference: "high-performance",
-            precision: "mediump",
           }}
-          dpr={[0.75, 1.5]}
+          dpr={[1, 2]}
         >
           <CameraSetup />
-          <ambientLight intensity={0.7} />
-          <directionalLight position={[5, 8, 5]} intensity={1.0} />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
           <directionalLight position={[-3, 5, -3]} intensity={0.4} />
-          <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
+          <hemisphereLight args={["#ffffff", "#e0e0e0", 0.6]} />
 
           <RoomModel onLoaded={handleLoaded} />
 
