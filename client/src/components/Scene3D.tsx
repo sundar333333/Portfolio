@@ -9,6 +9,7 @@ interface Scene3DProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   isMuted: boolean;
+  onStopVideo: () => void;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
@@ -562,13 +563,14 @@ interface ScrollSceneProps {
   onTVClick: () => void;
   isVideoPlaying: boolean;
   isMuted: boolean;
+  onStopVideo: () => void;
   onWorkSectionChange?: (visible: boolean) => void;
   onScrollProgress?: (progress: number) => void;
   onWhiteSectionProgress?: (progress: number) => void;
   onCircleProgress?: (progress: number) => void;
 }
 
-function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: ScrollSceneProps) {
+function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, onStopVideo, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: ScrollSceneProps) {
   const scroll = useScroll();
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
@@ -592,8 +594,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   useFrame(() => {
     const offset = scroll.offset;
 
-    if (isVideoPlaying && Math.abs(offset - lastScrollOffset.current) > 0.002) {
-      onTVClick();
+    if (isVideoPlaying && Math.abs(offset - lastScrollOffset.current) > 0.001) {
+      onStopVideo();
     }
     lastScrollOffset.current = offset;
     
@@ -718,7 +720,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   );
 }
 
-export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
+export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onStopVideo, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
@@ -748,6 +750,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onWor
               onTVClick={onTVClick}
               isVideoPlaying={isVideoPlaying}
               isMuted={isMuted}
+              onStopVideo={onStopVideo}
               onWorkSectionChange={onWorkSectionChange}
               onScrollProgress={onScrollProgress}
               onWhiteSectionProgress={onWhiteSectionProgress}

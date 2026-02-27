@@ -97,6 +97,11 @@ export default function Home() {
     }
   }, [isVideoPlaying, stopStaticNoise, resumeStaticNoise]);
 
+  const handleStopVideo = useCallback(() => {
+    setIsVideoPlaying(false);
+    resumeStaticNoise();
+  }, [resumeStaticNoise]);
+
   const handleAudioToggle = useCallback(() => {
     setIsMuted((prev) => !prev);
   }, []);
@@ -118,6 +123,7 @@ export default function Home() {
                 onTVClick={handleTVClick}
                 isVideoPlaying={isVideoPlaying}
                 isMuted={isMuted}
+                onStopVideo={handleStopVideo}
                 onWorkSectionChange={handleWorkSectionChange}
                 onScrollProgress={handleScrollProgress}
                 onWhiteSectionProgress={handleWhiteSectionProgress}
