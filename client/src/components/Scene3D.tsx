@@ -395,8 +395,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
         >
           <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden' }}>
             <video
-              autoPlay
-              muted
+              ref={(el) => {
+                if (el) {
+                  el.muted = true;
+                  el.play().then(() => {
+                    setTimeout(() => { el.muted = false; }, 100);
+                  }).catch(() => {});
+                }
+              }}
               loop
               playsInline
               width={340}
