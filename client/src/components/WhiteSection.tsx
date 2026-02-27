@@ -470,7 +470,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <div className="flex flex-col justify-between flex-1 h-full max-w-xl">
                         <div>
                           <h2
-                            className="text-white font-black text-2xl md:text-4xl lg:text-4xl leading-tight mb-6"
+                            className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-6"
                             style={{ fontFamily: "'Anton', sans-serif" }}
                             data-testid="text-contact-heading"
                           >
@@ -479,12 +479,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <img 
                             src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
                             alt="Creative animation"
-                            className="w-full max-w-lg object-contain rounded-lg mb-6"
+                            className="w-full max-w-xl object-contain rounded-lg mb-6"
                             data-testid="img-contact-gif"
                           />
                           <div className="group/mail pointer-events-auto">
                             <div className="flex items-center gap-3">
-                              <div className="relative w-8 h-6 md:w-10 md:h-7 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
+                              <div className="relative w-10 h-7 md:w-12 md:h-9 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
                                 <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
                                 <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
                                   <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
@@ -501,10 +501,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                                 </div>
                               </div>
                               <div>
-                                <span className="text-white/50 text-base md:text-lg">Mail : </span>
+                                <span className="text-white/50 text-lg md:text-xl">Mail : </span>
                                 <a
                                   href="mailto:leosr1033@gmail.com"
-                                  className="relative text-white text-base md:text-lg"
+                                  className="relative text-white text-lg md:text-xl"
                                   data-testid="link-email"
                                 >
                                   leosr1033@gmail.com
