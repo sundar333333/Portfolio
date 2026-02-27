@@ -53,6 +53,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const [openCaseStudy, setOpenCaseStudy] = useState<string | null>(null);
   const [zoomProgress, setZoomProgress] = useState(0);
+  const [postZoomProgress, setPostZoomProgress] = useState(0);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const zoomScrollAccumulator = useRef(0);
@@ -85,6 +86,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     if (!isWorksScreenVisible || openCaseStudy !== null) {
       zoomScrollAccumulator.current = 0;
       setZoomProgress(0);
+      setPostZoomProgress(0);
       onZoomProgress?.(0);
     }
   }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
@@ -95,32 +97,30 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
-    const totalThreshold = freeScrollThreshold + zoomThreshold;
+    const postZoomThreshold = 1000; // Scroll distance after zoom for contact section
+    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
-      // Only handle scroll when Works screen is fully visible and no case study is open
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
       
-      // Allow scrolling back to previous sections when zoom hasn't started
       const isScrollingUp = e.deltaY < 0;
       if (isScrollingUp && zoomScrollAccumulator.current <= 0) {
-        // Don't prevent default - let the base scroll handle going back
         return;
       }
       
-      // Only prevent default when we're actively in the scroll phase
       e.preventDefault();
       
       zoomScrollAccumulator.current += e.deltaY;
-      
-      // Clamp the accumulator
       zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
       
-      // Calculate zoom progress (only starts after free scroll threshold)
       const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
-      const newZoomProgress = zoomStart / zoomThreshold;
-      setZoomProgress(Math.min(1, newZoomProgress));
-      onZoomProgress?.(Math.min(1, newZoomProgress));
+      const newZoomProgress = Math.min(1, zoomStart / zoomThreshold);
+      setZoomProgress(newZoomProgress);
+      onZoomProgress?.(newZoomProgress);
+      
+      const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
+      const newPostZoomProgress = Math.min(1, postStart / postZoomThreshold);
+      setPostZoomProgress(newPostZoomProgress);
     };
     
     window.addEventListener('wheel', handleWheel, { passive: false });
@@ -399,7 +399,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               Back
             </button>
           )}
-          {zoomProgress >= 0.85 && !isEntered && (
+          {zoomProgress >= 0.85 && !isEntered && postZoomProgress === 0 && (
             <button
               className="group relative flex items-center justify-center cursor-pointer"
               style={{
@@ -426,6 +426,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 </span>
               </div>
             </button>
+          )}
+          {postZoomProgress > 0 && !isEntered && (
+            <div 
+              className="fixed inset-0 z-40 bg-black"
+              style={{ opacity: Math.min(1, postZoomProgress * 3) }}
+              data-testid="post-zoom-section"
+            />
           )}
         </div>
       )}
