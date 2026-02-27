@@ -617,32 +617,39 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 flex items-start justify-center" style={{ height: '50vh', paddingTop: '12vh' }}>
-                      <h1
-                        className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
-                        style={{
-                          fontFamily: "'Anton', sans-serif",
-                          fontWeight: 400,
-                          fontSize: '3.5vw',
-                          letterSpacing: '0.05em',
-                          lineHeight: 1,
-                        }}
-                        data-testid="text-footer-name"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #3b5bdb 0%, #9b59b6 40%, #e74c3c 100%)';
-                          e.currentTarget.style.webkitBackgroundClip = 'text';
-                          e.currentTarget.style.webkitTextFillColor = 'transparent';
-                          e.currentTarget.style.backgroundClip = 'text';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'none';
-                          e.currentTarget.style.webkitBackgroundClip = 'unset';
-                          e.currentTarget.style.webkitTextFillColor = 'white';
-                          e.currentTarget.style.backgroundClip = 'unset';
-                        }}
-                      >
-                        SUNDAR RAM
-                      </h1>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 flex items-start" style={{ height: '50vh', paddingTop: '12vh' }}>
+                      <div className="flex flex-col gap-4 pointer-events-auto" data-testid="footer-nav">
+                        <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
+                        <a href="#works" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works</a>
+                        <a href="#3droom" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room</a>
+                      </div>
+                      <div className="flex-1 flex justify-center">
+                        <h1
+                          className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
+                          style={{
+                            fontFamily: "'Anton', sans-serif",
+                            fontWeight: 400,
+                            fontSize: '3.5vw',
+                            letterSpacing: '0.05em',
+                            lineHeight: 1,
+                          }}
+                          data-testid="text-footer-name"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, #3b5bdb 0%, #9b59b6 40%, #e74c3c 100%)';
+                            e.currentTarget.style.webkitBackgroundClip = 'text';
+                            e.currentTarget.style.webkitTextFillColor = 'transparent';
+                            e.currentTarget.style.backgroundClip = 'text';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'none';
+                            e.currentTarget.style.webkitBackgroundClip = 'unset';
+                            e.currentTarget.style.webkitTextFillColor = 'white';
+                            e.currentTarget.style.backgroundClip = 'unset';
+                          }}
+                        >
+                          SUNDAR RAM
+                        </h1>
+                      </div>
                     </div>
                   </div>
                 );
