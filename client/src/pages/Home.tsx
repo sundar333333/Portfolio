@@ -99,8 +99,8 @@ export default function Home() {
 
   const handleStopVideo = useCallback(() => {
     setIsVideoPlaying(false);
-    resumeStaticNoise();
-  }, [resumeStaticNoise]);
+    setIsMuted(true);
+  }, []);
 
   const handleAudioToggle = useCallback(() => {
     setIsMuted((prev) => !prev);
