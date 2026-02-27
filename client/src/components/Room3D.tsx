@@ -1,16 +1,13 @@
 import { Suspense, useRef, useState, useEffect, useCallback } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment, ContactShadows, useProgress } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
-useGLTF.preload("/static/room.glb");
-
-function RoomModel({ onModelLoaded }: { onModelLoaded: () => void }) {
+function RoomModel({ onModelLoaded }: { onModelLoaded: (center: THREE.Vector3, size: THREE.Vector3) => void }) {
   const { scene } = useGLTF("/static/room.glb", true, true, (loader) => {
     loader.setMeshoptDecoder(MeshoptDecoder);
   });
-  const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     if (scene) {
@@ -26,24 +23,77 @@ function RoomModel({ onModelLoaded }: { onModelLoaded: () => void }) {
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
 
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const targetSize = 8;
-      const scale = targetSize / maxDim;
-
-      scene.scale.setScalar(scale);
-
-      const scaledBox = new THREE.Box3().setFromObject(scene);
-      const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
-      scene.position.sub(scaledCenter);
-
-      onModelLoaded();
+      onModelLoaded(center, size);
     }
   }, [scene, onModelLoaded]);
 
+  return <primitive object={scene} />;
+}
+
+function CameraSetup({ center, size }: { center: THREE.Vector3; size: THREE.Vector3 }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!center || !size) return;
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const distance = maxDim * 0.8;
+
+    camera.position.set(
+      center.x + distance * 0.6,
+      center.y + distance * 0.4,
+      center.z + distance * 0.6
+    );
+    camera.near = maxDim * 0.001;
+    camera.far = maxDim * 10;
+    (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    camera.lookAt(center);
+  }, [center, size, camera]);
+
   return (
-    <group ref={groupRef}>
-      <primitive object={scene} />
-    </group>
+    <OrbitControls
+      ref={controlsRef}
+      target={center ? [center.x, center.y, center.z] : [0, 0, 0]}
+      enablePan={true}
+      enableZoom={true}
+      enableRotate={true}
+      minDistance={size ? Math.max(size.x, size.y, size.z) * 0.1 : 1}
+      maxDistance={size ? Math.max(size.x, size.y, size.z) * 3 : 100}
+      minPolarAngle={0.1}
+      maxPolarAngle={Math.PI / 2.05}
+      enableDamping={true}
+      dampingFactor={0.05}
+      autoRotate={true}
+      autoRotateSpeed={0.3}
+    />
+  );
+}
+
+function SceneLights({ center, size }: { center: THREE.Vector3 | null; size: THREE.Vector3 | null }) {
+  const maxDim = size ? Math.max(size.x, size.y, size.z) : 100;
+  const cx = center?.x || 0;
+  const cy = center?.y || 0;
+  const cz = center?.z || 0;
+
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight
+        position={[cx + maxDim, cy + maxDim * 1.5, cz + maxDim * 0.5]}
+        intensity={1.5}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={maxDim * 5}
+        shadow-camera-left={-maxDim}
+        shadow-camera-right={maxDim}
+        shadow-camera-top={maxDim}
+        shadow-camera-bottom={-maxDim}
+      />
+      <pointLight position={[cx - maxDim * 0.5, cy + maxDim, cz - maxDim * 0.5]} intensity={0.4} color="#ffeedd" />
+      <hemisphereLight args={["#b1e1ff", "#b97a20", 0.4]} />
+    </>
   );
 }
 
@@ -70,8 +120,11 @@ interface Room3DProps {
 
 export default function Room3D({ isVisible }: Room3DProps) {
   const [loaded, setLoaded] = useState(false);
-  const handleModelLoaded = useCallback(() => {
-    setTimeout(() => setLoaded(true), 300);
+  const [sceneInfo, setSceneInfo] = useState<{ center: THREE.Vector3; size: THREE.Vector3 } | null>(null);
+
+  const handleModelLoaded = useCallback((center: THREE.Vector3, size: THREE.Vector3) => {
+    setSceneInfo({ center, size });
+    setTimeout(() => setLoaded(true), 500);
   }, []);
 
   if (!isVisible) return null;
@@ -87,7 +140,7 @@ export default function Room3D({ isVisible }: Room3DProps) {
       {!loaded && <LoadingOverlay />}
       <Canvas
         shadows
-        camera={{ position: [10, 6, 10], fov: 50, near: 0.1, far: 200 }}
+        camera={{ fov: 50, near: 0.1, far: 100000 }}
         style={{
           width: '100%',
           height: '100%',
@@ -96,46 +149,18 @@ export default function Room3D({ isVisible }: Room3DProps) {
         }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
       >
-        <color attach="background" args={['#f5f5f5']} />
+        <color attach="background" args={['#f0f0f0']} />
 
-        <ambientLight intensity={0.5} />
-        <directionalLight
-          position={[8, 12, 5]}
-          intensity={1.5}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-        />
-        <pointLight position={[-5, 8, -5]} intensity={0.4} color="#ffeedd" />
-        <hemisphereLight args={["#b1e1ff", "#b97a20", 0.3]} />
+        <SceneLights center={sceneInfo?.center || null} size={sceneInfo?.size || null} />
 
         <Suspense fallback={null}>
           <RoomModel onModelLoaded={handleModelLoaded} />
           <Environment preset="apartment" />
         </Suspense>
 
-        <ContactShadows
-          position={[0, -4, 0]}
-          opacity={0.35}
-          scale={30}
-          blur={2.5}
-          far={10}
-        />
-
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          minDistance={3}
-          maxDistance={30}
-          minPolarAngle={0.2}
-          maxPolarAngle={Math.PI / 2.1}
-          target={[0, 0, 0]}
-          enableDamping={true}
-          dampingFactor={0.05}
-          autoRotate={true}
-          autoRotateSpeed={0.5}
-        />
+        {sceneInfo && (
+          <CameraSetup center={sceneInfo.center} size={sceneInfo.size} />
+        )}
       </Canvas>
     </div>
   );
