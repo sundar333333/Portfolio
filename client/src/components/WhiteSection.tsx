@@ -483,6 +483,23 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     
                     {contactPhase > 0 && (
                       <div
+                        className="absolute left-8 md:left-16 lg:left-24"
+                        style={{ 
+                          opacity: mailOpacity,
+                          top: `calc(50% + ${40 - headingShift * 0.3}px)`,
+                        }}
+                      >
+                        <img 
+                          src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
+                          alt="Creative animation"
+                          className="w-32 md:w-40 lg:w-48 rounded-lg mb-6"
+                          data-testid="img-contact-gif"
+                        />
+                      </div>
+                    )}
+
+                    {contactPhase > 0 && (
+                      <div
                         className="absolute left-8 md:left-16 lg:left-24 bottom-12 md:bottom-16"
                         style={{ opacity: mailOpacity }}
                       >
