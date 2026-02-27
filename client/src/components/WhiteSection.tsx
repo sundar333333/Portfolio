@@ -508,7 +508,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 <Room3D isVisible={true} />
               </Suspense>
               <button
-                className="fixed top-6 left-6 z-40 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm shadow-md"
+                className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm shadow-md"
                 onClick={() => onBack?.()}
                 data-testid="button-back-home"
               >
@@ -518,7 +518,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 </svg>
                 Back
               </button>
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 text-black/30 text-xs tracking-wider">
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 text-black/30 text-xs tracking-wider">
                 <span>Drag to rotate</span>
                 <span>•</span>
                 <span>Scroll to zoom</span>
