@@ -183,9 +183,9 @@ export default function Home() {
                 transition={{ delay: 2.5, duration: 0.5 }}
                 data-testid="scroll-indicator"
               >
-                <span className="text-white/40 text-sm font-bold tracking-[0.3em] uppercase">Scroll</span>
+                <span className={`${isEntered ? 'text-black/40' : 'text-white/40'} text-sm font-bold tracking-[0.3em] uppercase`}>Scroll</span>
                 <motion.div
-                  className="w-[1px] h-6 bg-white/20"
+                  className={`w-[1px] h-6 ${isEntered ? 'bg-black/20' : 'bg-white/20'}`}
                   animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
