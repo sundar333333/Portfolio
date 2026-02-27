@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState, useEffect, useMemo } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
@@ -47,17 +47,16 @@ function RoomModel() {
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
+                mat.envMapIntensity = 0.3;
                 if (mat.map) {
-                  mat.map.anisotropy = maxAnisotropy;
-                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                  mat.map.anisotropy = Math.min(maxAnisotropy, 4);
+                  mat.map.generateMipmaps = false;
+                  mat.map.minFilter = THREE.LinearFilter;
                   mat.map.magFilter = THREE.LinearFilter;
-                  mat.map.generateMipmaps = true;
                   mat.map.needsUpdate = true;
                 }
               });
@@ -162,16 +161,15 @@ export function Room3D({ visible }: Room3DProps) {
       )}
 
       <Canvas
-        shadows
         camera={{ fov: 45, near: 0.1, far: 200 }}
         style={{ background: "#ffffff" }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
+        gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, powerPreference: "high-performance" }}
       >
         <CameraSetup />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
+        <ambientLight intensity={0.8} />
+        <directionalLight position={[5, 8, 5]} intensity={1.0} />
         <directionalLight position={[-3, 5, -3]} intensity={0.4} />
-        <Environment preset="apartment" background={false} />
+        <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
 
         <Suspense fallback={null}>
           <RoomModel />
