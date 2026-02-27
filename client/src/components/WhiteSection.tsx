@@ -385,6 +385,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           }}
           data-testid="black-screen-section"
         >
+          {isEntered && (
+            <button
+              className="fixed top-6 left-6 z-40 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm"
+              onClick={() => window.location.reload()}
+              data-testid="button-back-home"
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="14" y1="10" x2="6" y2="10" />
+                <polyline points="10,4 4,10 10,16" />
+              </svg>
+              Back
+            </button>
+          )}
           {zoomProgress >= 0.85 && !isEntered && (
             <button
               className="group relative flex items-center justify-center cursor-pointer"
