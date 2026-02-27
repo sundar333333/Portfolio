@@ -105,7 +105,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
     const postZoomThreshold = 5000; // Scroll distance after zoom for contact section
-    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
+    const footerThreshold = 2000; // Scroll to reveal gradient footer
+    const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold + footerThreshold;
     
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
@@ -125,6 +126,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       
       const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
       targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
+      
+      const footerStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold - postZoomThreshold);
+      targetFooter.current = Math.min(1, footerStart / footerThreshold);
     };
     
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -138,6 +142,11 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       setPostZoomProgress(prev => {
         const next = lerp(prev, targetPostZoom.current, 0.12);
         if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
+        return next;
+      });
+      setFooterProgress(prev => {
+        const next = lerp(prev, targetFooter.current, 0.12);
+        if (Math.abs(next - targetFooter.current) < 0.001) return targetFooter.current;
         return next;
       });
       onZoomProgress?.(targetZoom.current);
@@ -458,28 +467,28 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             >
-              <div className="absolute inset-0 bg-black" />
               <div
-                className="absolute bottom-0 left-0 right-0"
+                className="absolute inset-0"
                 style={{
-                  height: '35vh',
                   background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
                 }}
               />
               {(() => {
                 const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
                 const translateY = 100 - slideUp * 100;
+                const contactUp = footerProgress * 100;
                 
                 return (
                   <div
                     className="absolute inset-0 overflow-hidden"
                     style={{
-                      transform: `translateY(${translateY}%)`,
+                      transform: `translateY(${translateY}%) translateY(-${contactUp}%)`,
                       transition: 'transform 0.1s ease-out',
                     }}
                   >
                     <div
-                      className="w-full min-h-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20"
+                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20 bg-black"
+                      style={{ minHeight: '100vh' }}
                     >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
