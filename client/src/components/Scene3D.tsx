@@ -219,33 +219,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current) {
       const canvas = videoCanvasRef.current;
       const ctx = canvas.getContext("2d");
-      
       if (ctx) {
-        frameRef.current += 1;
-        
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, `hsl(${(frameRef.current * 2) % 360}, 70%, 20%)`);
-        gradient.addColorStop(0.5, `hsl(${(frameRef.current * 2 + 60) % 360}, 80%, 30%)`);
-        gradient.addColorStop(1, `hsl(${(frameRef.current * 2 + 120) % 360}, 70%, 20%)`);
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "white";
-        ctx.font = "bold 48px Arial, sans-serif";
-        ctx.textAlign = "center";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-        ctx.shadowBlur = 10;
-        
-        ctx.fillText("MESSI", canvas.width / 2, canvas.height / 2 - 40);
-        ctx.fillText("GOAT", canvas.width / 2, canvas.height / 2 + 30);
-        ctx.font = "20px Arial, sans-serif";
-        ctx.fillText("Best Moments Tribute", canvas.width / 2, canvas.height / 2 + 80);
-        
-        for (let y = 0; y < canvas.height; y += 3) {
-          ctx.fillStyle = `rgba(0, 0, 0, ${0.03 + Math.sin(y * 0.5 + frameRef.current * 0.1) * 0.02})`;
-          ctx.fillRect(0, y, canvas.width, 1);
-        }
-        
         videoTextureRef.current.needsUpdate = true;
       }
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
@@ -407,26 +383,25 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
 
       {isVideoPlaying && (
         <Html
-          position={[-0.08, 0.02, 0.30]}
+          position={[-0.08, 0.02, 0.31]}
           transform
           occlude={false}
           style={{
-            width: '320px',
-            height: '240px',
-            pointerEvents: 'auto',
+            width: '340px',
+            height: '250px',
+            pointerEvents: 'none',
           }}
           distanceFactor={0.62}
         >
-          <div style={{ width: '320px', height: '240px', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+          <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden', position: 'relative' }}>
             <iframe
-              width="320"
-              height="240"
-              src="https://www.youtube.com/embed/ZmKy_fnRM_E?autoplay=1&mute=0&controls=1&rel=0"
+              width="340"
+              height="250"
+              src="https://www.youtube.com/embed/ZmKy_fnRM_E?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&loop=1&playlist=ZmKy_fnRM_E"
               title="YouTube video"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ border: 'none' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+              style={{ border: 'none', pointerEvents: 'none' }}
               data-testid="tv-youtube-player"
             />
           </div>
