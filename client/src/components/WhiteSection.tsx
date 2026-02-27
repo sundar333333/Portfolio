@@ -626,6 +626,15 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full mt-12">
                       <hr className="border-white/20" />
                     </div>
+                    <div
+                      className="w-full py-16 -mx-8 md:-mx-16 lg:-mx-24 px-8 md:px-16 lg:px-24"
+                      style={{
+                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
+                        marginBottom: '-5rem',
+                        paddingBottom: '5rem',
+                      }}
+                    >
+                    </div>
                     </div>
                   </div>
                 );
