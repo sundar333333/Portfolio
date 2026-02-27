@@ -42,6 +42,7 @@ export default function Home() {
   const [whiteSectionProgress, setWhiteSectionProgress] = useState(0);
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
+  const [postZoomProgress, setPostZoomProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [isEntered, setIsEntered] = useState(false);
   
@@ -69,6 +70,10 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
+  }, []);
+
+  const handlePostZoomProgress = useCallback((progress: number) => {
+    setPostZoomProgress(progress);
   }, []);
 
   const handleEnter = useCallback(() => {
@@ -141,7 +146,7 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} onBack={handleBack} isEntered={isEntered} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onPostZoomProgress={handlePostZoomProgress} onEnter={handleEnter} onBack={handleBack} isEntered={isEntered} />
 
           {!isCaseStudyOpen && !isEntered && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
@@ -176,20 +181,22 @@ export default function Home() {
                 )}
               </AnimatePresence>
 
-              <motion.div
-                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2.5, duration: 0.5 }}
-                data-testid="scroll-indicator"
-              >
-                <span className={`${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'text-black/40' : 'text-white/40'} text-sm font-bold tracking-[0.3em] uppercase`}>Scroll</span>
+              {postZoomProgress < 0.85 && (
                 <motion.div
-                  className={`w-[1px] h-6 ${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'bg-black/20' : 'bg-white/20'}`}
-                  animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </motion.div>
+                  className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: postZoomProgress > 0.7 ? 0 : 1 }}
+                  transition={{ delay: postZoomProgress > 0 ? 0 : 2.5, duration: 0.5 }}
+                  data-testid="scroll-indicator"
+                >
+                  <span className={`${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'text-black/40' : 'text-white/40'} text-sm font-bold tracking-[0.3em] uppercase`}>Scroll</span>
+                  <motion.div
+                    className={`w-[1px] h-6 ${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'bg-black/20' : 'bg-white/20'}`}
+                    animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </motion.div>
+              )}
 
             </>
           )}

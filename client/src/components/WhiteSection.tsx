@@ -20,6 +20,7 @@ interface WhiteSectionProps {
   circleProgress: number;
   onCaseStudyChange?: (isOpen: boolean) => void;
   onZoomProgress?: (progress: number) => void;
+  onPostZoomProgress?: (progress: number) => void;
   onEnter?: () => void;
   onBack?: () => void;
   isEntered?: boolean;
@@ -41,7 +42,7 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onEnter, onBack, isEntered }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onPostZoomProgress, onEnter, onBack, isEntered }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -141,6 +142,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         return next;
       });
       onZoomProgress?.(targetZoom.current);
+      onPostZoomProgress?.(targetPostZoom.current);
       smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
     };
     smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
@@ -619,8 +621,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <h1
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center"
                         style={{
-                          fontFamily: "'Orbitron', sans-serif",
-                          fontWeight: 900,
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontWeight: 700,
                           fontSize: '12vw',
                           letterSpacing: '0',
                           lineHeight: 0.9,
