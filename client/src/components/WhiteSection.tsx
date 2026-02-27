@@ -21,6 +21,7 @@ interface WhiteSectionProps {
   onCaseStudyChange?: (isOpen: boolean) => void;
   onZoomProgress?: (progress: number) => void;
   onEnter?: () => void;
+  onBack?: () => void;
   isEntered?: boolean;
 }
 
@@ -40,7 +41,7 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onEnter, isEntered }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onEnter, onBack, isEntered }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -388,7 +389,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           {isEntered && (
             <button
               className="fixed top-6 left-6 z-40 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm"
-              onClick={() => window.location.reload()}
+              onClick={() => onBack?.()}
               data-testid="button-back-home"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

@@ -75,6 +75,10 @@ export default function Home() {
     setIsEntered(true);
   }, []);
 
+  const handleBack = useCallback(() => {
+    setIsEntered(false);
+  }, []);
+
   const handleLoadingComplete = useCallback(() => {
     setIsLoading(false);
   }, []);
@@ -130,7 +134,7 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} isEntered={isEntered} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} onBack={handleBack} isEntered={isEntered} />
 
           {!isCaseStudyOpen && !isEntered && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
