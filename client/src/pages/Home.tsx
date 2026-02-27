@@ -181,58 +181,24 @@ export default function Home() {
               postZoomProgress * 0.15;
             const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
             const c = isDark ? '0,0,0' : '255,255,255';
-            const trackH = 220;
-            const thumbY = totalProgress * trackH;
-            const nums = ['01', '02', '03', '04'];
-            const positions = [0, 0.33, 0.60, 0.85];
+            const positions = [0, 0.20, 0.45, 0.65, 0.85];
             return (
-              <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40" data-testid="scroll-tracker">
-                <div className="relative" style={{ height: `${trackH}px`, width: '40px' }}>
-                  <div className="absolute right-[4px] top-0 bottom-0" style={{ width: '1px', backgroundColor: `rgba(${c},0.1)` }} />
-                  <div
-                    className="absolute right-0 transition-all duration-200 ease-out"
-                    style={{
-                      top: `${thumbY}px`,
-                      width: '9px',
-                      height: '9px',
-                      borderRadius: '50%',
-                      border: `1.5px solid rgba(${c},0.8)`,
-                      backgroundColor: `rgba(${c},0.15)`,
-                      transform: 'translateY(-50%)',
-                    }}
-                  />
+              <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40" data-testid="scroll-tracker">
+                <div className="flex flex-col items-end gap-[10px]">
                   {positions.map((pos, i) => {
                     const isCurrent = i === 0 ? totalProgress < positions[1] :
                       i < positions.length - 1 ? totalProgress >= pos && totalProgress < positions[i + 1] :
                       totalProgress >= pos;
-                    const y = pos * trackH;
                     return (
                       <div
                         key={i}
-                        className="absolute flex items-center gap-2 transition-all duration-400"
-                        style={{ top: `${y}px`, right: '14px', transform: 'translateY(-50%)' }}
-                      >
-                        <span
-                          className="transition-all duration-400"
-                          style={{
-                            fontFamily: "'DM Sans', sans-serif",
-                            fontSize: '9px',
-                            fontWeight: isCurrent ? 600 : 400,
-                            letterSpacing: '0.12em',
-                            color: isCurrent ? `rgba(${c},0.7)` : `rgba(${c},0.18)`,
-                          }}
-                        >
-                          {nums[i]}
-                        </span>
-                        <div
-                          className="transition-all duration-300"
-                          style={{
-                            width: isCurrent ? '14px' : '6px',
-                            height: '1px',
-                            backgroundColor: isCurrent ? `rgba(${c},0.6)` : `rgba(${c},0.15)`,
-                          }}
-                        />
-                      </div>
+                        className="transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-full"
+                        style={{
+                          width: isCurrent ? '32px' : '16px',
+                          height: '3px',
+                          backgroundColor: isCurrent ? `rgba(${c},0.9)` : `rgba(${c},0.2)`,
+                        }}
+                      />
                     );
                   })}
                 </div>
