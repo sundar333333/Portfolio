@@ -632,7 +632,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
                         </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-6vh' }}>
                         <h1
                           className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out pointer-events-auto"
                           style={{
