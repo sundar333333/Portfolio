@@ -20,6 +20,8 @@ interface WhiteSectionProps {
   circleProgress: number;
   onCaseStudyChange?: (isOpen: boolean) => void;
   onZoomProgress?: (progress: number) => void;
+  onEnter?: () => void;
+  isEntered?: boolean;
 }
 
 const projectLogos: Record<string, string> = {
@@ -38,7 +40,7 @@ const projectCaseStudies: Record<string, string> = {
 
 let trailId = 0;
 
-export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress }: WhiteSectionProps) {
+export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onEnter, isEntered }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
   
   const minSize = 150;
@@ -377,19 +379,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         <div 
           className="fixed inset-0 z-30 pointer-events-auto flex items-center justify-center"
           style={{
-            backgroundColor: '#000',
+            backgroundColor: isEntered ? '#fff' : '#000',
             opacity: Math.min(1, (zoomProgress - 0.3) / 0.4),
-            transition: 'opacity 0.3s ease-out',
+            transition: 'background-color 0.8s ease-out, opacity 0.3s ease-out',
           }}
           data-testid="black-screen-section"
         >
-          {zoomProgress >= 0.85 && (
+          {zoomProgress >= 0.85 && !isEntered && (
             <button
               className="group relative flex items-center justify-center cursor-pointer"
               style={{
                 opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
               }}
-              onClick={() => window.open('https://sundarram.replit.app', '_blank')}
+              onClick={() => onEnter?.()}
               data-testid="button-enter"
             >
               <div className="absolute w-44 h-44 md:w-56 md:h-56 rounded-full border border-white/10 group-hover:border-white/30 group-hover:scale-110 transition-all duration-700 ease-out" />

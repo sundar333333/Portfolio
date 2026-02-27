@@ -33,6 +33,7 @@ export default function Home() {
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
+  const [isEntered, setIsEntered] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -58,6 +59,10 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    setIsEntered(true);
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -108,19 +113,19 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} isEntered={isEntered} />
 
-          {!isCaseStudyOpen && (
+          {!isCaseStudyOpen && !isEntered && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
               <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} />
             </div>
           )}
 
-          {!isCaseStudyOpen && (
+          {!isCaseStudyOpen && !isEntered && (
             <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
           )}
 
-          {!isCaseStudyOpen && (
+          {!isCaseStudyOpen && !isEntered && (
             <>
               <AnimatePresence>
                 {isVideoPlaying && (
