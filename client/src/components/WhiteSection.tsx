@@ -479,7 +479,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
                         <div>
                           <h2
-                            className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-6"
+                            className="text-white font-black text-2xl md:text-3xl lg:text-4xl leading-tight mb-12"
                             style={{ fontFamily: "'Anton', sans-serif" }}
                             data-testid="text-contact-heading"
                           >
@@ -488,7 +488,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <img 
                             src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
                             alt="Creative animation"
-                            className="w-full max-w-xl object-contain rounded-lg mb-6"
+                            className="w-full max-w-xl object-contain rounded-lg mb-10"
                             data-testid="img-contact-gif"
                           />
                           <div className="group/mail pointer-events-auto">
