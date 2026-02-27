@@ -35,8 +35,8 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
 
   if (!visible) return null;
 
-  // ABOUT ME: even faster scroll
-  const aboutMeY = 120 + scrollProgress * (window.innerHeight * 8);
+  // ABOUT ME: starts below header text, each letter stacked vertically
+  const aboutMeY = 80 + scrollProgress * (window.innerHeight * 8);
   const aboutMeOpacity = scrollProgress < 0.02 ? scrollProgress * 50 : 
                          scrollProgress > 0.15 ? Math.max(0, (0.2 - scrollProgress) * 20) : 1;
   
@@ -50,24 +50,25 @@ export function AboutHeroSection({ visible, scrollProgress }: AboutHeroSectionPr
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       <motion.div
-        className="absolute left-8 pointer-events-none"
+        className="absolute left-6 pointer-events-none flex flex-col items-center"
         style={{
           top: aboutMeY,
           opacity: aboutMeOpacity,
-          transform: "rotate(-90deg)",
-          transformOrigin: "left top",
         }}
       >
-        <span
-          className="text-white font-black tracking-widest whitespace-nowrap"
-          style={{
-            fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(3rem, 8vw, 6rem)",
-            textShadow: "0 0 20px rgba(255,255,255,0.3)",
-          }}
-        >
-          ABOUT ME
-        </span>
+        {"ABOUT ME".split("").filter(c => c !== " ").map((letter, i) => (
+          <span
+            key={i}
+            className="text-white font-black block leading-[0.85]"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(3rem, 8vw, 6rem)",
+              textShadow: "0 0 20px rgba(255,255,255,0.3)",
+            }}
+          >
+            {letter}
+          </span>
+        ))}
       </motion.div>
 
       <motion.div
