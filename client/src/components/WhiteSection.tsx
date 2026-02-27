@@ -470,7 +470,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <div className="flex flex-col justify-between flex-1 h-full max-w-xl">
                         <div>
                           <h2
-                            className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-6"
+                            className="text-white font-black text-2xl md:text-4xl lg:text-4xl leading-tight mb-6"
                             style={{ fontFamily: "'Anton', sans-serif" }}
                             data-testid="text-contact-heading"
                           >
