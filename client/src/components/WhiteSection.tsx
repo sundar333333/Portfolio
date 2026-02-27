@@ -625,10 +625,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
                     <div className="w-full mt-24 pb-4" data-testid="text-footer-name">
                       <h1
-                        className="text-white font-black leading-none select-none w-full"
+                        className="text-white font-black leading-none select-none w-full whitespace-nowrap"
                         style={{
                           fontFamily: "'Anton', sans-serif",
-                          fontSize: '17.5vw',
+                          fontSize: '14vw',
                           letterSpacing: '0.08em',
                           lineHeight: 0.9,
                         }}
