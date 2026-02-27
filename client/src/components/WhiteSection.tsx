@@ -492,7 +492,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         <img 
                           src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
                           alt="Creative animation"
-                          className="w-80 md:w-[28rem] lg:w-[32rem] rounded-lg"
+                          className="w-80 md:w-[28rem] lg:w-[32rem] h-48 md:h-56 lg:h-60 object-cover rounded-lg"
                           data-testid="img-contact-gif"
                         />
                       </div>
