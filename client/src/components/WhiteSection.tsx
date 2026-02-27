@@ -493,7 +493,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           />
                           <div className="group/mail pointer-events-auto">
                             <div className="flex items-center gap-3">
-                              <div className="relative w-10 h-7 md:w-12 md:h-9 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
+                              <div className="relative w-8 h-5 md:w-9 md:h-6 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
                                 <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
                                 <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
                                   <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
@@ -510,10 +510,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                                 </div>
                               </div>
                               <div>
-                                <span className="text-white/50 text-lg md:text-xl">Mail : </span>
+                                <span className="text-white/50 text-sm md:text-base">Mail : </span>
                                 <a
                                   href="mailto:leosr1033@gmail.com"
-                                  className="relative text-white text-lg md:text-xl"
+                                  className="relative text-white text-sm md:text-base"
                                   data-testid="link-email"
                                 >
                                   leosr1033@gmail.com
