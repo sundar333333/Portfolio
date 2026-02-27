@@ -201,18 +201,27 @@ export default function Home() {
 
               {postZoomProgress < 0.85 && (
                 <motion.div
-                  className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
+                  className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: postZoomProgress > 0.7 ? 0 : 1 }}
                   transition={{ delay: postZoomProgress > 0 ? 0 : 2.5, duration: 0.5 }}
                   data-testid="scroll-indicator"
                 >
-                  <span className={`${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'text-black/40' : 'text-white/40'} text-sm font-bold tracking-[0.3em] uppercase`}>Scroll</span>
-                  <motion.div
-                    className={`w-[1px] h-6 ${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'bg-black/20' : 'bg-white/20'}`}
-                    animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
+                  <motion.svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className={`${(whiteSectionProgress > 0.5 && zoomProgress < 0.5) ? 'stroke-black/40' : 'stroke-white/40'}`}
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    animate={{ y: [0, 6, 0] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  />
+                  >
+                    <path d="M12 5v14" />
+                    <path d="M5 12l7 7 7-7" />
+                  </motion.svg>
                 </motion.div>
               )}
 
