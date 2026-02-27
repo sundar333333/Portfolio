@@ -18,13 +18,18 @@ function applyRoomFixes(scene: THREE.Group) {
   }
 
   scene.traverse((child) => {
-    if (!(child as THREE.Mesh).isMesh) return;
-    const mesh = child as THREE.Mesh;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    const obj = child as THREE.Mesh;
 
-    if (hideByName.has(mesh.name)) {
-      mesh.visible = false;
+    if (obj.name && obj.name.startsWith("defaultMaterial")) {
+      obj.visible = false;
+    }
+
+    if (!obj.isMesh) return;
+    obj.castShadow = true;
+    obj.receiveShadow = true;
+
+    if (hideByName.has(obj.name) || obj.name === "Plane_2") {
+      obj.visible = false;
     }
   });
 }
