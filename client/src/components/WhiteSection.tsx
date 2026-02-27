@@ -86,7 +86,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
       const freeScrollThreshold = 300;
       const zoomThreshold = 2000;
-      const postZoomThreshold = 4000;
+      const postZoomThreshold = 2500;
 
       let accTarget = 0;
       if (section === 'reset') {
@@ -100,7 +100,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       } else if (section === 'room') {
         accTarget = freeScrollThreshold + zoomThreshold;
       } else if (section === 'contact') {
-        accTarget = freeScrollThreshold + zoomThreshold + 2400;
+        accTarget = freeScrollThreshold + zoomThreshold + 1500;
       } else {
         return;
       }
@@ -192,7 +192,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 300;
     const zoomThreshold = 2000;
-    const postZoomThreshold = 4000;
+    const postZoomThreshold = 2500;
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -226,7 +226,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         return next;
       });
       setPostZoomProgress(prev => {
-        const next = lerp(prev, targetPostZoom.current, 0.18);
+        const next = lerp(prev, targetPostZoom.current, 0.08);
         if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
         return next;
       });
