@@ -54,6 +54,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const [openCaseStudy, setOpenCaseStudy] = useState<string | null>(null);
   const [zoomProgress, setZoomProgress] = useState(0);
   const [postZoomProgress, setPostZoomProgress] = useState(0);
+  const targetZoom = useRef(0);
+  const targetPostZoom = useRef(0);
+  const smoothAnimFrame = useRef<number>(0);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const zoomScrollAccumulator = useRef(0);
@@ -97,7 +100,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
-    const postZoomThreshold = 3500; // Scroll distance after zoom for contact section
+    const postZoomThreshold = 2500; // Scroll distance after zoom for contact section
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -114,19 +117,35 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
       
       const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
-      const newZoomProgress = Math.min(1, zoomStart / zoomThreshold);
-      setZoomProgress(newZoomProgress);
-      onZoomProgress?.(newZoomProgress);
+      targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
       
       const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
-      const newPostZoomProgress = Math.min(1, postStart / postZoomThreshold);
-      setPostZoomProgress(newPostZoomProgress);
+      targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
     };
+    
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    
+    const smoothUpdate = () => {
+      setZoomProgress(prev => {
+        const next = lerp(prev, targetZoom.current, 0.12);
+        if (Math.abs(next - targetZoom.current) < 0.001) return targetZoom.current;
+        return next;
+      });
+      setPostZoomProgress(prev => {
+        const next = lerp(prev, targetPostZoom.current, 0.12);
+        if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
+        return next;
+      });
+      onZoomProgress?.(targetZoom.current);
+      smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
+    };
+    smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
     
     window.addEventListener('wheel', handleWheel, { passive: false });
     
     return () => {
       window.removeEventListener('wheel', handleWheel);
+      cancelAnimationFrame(smoothAnimFrame.current);
     };
   }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
 
