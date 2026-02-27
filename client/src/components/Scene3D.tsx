@@ -576,10 +576,14 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
-  const lastScrollOffset = useRef(0);
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
+
+  const onStopVideoRef = useRef(onStopVideo);
+  onStopVideoRef.current = onStopVideo;
+  const isVideoPlayingRef = useRef(isVideoPlaying);
+  isVideoPlayingRef.current = isVideoPlaying;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -587,17 +591,30 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
     };
 
+    const handleWheel = () => {
+      if (isVideoPlayingRef.current) {
+        onStopVideoRef.current();
+      }
+    };
+
+    const handleTouchMove = () => {
+      if (isVideoPlayingRef.current) {
+        onStopVideoRef.current();
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
   }, []);
 
   useFrame(() => {
     const offset = scroll.offset;
-
-    if (isVideoPlaying && Math.abs(offset - lastScrollOffset.current) > 0.001) {
-      onStopVideo();
-    }
-    lastScrollOffset.current = offset;
     
     const startZ = 1.8;
     const screenZ = 0.3;
