@@ -487,7 +487,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         transition: 'transform 0.1s ease-out',
                       }}
                     >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-1 min-h-0">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
                       <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
                         <div>
                           <h2
@@ -622,30 +622,20 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         </form>
                       </div>
                     </div>
-                    </div>
 
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 flex items-end justify-center overflow-hidden px-4 md:px-8"
-                      style={{
-                        opacity: Math.min(1, footerProgress / 0.3),
-                        height: '40vh',
-                      }}
-                      data-testid="text-footer-name"
-                    >
+                    <div className="w-full overflow-hidden mt-8 pb-8" data-testid="text-footer-name">
                       <h1
-                        className="text-white font-black leading-none whitespace-nowrap select-none"
+                        className="text-white/20 font-black leading-none whitespace-nowrap select-none"
                         style={{
                           fontFamily: "'Anton', sans-serif",
                           fontSize: 'clamp(6rem, 18vw, 22rem)',
                           letterSpacing: '-0.02em',
                           lineHeight: 0.85,
-                          transform: `translateY(${(1 - footerProgress) * 50}%)`,
-                          transition: 'transform 0.1s ease-out',
-                          paddingBottom: '2vh',
                         }}
                       >
                         SUNDAR RAM
                       </h1>
+                    </div>
                     </div>
                   </div>
                 );
