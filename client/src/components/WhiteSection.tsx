@@ -623,8 +623,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         style={{
                           fontFamily: "'Anton', sans-serif",
                           fontWeight: 400,
-                          fontSize: '12vw',
-                          letterSpacing: '0',
+                          fontSize: '9vw',
+                          letterSpacing: '0.05em',
                           lineHeight: 0.9,
                         }}
                         data-testid="text-footer-name"
