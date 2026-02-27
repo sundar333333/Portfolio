@@ -632,20 +632,23 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
                         </div>
                       </div>
-                      <div className="flex items-start gap-10 pointer-events-auto" data-testid="footer-right">
-                        <div className="flex flex-col gap-4">
+                      <div className="flex items-start gap-6 pointer-events-auto" data-testid="footer-right">
+                        <div className="flex flex-col gap-4 mr-4">
                           <a href="https://behance.net" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-behance">Behance</a>
                           <a href="https://dribbble.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-dribbble">Dribbble</a>
                         </div>
-                        <button
-                          className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
-                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                          data-testid="button-scroll-top"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M8 14V2M8 2L3 7M8 2L13 7" />
-                          </svg>
-                        </button>
+                        <div className="flex flex-col items-center gap-2">
+                          <button
+                            className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            data-testid="button-scroll-top"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M8 14V2M8 2L3 7M8 2L13 7" />
+                            </svg>
+                          </button>
+                          <span className="text-white/30 text-[10px] uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Inter', sans-serif" }}>Back to top</span>
+                        </div>
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-12vh' }}>
                         <h1
