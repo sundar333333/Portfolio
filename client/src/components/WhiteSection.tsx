@@ -104,7 +104,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
-    const postZoomThreshold = 5000; // Scroll distance after zoom for contact section
+    const postZoomThreshold = 2500; // Scroll distance after zoom for contact section
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -136,7 +136,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         return next;
       });
       setPostZoomProgress(prev => {
-        const next = lerp(prev, targetPostZoom.current, 0.12);
+        const next = lerp(prev, targetPostZoom.current, 0.18);
         if (Math.abs(next - targetPostZoom.current) < 0.001) return targetPostZoom.current;
         return next;
       });
