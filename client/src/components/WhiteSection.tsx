@@ -467,7 +467,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     }}
                   >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-1">
-                      <div className="flex flex-col justify-between flex-1 h-full max-w-xl">
+                      <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
                         <div>
                           <h2
                             className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight mb-6"
