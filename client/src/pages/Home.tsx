@@ -51,7 +51,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isEntered) {
-      const timer = setTimeout(() => setRoomReady(true), 600);
+      const timer = setTimeout(() => setRoomReady(true), 1000);
       return () => clearTimeout(timer);
     } else {
       setRoomReady(false);

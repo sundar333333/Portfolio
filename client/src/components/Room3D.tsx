@@ -1,45 +1,21 @@
-import { Suspense, useRef, useState, useEffect, useMemo } from "react";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { Suspense, useRef, useState, useEffect } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { OrbitControls, useProgress, Html } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
-let cachedScene: THREE.Group | null = null;
-let preloadStarted = false;
-
-export function preloadRoom3D() {
-  if (preloadStarted) return;
-  preloadStarted = true;
-
-  const loader = new GLTFLoader();
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  loader.load(
-    "/myroom.glb",
-    (gltf) => {
-      cachedScene = gltf.scene;
-    },
-    undefined,
-    (error) => {
-      console.error("Failed to preload room model:", error);
-      preloadStarted = false;
-    }
-  );
+function disposeThreeCache() {
+  THREE.Cache.clear();
 }
 
 function RoomModel() {
-  const [scene, setScene] = useState<THREE.Group | null>(cachedScene);
+  const [scene, setScene] = useState<THREE.Group | null>(null);
   const { gl } = useThree();
 
   useEffect(() => {
-    if (cachedScene) {
-      setScene(cachedScene);
-      return;
-    }
-
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
-    const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
 
     loader.load(
       "/myroom.glb",
@@ -50,52 +26,66 @@ function RoomModel() {
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
-                if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
-                mat.envMapIntensity = 0.3;
-                if (mat.map) {
-                  mat.map.anisotropy = Math.min(maxAnisotropy, 4);
-                  mat.map.generateMipmaps = false;
-                  mat.map.minFilter = THREE.LinearFilter;
-                  mat.map.magFilter = THREE.LinearFilter;
-                  mat.map.needsUpdate = true;
+                if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+                  mat.envMapIntensity = 0.3;
+                  mat.normalMap = null;
+                  mat.aoMap = null;
+                  mat.metalnessMap = null;
+                  mat.roughnessMap = null;
+                  mat.needsUpdate = true;
+                  if (mat.map) {
+                    mat.map.generateMipmaps = false;
+                    mat.map.minFilter = THREE.LinearFilter;
+                    mat.map.magFilter = THREE.LinearFilter;
+                    mat.map.needsUpdate = true;
+                  }
                 }
               });
             }
           }
         });
-
-        cachedScene = gltf.scene;
         setScene(gltf.scene);
       },
       undefined,
       (error) => console.error("Failed to load room model:", error)
     );
-  }, [gl]);
 
-  const { center, size } = useMemo(() => {
-    if (!scene) return { center: new THREE.Vector3(), size: 10 };
-    const box = new THREE.Box3();
-    scene.traverse((child) => {
-      if (!(child as THREE.Mesh).isMesh) return;
-      const mesh = child as THREE.Mesh;
-      const wp = new THREE.Vector3();
-      mesh.getWorldPosition(wp);
-      if (wp.length() > 50) return;
-      const meshBox = new THREE.Box3().setFromObject(mesh);
-      if (meshBox.min.x !== Infinity) box.union(meshBox);
-    });
-    const c = new THREE.Vector3();
-    box.getCenter(c);
-    const s = box.getSize(new THREE.Vector3()).length();
-    return { center: c, size: s || 10 };
-  }, [scene]);
+    return () => {
+      if (scene) {
+        scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.geometry?.dispose();
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            materials.forEach((mat) => {
+              if (mat.map) mat.map.dispose();
+              mat.dispose();
+            });
+          }
+        });
+      }
+    };
+  }, [gl]);
 
   if (!scene) return null;
 
+  return <primitive object={scene} />;
+}
+
+function Loader() {
+  const { progress } = useProgress();
   return (
-    <group>
-      <primitive object={scene} />
-    </group>
+    <Html center>
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-48 h-1 bg-black/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-black/60 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <span className="text-black/40 text-xs tracking-widest uppercase">Loading room</span>
+      </div>
+    </Html>
   );
 }
 
@@ -119,51 +109,26 @@ interface Room3DProps {
 }
 
 export function Room3D({ visible }: Room3DProps) {
-  const [loadProgress, setLoadProgress] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(!!cachedScene);
-
   useEffect(() => {
-    if (cachedScene) {
-      setIsLoaded(true);
-      setLoadProgress(100);
-      return;
-    }
-
-    preloadRoom3D();
-
-    const checkInterval = setInterval(() => {
-      if (cachedScene) {
-        setIsLoaded(true);
-        setLoadProgress(100);
-        clearInterval(checkInterval);
-      } else {
-        setLoadProgress((prev) => Math.min(prev + 2, 90));
-      }
-    }, 200);
-
-    return () => clearInterval(checkInterval);
+    disposeThreeCache();
   }, []);
 
   if (!visible) return null;
 
   return (
     <div className="w-full h-full relative" data-testid="room-3d-container">
-      {!isLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10" data-testid="room-loading">
-          <div className="w-48 h-1 bg-black/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-black/60 rounded-full transition-all duration-300"
-              style={{ width: `${loadProgress}%` }}
-            />
-          </div>
-          <span className="mt-3 text-black/40 text-xs tracking-widest uppercase">Loading room</span>
-        </div>
-      )}
-
       <Canvas
         camera={{ fov: 45, near: 0.1, far: 200 }}
         style={{ background: "#ffffff" }}
-        gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, powerPreference: "high-performance" }}
+        gl={{
+          antialias: false,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.0,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: false,
+          precision: "mediump",
+        }}
+        dpr={[0.75, 1]}
       >
         <CameraSetup />
         <ambientLight intensity={0.8} />
@@ -171,7 +136,7 @@ export function Room3D({ visible }: Room3DProps) {
         <directionalLight position={[-3, 5, -3]} intensity={0.4} />
         <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
 
-        <Suspense fallback={null}>
+        <Suspense fallback={<Loader />}>
           <RoomModel />
         </Suspense>
 
