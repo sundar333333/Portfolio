@@ -443,11 +443,11 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 }}
               >
                 <h2
-                  className="text-white font-black text-4xl md:text-6xl lg:text-7xl leading-tight"
+                  className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight"
                   style={{ fontFamily: "'Anton', sans-serif" }}
                   data-testid="text-contact-heading"
                 >
-                  Let's connect and create meaningful digital experiences.
+                  Let's connect and create<br />meaningful digital experiences.
                 </h2>
               </div>
             </div>
