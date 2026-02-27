@@ -135,17 +135,17 @@ export default function RoomViewer() {
           gl={{
             antialias: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.2,
+            toneMappingExposure: 0.9,
             powerPreference: "high-performance",
           }}
           dpr={[1, 1.5]}
         >
           <CameraSetup />
-          <ambientLight intensity={0.7} />
-          <directionalLight position={[5, 8, 5]} intensity={1.0} />
-          <directionalLight position={[-3, 5, -3]} intensity={0.4} />
-          <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
-          <Environment preset="apartment" background={false} />
+          <ambientLight intensity={0.3} />
+          <directionalLight position={[5, 8, 5]} intensity={0.8} />
+          <directionalLight position={[-3, 5, -3]} intensity={0.3} />
+          <hemisphereLight args={["#f5f5f0", "#c0c0c0", 0.4]} />
+          <Environment preset="apartment" background={false} environmentIntensity={0.4} />
 
           <RoomModel onLoaded={handleLoaded} />
 
