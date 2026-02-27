@@ -179,7 +179,7 @@ export default function Home() {
               <motion.div
                 className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: scrollProgress < 0.02 ? 1 : 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 2.5, duration: 0.5 }}
                 data-testid="scroll-indicator"
               >
