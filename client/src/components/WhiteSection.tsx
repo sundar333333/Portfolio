@@ -617,12 +617,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 py-10 flex items-center justify-center">
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 flex items-center justify-center" style={{ height: '100vh' }}>
                       <h1
-                        className="text-white font-black leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
+                        className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
                         style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          fontWeight: 700,
+                          fontFamily: "'Anton', sans-serif",
+                          fontWeight: 400,
                           fontSize: '3.5vw',
                           letterSpacing: '0.15em',
                           lineHeight: 1,
