@@ -1,18 +1,36 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, Component, type ReactNode } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
+class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch() {}
+  render() {
+    if (this.state.hasError) return this.props.fallback || (
+      <div className="w-full h-full flex items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="text-black/50 text-sm mb-4">Unable to render the 3D room</p>
+          <button onClick={() => window.location.href = "/"} className="text-black/40 text-xs underline" data-testid="link-back-error">Go back</button>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 function RoomModel({ onLoaded }: { onLoaded: () => void }) {
   const [scene, setScene] = useState<THREE.Group | null>(null);
   const { gl } = useThree();
+  const onLoadedRef = useRef(onLoaded);
+  onLoadedRef.current = onLoaded;
 
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
-    const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
 
     loader.load(
       "/myroom.glb",
@@ -20,17 +38,14 @@ function RoomModel({ onLoaded }: { onLoaded: () => void }) {
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
             if (mesh.material) {
               const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
               materials.forEach((mat) => {
                 if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) return;
                 if (mat.map) {
-                  mat.map.anisotropy = maxAnisotropy;
-                  mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                  mat.map.generateMipmaps = false;
+                  mat.map.minFilter = THREE.LinearFilter;
                   mat.map.magFilter = THREE.LinearFilter;
-                  mat.map.generateMipmaps = true;
                   mat.map.needsUpdate = true;
                 }
               });
@@ -38,12 +53,12 @@ function RoomModel({ onLoaded }: { onLoaded: () => void }) {
           }
         });
         setScene(gltf.scene);
-        onLoaded();
+        onLoadedRef.current();
       },
       undefined,
       (error) => console.error("Failed to load room model:", error)
     );
-  }, [gl, onLoaded]);
+  }, [gl]);
 
   if (!scene) return null;
   return <primitive object={scene} />;
@@ -78,6 +93,8 @@ export default function RoomViewer() {
   const [progress, setProgress] = useState(0);
   const webglSupported = hasWebGL();
 
+  const handleLoaded = useCallback(() => setLoaded(true), []);
+
   useEffect(() => {
     if (!loaded) {
       const interval = setInterval(() => {
@@ -111,39 +128,42 @@ export default function RoomViewer() {
         </div>
       )}
 
-      <Canvas
-        shadows
-        camera={{ fov: 45, near: 0.1, far: 200 }}
-        style={{ background: "#ffffff" }}
-        gl={{
-          antialias: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2,
-          powerPreference: "high-performance",
-        }}
-      >
-        <CameraSetup />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
-        <directionalLight position={[-3, 5, -3]} intensity={0.4} />
-        <hemisphereLight args={["#ffffff", "#e0e0e0", 0.6]} />
+      <WebGLErrorBoundary>
+        <Canvas
+          camera={{ fov: 45, near: 0.1, far: 200 }}
+          style={{ background: "#ffffff" }}
+          gl={{
+            antialias: false,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.2,
+            powerPreference: "high-performance",
+            precision: "mediump",
+          }}
+          dpr={[0.75, 1.5]}
+        >
+          <CameraSetup />
+          <ambientLight intensity={0.7} />
+          <directionalLight position={[5, 8, 5]} intensity={1.0} />
+          <directionalLight position={[-3, 5, -3]} intensity={0.4} />
+          <hemisphereLight args={["#ffffff", "#e0e0e0", 0.5]} />
 
-        <RoomModel onLoaded={() => setLoaded(true)} />
+          <RoomModel onLoaded={handleLoaded} />
 
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          zoomSpeed={0.8}
-          rotateSpeed={0.5}
-          panSpeed={0.5}
-          minDistance={2}
-          maxDistance={20}
-          target={[0, 1, 0]}
-          dampingFactor={0.12}
-          enableDamping={true}
-        />
-      </Canvas>
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+            zoomSpeed={0.8}
+            rotateSpeed={0.5}
+            panSpeed={0.5}
+            minDistance={2}
+            maxDistance={20}
+            target={[0, 1, 0]}
+            dampingFactor={0.12}
+            enableDamping={true}
+          />
+        </Canvas>
+      </WebGLErrorBoundary>
 
       <button
         className="absolute top-6 left-6 z-10 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm"
