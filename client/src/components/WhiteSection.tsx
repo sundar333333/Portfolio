@@ -626,7 +626,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         }}
                         data-testid="text-footer-name"
                       >
-                        SUNDAR RAM
+                        SR
                       </h1>
                     </div>
                   </div>
