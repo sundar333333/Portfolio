@@ -105,20 +105,7 @@ Preferred communication style: Simple, everyday language.
 - The workflow runs `bash start.sh` which: kills any existing process on port 5000, builds the production bundle (if `dist/` is missing), symlinks `room.glb`, then starts the Express production server via `exec`
 - `start.sh` uses `exec` so the Node process replaces the shell, preventing orphan processes and restart loops
 - Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
-- Two 3D room models exist:
-  - `server/static/room.glb` (26MB) — old compressed room, used by Scene3D TV environment (not currently rendered)
-  - `server/static/quit2.glb` (20MB) — user's Blender room from GitHub (`quit2.glb`), compressed from 436MB with meshopt + WebP 1024px textures. Displayed in the interactive Room3D viewer after clicking ENTER on the black screen
-- Room3D component uses meshoptimizer decoder for EXT_meshopt_compression support
-- Room3D preloads the GLB when zoom progress > 0.3 (before user clicks ENTER) via `preloadRoom3D()`
-- Room3D supports scroll zoom (in/out) and left-click drag rotation (360 degrees) via OrbitControls
-- GLB material mapping for room.glb (important for future material fixes):
-  - CRITICAL: `phong1` (node 123, Object_1.002, 76K verts) is a Blender baked texture atlas containing BOTH wall AND furniture colors (desk, chair, shelves, Ballon d'Or). NEVER strip its texture or everything goes black. Leave it completely untouched.
-  - Walls tinted dark: `PaletteMaterial001` (Plane.003, room shell), `Black Painted Plaster Wall` (tiny accent Plane) — mat.color set to #333333 which multiplies with existing texture to darken. Textures NOT stripped.
-  - Cupboard/bookshelf (IKEA Skruvby, node 118): `Beige Painted Plaster Wall` — left untouched, keeps original beige texture
-  - Window frame materials: `Border_1001`, `Sides_1001`, `BottomBase_1001`, `Top_1001`, `Shelves_1001`, `TriangleBottom_1001`, `XLeft_1001`, `XRight_1001` — set to white (#f0f0f0) with emissive glow
-  - Window glass materials: `GlassA_1001`, `GlassB_1001`, `GlowLeft_1001`, `GlowRight_1001` — translucent blue with emissive
-  - Window meshes use polygonOffset and renderOrder to prevent z-fighting with wall geometry
-  - Materials are matched by material name (lowercased), not mesh node name
-  - CRITICAL: Three outlier book meshes (nodes 95-97) at positions ~(-2900, 5600, -10600) with scale ~524 blow up Box3.setFromObject. Bounding box computation filters out meshes with world position > 50 units from origin.
+- `server/static/room.glb` (26MB) — old compressed room model, used by Scene3D TV environment (not currently rendered)
+- The 3D room feature (Room3D component, quit2.glb) has been removed. The "3D Room" header link remains for future use.
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build

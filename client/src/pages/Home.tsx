@@ -9,7 +9,6 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
-import { Room3D, preloadRoom3D } from "@/components/Room3D";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -34,7 +33,6 @@ export default function Home() {
   const [circleProgress, setCircleProgress] = useState(0);
   const [zoomProgress, setZoomProgress] = useState(0);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
-  const [isRoomEntered, setIsRoomEntered] = useState(false);
   
   const { stopStaticNoise, resumeStaticNoise } = useAudio(isMuted);
 
@@ -58,19 +56,8 @@ export default function Home() {
     setIsCaseStudyOpen(isOpen);
   }, []);
 
-  const handleEnterRoom = useCallback(() => {
-    setIsRoomEntered(true);
-  }, []);
-
-  const handleExitRoom = useCallback(() => {
-    setIsRoomEntered(false);
-  }, []);
-
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
-    if (progress > 0.3) {
-      preloadRoom3D();
-    }
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -121,51 +108,19 @@ export default function Home() {
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
-          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnterRoom={handleEnterRoom} />
+          <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} />
 
-          <AnimatePresence>
-            {isRoomEntered && (
-              <motion.div
-                className="fixed inset-0 z-[70] bg-white"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-                data-testid="room-white-screen"
-              >
-                <WebGLErrorBoundary>
-                  <Room3D visible={isRoomEntered} />
-                </WebGLErrorBoundary>
-                <motion.button
-                  className="fixed top-6 right-6 z-[71] w-12 h-12 flex items-center justify-center rounded-full border border-black/20 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors"
-                  onClick={handleExitRoom}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  data-testid="button-exit-room"
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="4" y1="4" x2="16" y2="16" />
-                    <line x1="16" y1="4" x2="4" y2="16" />
-                  </svg>
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {!isCaseStudyOpen && !isRoomEntered && (
+          {!isCaseStudyOpen && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
               <Header onTextHover={handleTextHover} isDarkText={whiteSectionProgress >= 1 && zoomProgress < 0.5} />
             </div>
           )}
 
-          {!isCaseStudyOpen && !isRoomEntered && (
+          {!isCaseStudyOpen && (
             <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
           )}
 
-          {!isCaseStudyOpen && !isRoomEntered && (
+          {!isCaseStudyOpen && (
             <>
               <AnimatePresence>
                 {isVideoPlaying && (
