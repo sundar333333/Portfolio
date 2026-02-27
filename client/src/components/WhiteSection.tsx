@@ -473,7 +473,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     }}
                   >
                     <div
-                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 py-16 md:py-20 bg-black"
+                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 pt-16 md:pt-20 pb-0 bg-black"
                       style={{ minHeight: '100vh' }}
                     >
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
@@ -612,7 +612,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       </div>
                     </div>
 
-                    <div className="w-full mt-12">
+                    <div className="w-full mt-12 mb-0">
                       <hr className="border-white/20" />
                     </div>
                     </div>
