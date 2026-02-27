@@ -189,8 +189,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     canvasTextureRef.current = tex;
 
     const videoCanvas = document.createElement("canvas");
-    videoCanvas.width = 512;
-    videoCanvas.height = 384;
+    videoCanvas.width = 640;
+    videoCanvas.height = 480;
     videoCanvasRef.current = videoCanvas;
     const videoTex = new THREE.CanvasTexture(videoCanvas);
     videoTextureRef.current = videoTex;
