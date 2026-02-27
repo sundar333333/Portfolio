@@ -36,6 +36,7 @@ export async function registerRoutes(
   };
 
   serveGLB("/room.glb", "room.glb");
+  serveGLB("/myroom.glb", "myroom.glb");
   serveGLB("/ballon_dor.glb", "ballon_dor.glb");
   serveGLB("/corner_shelves.glb", "corner_shelves.glb");
   serveGLB("/table.glb", "table.glb");

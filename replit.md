@@ -106,6 +106,9 @@ Preferred communication style: Simple, everyday language.
 - `start.sh` uses `exec` so the Node process replaces the shell, preventing orphan processes and restart loops
 - Production build requires `NODE_OPTIONS='--max-old-space-size=1024'` (set in `start.sh`)
 - `server/static/room.glb` (26MB) — old compressed room model, used by Scene3D TV environment (not currently rendered)
-- The 3D room feature (Room3D component, quit2.glb) has been removed. The "3D Room" header link remains for future use.
+- `server/static/myroom.glb` (52MB) — user's Blender room from GitHub (`myroom.glb`), compressed from 435MB using dedup→resize 512px→JPEG→meshopt pipeline. Displayed in Room3D viewer after clicking ENTER on the black screen
+- Room3D component loads myroom.glb with meshoptimizer decoder, OrbitControls for rotation/zoom/pan, and apartment environment lighting on white background
+- Room3D preloads when zoom progress > 0.3 via `preloadRoom3D()`
+- The "3D Room" header link remains for future use
 - `server/index.ts` includes a `SIGHUP` handler to prevent the workflow from killing the process
 - After any code changes, run `rm -rf dist` then restart the workflow to trigger a fresh build

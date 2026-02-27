@@ -9,6 +9,7 @@ import { PixelEffect } from "@/components/PixelEffect";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { QASection } from "@/components/QASection";
 import { WhiteSection } from "@/components/WhiteSection";
+import { Room3D, preloadRoom3D } from "@/components/Room3D";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -59,6 +60,9 @@ export default function Home() {
 
   const handleZoomProgress = useCallback((progress: number) => {
     setZoomProgress(progress);
+    if (progress > 0.3) {
+      preloadRoom3D();
+    }
   }, []);
 
   const handleEnter = useCallback(() => {
@@ -114,6 +118,22 @@ export default function Home() {
           <QASection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
 
           <WhiteSection progress={whiteSectionProgress} circleProgress={circleProgress} onCaseStudyChange={handleCaseStudyChange} onZoomProgress={handleZoomProgress} onEnter={handleEnter} isEntered={isEntered} />
+
+          <AnimatePresence>
+            {isEntered && (
+              <motion.div
+                className="fixed inset-0 z-[70] bg-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6 }}
+                data-testid="room-white-screen"
+              >
+                <WebGLErrorBoundary>
+                  <Room3D visible={isEntered} />
+                </WebGLErrorBoundary>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {!isCaseStudyOpen && !isEntered && (
             <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
