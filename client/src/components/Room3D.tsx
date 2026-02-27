@@ -26,19 +26,6 @@ function applyRoomFixes(scene: THREE.Group) {
     if (hideByName.has(mesh.name)) {
       mesh.visible = false;
     }
-
-    if (mesh.name.startsWith("Plane") && mesh.name !== "Plane.006") {
-      mesh.visible = false;
-    }
-
-    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    const allWallMat = mats.every((m: any) => {
-      const mn = (m.name || "").toLowerCase();
-      return mn.includes("plaster wall") || mn.includes("painted plaster");
-    });
-    if (allWallMat) {
-      mesh.visible = false;
-    }
   });
 }
 
