@@ -467,13 +467,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             >
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
-                  opacity: Math.min(1, footerProgress / 0.5),
-                }}
-              />
               {(() => {
                 const slideUp = Math.max(0, (postZoomProgress - 0.5) / 0.5);
                 const translateY = 100 - slideUp * 100;
@@ -634,6 +627,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <hr className="border-white/20" />
                     </div>
                     </div>
+                    <div
+                      className="w-full min-h-[50vh]"
+                      style={{
+                        background: 'linear-gradient(135deg, #1a2a6c 0%, #4a1942 40%, #b21f1f 100%)',
+                      }}
+                    />
                   </div>
                 );
               })()}
