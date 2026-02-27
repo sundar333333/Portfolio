@@ -31,6 +31,7 @@ ln -sf "$WORKSPACE/server/static/quit2.glb" dist/static/quit2.glb
 ln -sf "$WORKSPACE/server/static/ballon_dor.glb" dist/static/ballon_dor.glb
 ln -sf "$WORKSPACE/server/static/corner_shelves.glb" dist/static/corner_shelves.glb
 ln -sf "$WORKSPACE/server/static/table.glb" dist/static/table.glb
+ln -sf "$WORKSPACE/server/static/tribute.mp4" dist/static/tribute.mp4
 
 echo "Starting production server on port 5000..."
 export NODE_ENV=production

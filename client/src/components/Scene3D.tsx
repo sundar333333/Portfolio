@@ -393,17 +393,18 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
           }}
           distanceFactor={0.62}
         >
-          <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden', position: 'relative' }}>
-            <iframe
-              width="340"
-              height="250"
-              src="https://www.youtube.com/embed/ZmKy_fnRM_E?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&loop=1&playlist=ZmKy_fnRM_E"
-              title="YouTube video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-              style={{ border: 'none', pointerEvents: 'none' }}
-              data-testid="tv-youtube-player"
-            />
+          <div style={{ width: '340px', height: '250px', background: '#000', overflow: 'hidden' }}>
+            <video
+              autoPlay
+              loop
+              playsInline
+              width={340}
+              height={250}
+              style={{ width: '340px', height: '250px', objectFit: 'cover', display: 'block' }}
+              data-testid="tv-video-player"
+            >
+              <source src="/static/tribute.mp4" type="video/mp4" />
+            </video>
           </div>
         </Html>
       )}
