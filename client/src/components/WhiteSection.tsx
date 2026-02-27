@@ -621,10 +621,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <h1
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
                         style={{
-                          fontFamily: "'Archivo Black', sans-serif",
-                          fontWeight: 400,
-                          fontSize: '2.5vw',
-                          letterSpacing: '0.05em',
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontWeight: 700,
+                          fontSize: '3.5vw',
+                          letterSpacing: '0.15em',
                           lineHeight: 1,
                         }}
                         data-testid="text-footer-name"
