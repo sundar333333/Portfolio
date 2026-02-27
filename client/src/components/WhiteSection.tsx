@@ -431,10 +431,26 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           )}
           {postZoomProgress > 0.3 && !isEntered && (
             <div 
-              className="fixed inset-0 z-40 bg-black"
+              className="fixed inset-0 z-40 bg-black flex items-center"
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
-            />
+            >
+              <div 
+                className="pl-8 md:pl-16 lg:pl-24 max-w-3xl"
+                style={{
+                  opacity: Math.min(1, Math.max(0, (postZoomProgress - 0.5) / 0.2)),
+                  transform: `translateY(${Math.max(0, 40 - (postZoomProgress - 0.5) * 200)}px)`,
+                }}
+              >
+                <h2
+                  className="text-white font-black text-4xl md:text-6xl lg:text-7xl leading-tight"
+                  style={{ fontFamily: "'Anton', sans-serif" }}
+                  data-testid="text-contact-heading"
+                >
+                  Let's connect and create meaningful digital experiences.
+                </h2>
+              </div>
+            </div>
           )}
         </div>
       )}
