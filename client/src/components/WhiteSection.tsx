@@ -617,7 +617,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative" style={{ height: '50vh', paddingTop: '12vh' }}>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative flex justify-between" style={{ height: '50vh', paddingTop: '12vh' }}>
                       <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
                         <div className="flex flex-col gap-4">
                           <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
@@ -631,6 +631,21 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-reddit">Reddit</a>
                           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
                         </div>
+                      </div>
+                      <div className="flex items-start gap-10 pointer-events-auto" data-testid="footer-right">
+                        <div className="flex flex-col gap-4">
+                          <a href="https://behance.net" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-behance">Behance</a>
+                          <a href="https://dribbble.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-dribbble">Dribbble</a>
+                        </div>
+                        <button
+                          className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          data-testid="button-scroll-top"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M8 14V2M8 2L3 7M8 2L13 7" />
+                          </svg>
+                        </button>
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-12vh' }}>
                         <h1
