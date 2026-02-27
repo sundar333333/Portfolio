@@ -523,35 +523,53 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               }}
             >
               <button
-                className="group relative flex items-center justify-center cursor-pointer w-64 h-64 md:w-80 md:h-80"
+                className="group relative flex items-center justify-center cursor-pointer w-52 h-52 md:w-64 md:h-64"
                 onClick={() => onEnter?.()}
                 data-testid="button-enter"
               >
-                <div className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-white/50 transition-all duration-500 ease-out"
-                  style={{ animation: 'enterSpin 12s linear infinite' }}
-                />
-                <div className="absolute rounded-full border border-white/10 group-hover:border-white/25 transition-all duration-700"
+                <div className="absolute inset-0 rounded-full transition-all duration-300 ease-out group-hover:scale-105 group-active:scale-95"
                   style={{
-                    inset: '-16px',
-                    animation: 'enterSpin 18s linear infinite reverse',
+                    background: 'radial-gradient(circle at 35% 30%, #ff4444 0%, #cc0000 40%, #8b0000 75%, #4a0000 100%)',
+                    boxShadow: '0 8px 32px rgba(200,0,0,0.5), 0 0 60px rgba(255,0,0,0.2), inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,150,150,0.15)',
                   }}
                 />
-                <div className="absolute rounded-full border border-dashed border-white/[0.06] group-hover:border-white/15 transition-all duration-1000"
+                <div className="absolute rounded-full transition-all duration-300 group-hover:opacity-80 opacity-0"
                   style={{
-                    inset: '-36px',
-                    animation: 'enterSpin 25s linear infinite',
+                    inset: '-4px',
+                    background: 'transparent',
+                    boxShadow: '0 0 40px rgba(255,0,0,0.4), 0 0 80px rgba(255,0,0,0.15)',
+                    borderRadius: '9999px',
                   }}
                 />
-                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                  style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%)' }}
+                <div className="absolute rounded-full border-4 border-gray-800/80 transition-all duration-300"
+                  style={{
+                    inset: '-8px',
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.5)',
+                    background: 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)',
+                  }}
                 />
-                <div className="relative flex flex-col items-center gap-3">
-                  <span className="font-anton text-white/90 text-5xl md:text-7xl tracking-[0.3em] uppercase group-hover:tracking-[0.45em] group-hover:text-white transition-all duration-500 ease-out"
-                    style={{ textShadow: '0 0 40px rgba(255,255,255,0.2), 0 0 80px rgba(255,255,255,0.05)' }}
+                <div className="absolute rounded-full"
+                  style={{
+                    inset: '-14px',
+                    border: '2px solid rgba(60,60,60,0.6)',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+                  }}
+                />
+                <div className="absolute rounded-full pointer-events-none"
+                  style={{
+                    top: '12%', left: '20%', width: '35%', height: '25%',
+                    background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 70%)',
+                    transform: 'rotate(-20deg)',
+                    filter: 'blur(4px)',
+                  }}
+                />
+                <div className="relative flex flex-col items-center gap-2 z-10">
+                  <span className="font-anton text-white text-4xl md:text-5xl tracking-[0.25em] uppercase group-hover:tracking-[0.35em] transition-all duration-300 ease-out drop-shadow-lg"
+                    style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 0 20px rgba(255,100,100,0.3)' }}
                   >
                     ENTER
                   </span>
-                  <span className="text-white/25 text-xs md:text-sm tracking-[0.4em] uppercase group-hover:text-white/50 transition-all duration-500">
+                  <span className="text-white/60 text-[10px] md:text-xs tracking-[0.3em] uppercase group-hover:text-white/80 transition-all duration-300 drop-shadow-md">
                     explore
                   </span>
                 </div>
