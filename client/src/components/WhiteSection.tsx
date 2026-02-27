@@ -623,24 +623,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       </div>
                     </div>
 
-                    <div className="w-full mt-24 mb-8">
-                      <hr className="border-white/20" />
-                    </div>
-                    <div className="w-full pb-4 overflow-hidden" data-testid="text-footer-name">
-                      <h1
-                        className="text-white font-black leading-none select-none whitespace-nowrap text-center"
-                        style={{
-                          fontFamily: "'Anton', sans-serif",
-                          fontSize: '12vw',
-                          letterSpacing: '0.15em',
-                          lineHeight: 0.9,
-                          transform: 'scaleX(1.15)',
-                          transformOrigin: 'center',
-                        }}
-                      >
-                        SUNDAR RAM
-                      </h1>
-                    </div>
                     </div>
                   </div>
                 );
