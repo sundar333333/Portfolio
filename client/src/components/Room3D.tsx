@@ -1,13 +1,10 @@
 import { Suspense, useRef, useState, useEffect, useCallback } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
-import { MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
 
 function RoomModel({ onModelLoaded }: { onModelLoaded: (center: THREE.Vector3, size: THREE.Vector3) => void }) {
-  const { scene } = useGLTF("/static/room.glb", true, true, (loader) => {
-    loader.setMeshoptDecoder(MeshoptDecoder);
-  });
+  const { scene } = useGLTF("/static/room.glb", false, true);
 
   useEffect(() => {
     if (scene) {
