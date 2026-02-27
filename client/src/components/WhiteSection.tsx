@@ -84,7 +84,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       const section = (e as CustomEvent).detail?.section;
       if (!section) return;
 
-      const freeScrollThreshold = 800;
+      const freeScrollThreshold = 300;
       const zoomThreshold = 2000;
       const postZoomThreshold = 4000;
 
@@ -190,9 +190,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   useEffect(() => {
     if (!isWorksScreenVisible || openCaseStudy !== null) return;
     
-    const freeScrollThreshold = 800; // Free scroll before zoom starts
-    const zoomThreshold = 2000; // Zoom scroll distance
-    const postZoomThreshold = 4000; // Scroll distance after zoom for contact section
+    const freeScrollThreshold = 300;
+    const zoomThreshold = 2000;
+    const postZoomThreshold = 4000;
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -206,7 +206,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       
       e.preventDefault();
       
-      zoomScrollAccumulator.current += e.deltaY;
+      const clampedDelta = Math.max(-80, Math.min(80, e.deltaY));
+      zoomScrollAccumulator.current += clampedDelta;
       zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
       
       const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
