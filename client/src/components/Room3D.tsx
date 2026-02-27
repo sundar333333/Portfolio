@@ -81,6 +81,8 @@ export default function Room3D({ isVisible }: Room3DProps) {
       className="fixed inset-0 z-30 bg-white"
       style={{ width: '100vw', height: '100vh' }}
       data-testid="room-3d-container"
+      onWheelCapture={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
     >
       {!loaded && <LoadingOverlay />}
       <Canvas

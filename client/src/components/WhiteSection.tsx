@@ -200,6 +200,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
       if (isNavigating.current) return;
+      if (isEntered) return;
       
       const isScrollingUp = e.deltaY < 0;
       if (isScrollingUp && zoomScrollAccumulator.current <= 0) {
@@ -244,7 +245,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       window.removeEventListener('wheel', handleWheel);
       cancelAnimationFrame(smoothAnimFrame.current);
     };
-  }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
+  }, [isWorksScreenVisible, openCaseStudy, onZoomProgress, isEntered]);
 
   useEffect(() => {
     let animationId: number;
