@@ -515,7 +515,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           )}
           {zoomProgress >= 0.85 && !isEntered && postZoomProgress < 0.5 && (
             <div
-              className="flex flex-col items-center gap-8"
+              className="flex flex-col items-center gap-12"
               style={{
                 opacity: postZoomProgress > 0.3 
                   ? Math.max(0, 1 - (postZoomProgress - 0.3) / 0.2)
@@ -529,8 +529,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               >
                 <div className="absolute inset-0 rounded-full transition-all duration-300 ease-out group-hover:scale-105 group-active:scale-95"
                   style={{
-                    background: 'radial-gradient(circle at 35% 30%, #ff4444 0%, #cc0000 40%, #8b0000 75%, #4a0000 100%)',
-                    boxShadow: '0 8px 32px rgba(200,0,0,0.5), 0 0 60px rgba(255,0,0,0.2), inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,150,150,0.15)',
+                    background: 'radial-gradient(circle at 35% 30%, #ff3333 0%, #e60000 35%, #cc0000 55%, #990000 80%, #660000 100%)',
+                    boxShadow: '0 8px 40px rgba(230,0,0,0.6), 0 0 80px rgba(255,0,0,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), inset 0 8px 16px rgba(255,120,120,0.2)',
                   }}
                 />
                 <div className="absolute rounded-full transition-all duration-300 group-hover:opacity-80 opacity-0"
@@ -574,7 +574,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                   </span>
                 </div>
               </button>
-              <p className="text-white/30 text-xs md:text-sm tracking-wider text-center"
+              <p className="text-white/30 text-xs md:text-sm tracking-wider text-center mt-6"
                 style={{ animation: 'enterFadeInUp 1s ease-out 0.5s both' }}
               >
                 Click enter to explore the 3D room or scroll to continue
