@@ -588,6 +588,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
+  const lastScrollOffset = useRef(0);
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -604,6 +605,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useFrame(() => {
     const offset = scroll.offset;
+
+    if (isVideoPlaying && Math.abs(offset - lastScrollOffset.current) > 0.002) {
+      onTVClick();
+    }
+    lastScrollOffset.current = offset;
     
     const startZ = 1.8;
     const screenZ = 0.3;
