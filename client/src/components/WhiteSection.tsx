@@ -100,7 +100,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
     
     const freeScrollThreshold = 800; // Free scroll before zoom starts
     const zoomThreshold = 2000; // Zoom scroll distance
-    const postZoomThreshold = 2500; // Scroll distance after zoom for contact section
+    const postZoomThreshold = 4000; // Scroll distance after zoom for contact section
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
     
     const handleWheel = (e: WheelEvent) => {
@@ -450,25 +450,114 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           )}
           {postZoomProgress > 0.3 && !isEntered && (
             <div 
-              className="fixed inset-0 z-40 bg-black flex items-center"
+              className="fixed inset-0 z-40 bg-black overflow-hidden"
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             >
-              <div 
-                className="pl-8 md:pl-16 lg:pl-24 max-w-3xl"
-                style={{
-                  opacity: Math.min(1, Math.max(0, (postZoomProgress - 0.5) / 0.2)),
-                  transform: `translateY(${Math.max(0, 40 - (postZoomProgress - 0.5) * 200)}px)`,
-                }}
-              >
-                <h2
-                  className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight"
-                  style={{ fontFamily: "'Anton', sans-serif" }}
-                  data-testid="text-contact-heading"
-                >
-                  Let's connect and create<br />meaningful digital experiences.
-                </h2>
-              </div>
+              {(() => {
+                const headingVisible = Math.min(1, Math.max(0, (postZoomProgress - 0.5) / 0.2));
+                const contactPhase = Math.max(0, (postZoomProgress - 0.75) / 0.25);
+                const headingShift = contactPhase * 120;
+                const mailOpacity = Math.min(1, Math.max(0, contactPhase * 2));
+                const formOpacity = Math.min(1, Math.max(0, (contactPhase - 0.2) * 1.5));
+                
+                return (
+                  <>
+                    <div 
+                      className="absolute left-8 md:left-16 lg:left-24 max-w-3xl"
+                      style={{
+                        opacity: headingVisible,
+                        top: `calc(50% - ${headingShift}px)`,
+                        transform: `translateY(-50%)`,
+                        transition: 'top 0.3s ease-out',
+                      }}
+                    >
+                      <h2
+                        className="text-white font-black text-3xl md:text-5xl lg:text-5xl leading-tight"
+                        style={{ fontFamily: "'Anton', sans-serif" }}
+                        data-testid="text-contact-heading"
+                      >
+                        Let's connect and create<br />meaningful digital experiences.
+                      </h2>
+                    </div>
+                    
+                    {contactPhase > 0 && (
+                      <div
+                        className="absolute left-8 md:left-16 lg:left-24 bottom-12 md:bottom-16"
+                        style={{ opacity: mailOpacity }}
+                      >
+                        <span className="text-white/50 text-sm md:text-base">Mail : </span>
+                        <a
+                          href="mailto:leosr1033@gmail.com"
+                          className="group relative text-white text-sm md:text-base pointer-events-auto"
+                          data-testid="link-email"
+                        >
+                          leosr1033@gmail.com
+                          <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
+                        </a>
+                      </div>
+                    )}
+                    
+                    {contactPhase > 0.2 && (
+                      <div
+                        className="absolute right-8 md:right-16 lg:right-24 bottom-12 md:bottom-16 top-[35%] md:top-[30%] w-[90%] max-w-md pointer-events-auto"
+                        style={{ 
+                          opacity: formOpacity,
+                          transform: `translateY(${Math.max(0, 30 - formOpacity * 30)}px)`,
+                        }}
+                        data-testid="contact-form"
+                      >
+                        <h3 className="text-white font-bold text-2xl md:text-3xl mb-8" style={{ fontFamily: "'Anton', sans-serif" }}>
+                          Contact
+                        </h3>
+                        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                          <div className="flex gap-4">
+                            <div className="flex-1">
+                              <label className="text-white/60 text-sm block mb-2">First Name</label>
+                              <input
+                                type="text"
+                                className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
+                                data-testid="input-first-name"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-white/60 text-sm block mb-2">Last Name</label>
+                              <input
+                                type="text"
+                                className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
+                                data-testid="input-last-name"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-white/60 text-sm block mb-2">Email *</label>
+                            <input
+                              type="email"
+                              className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
+                              data-testid="input-email"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-white/60 text-sm block mb-2">Write a message</label>
+                            <textarea
+                              rows={3}
+                              className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors resize-none"
+                              data-testid="input-message"
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className="px-8 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors text-sm tracking-wider"
+                            data-testid="button-submit-contact"
+                          >
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
