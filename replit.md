@@ -54,6 +54,8 @@ Preferred communication style: Simple, everyday language.
 - Serves static files in production from `dist/public`
 - Vite dev server integration for development with HMR
 - Session support ready via connect-pg-simple (prepared for future auth)
+- `POST /api/contact` endpoint sends portfolio contact form submissions to leosr1033@gmail.com via Gmail API (Replit connector integration)
+- Gmail client in `server/gmail.ts` handles OAuth token refresh and Gmail API authentication
 
 **Storage Layer**
 - Abstract `IStorage` interface in `server/storage.ts`

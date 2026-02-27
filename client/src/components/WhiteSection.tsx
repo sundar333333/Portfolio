@@ -54,6 +54,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const [openCaseStudy, setOpenCaseStudy] = useState<string | null>(null);
   const [zoomProgress, setZoomProgress] = useState(0);
   const [postZoomProgress, setPostZoomProgress] = useState(0);
+  const [contactForm, setContactForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const targetZoom = useRef(0);
   const targetPostZoom = useRef(0);
   const smoothAnimFrame = useRef<number>(0);
@@ -520,12 +522,33 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         <h3 className="text-white font-bold text-2xl md:text-3xl mb-8" style={{ fontFamily: "'Anton', sans-serif" }}>
                           Contact
                         </h3>
-                        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                        <form onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!contactForm.email || !contactForm.message) return;
+                          setFormStatus('sending');
+                          try {
+                            const res = await fetch('/api/contact', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(contactForm),
+                            });
+                            if (res.ok) {
+                              setFormStatus('sent');
+                              setContactForm({ firstName: '', lastName: '', email: '', message: '' });
+                            } else {
+                              setFormStatus('error');
+                            }
+                          } catch {
+                            setFormStatus('error');
+                          }
+                        }} className="space-y-6">
                           <div className="flex gap-4">
                             <div className="flex-1">
                               <label className="text-white/60 text-sm block mb-2">First Name</label>
                               <input
                                 type="text"
+                                value={contactForm.firstName}
+                                onChange={(e) => setContactForm(f => ({ ...f, firstName: e.target.value }))}
                                 className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
                                 data-testid="input-first-name"
                               />
@@ -534,6 +557,8 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                               <label className="text-white/60 text-sm block mb-2">Last Name</label>
                               <input
                                 type="text"
+                                value={contactForm.lastName}
+                                onChange={(e) => setContactForm(f => ({ ...f, lastName: e.target.value }))}
                                 className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
                                 data-testid="input-last-name"
                               />
@@ -543,6 +568,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                             <label className="text-white/60 text-sm block mb-2">Email *</label>
                             <input
                               type="email"
+                              required
+                              value={contactForm.email}
+                              onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))}
                               className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
                               data-testid="input-email"
                             />
@@ -551,16 +579,26 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                             <label className="text-white/60 text-sm block mb-2">Write a message</label>
                             <textarea
                               rows={3}
+                              required
+                              value={contactForm.message}
+                              onChange={(e) => setContactForm(f => ({ ...f, message: e.target.value }))}
                               className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors resize-none"
                               data-testid="input-message"
                             />
                           </div>
+                          {formStatus === 'sent' && (
+                            <p className="text-green-400 text-sm" data-testid="text-form-success">Message sent successfully!</p>
+                          )}
+                          {formStatus === 'error' && (
+                            <p className="text-red-400 text-sm" data-testid="text-form-error">Failed to send. Please try again.</p>
+                          )}
                           <button
                             type="submit"
-                            className="px-8 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors text-sm tracking-wider"
+                            disabled={formStatus === 'sending'}
+                            className="px-8 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors text-sm tracking-wider disabled:opacity-50"
                             data-testid="button-submit-contact"
                           >
-                            Submit
+                            {formStatus === 'sending' ? 'Sending...' : 'Submit'}
                           </button>
                         </form>
                       </div>
