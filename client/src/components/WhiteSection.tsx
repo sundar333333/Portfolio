@@ -619,7 +619,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       <h1
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center"
                         style={{
-                          fontFamily: "'Archivo Black', sans-serif",
+                          fontFamily: "'Playfair Display', serif",
+                          fontWeight: 900,
+                          fontStyle: 'italic',
                           fontSize: '12vw',
                           letterSpacing: '0',
                           lineHeight: 0.9,
