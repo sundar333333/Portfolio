@@ -463,7 +463,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               {(() => {
                 const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
                 const scrollPast = Math.min(1, Math.max(0, (postZoomProgress - 0.7) / 0.3));
-                const translateY = 100 - slideUp * 100 - scrollPast * 20;
+                const translateY = 100 - slideUp * 100 - scrollPast * 55;
                 
                 return (
                   <div
