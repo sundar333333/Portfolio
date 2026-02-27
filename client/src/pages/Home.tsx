@@ -172,6 +172,46 @@ export default function Home() {
             </div>
           )}
 
+          {!isCaseStudyOpen && !isEntered && (() => {
+            const phase1Weight = 0.35;
+            const phase2Weight = 0.25;
+            const phase3Weight = 0.25;
+            const phase4Weight = 0.15;
+            const sceneOffset = showWorkSection ? (scrollProgress * 0.9 + whiteSectionProgress * 0.1) : 0;
+            const totalProgress =
+              Math.min(1, sceneOffset) * phase1Weight +
+              circleProgress * phase2Weight +
+              zoomProgress * phase3Weight +
+              postZoomProgress * phase4Weight;
+            const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
+            const trackColor = isDark ? 'bg-black/10' : 'bg-white/10';
+            const thumbColor = isDark ? 'bg-black/50' : 'bg-white/50';
+            const dotColor = isDark ? 'bg-black/30' : 'bg-white/30';
+            const activeDotColor = isDark ? 'bg-black/70' : 'bg-white/70';
+            const sections = [0, 0.35, 0.60, 0.85];
+            return (
+              <div
+                className="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-0"
+                data-testid="scroll-tracker"
+              >
+                <div className={`relative w-[3px] h-[100px] rounded-full ${trackColor}`}>
+                  <motion.div
+                    className={`absolute top-0 left-0 w-full rounded-full ${thumbColor}`}
+                    style={{ height: `${Math.max(8, totalProgress * 100)}%` }}
+                    transition={{ duration: 0.15, ease: "linear" }}
+                  />
+                  {sections.map((pos, i) => (
+                    <div
+                      key={i}
+                      className={`absolute left-1/2 -translate-x-1/2 w-[7px] h-[7px] rounded-full transition-all duration-300 ${totalProgress >= pos ? activeDotColor : dotColor}`}
+                      style={{ top: `${pos * 100}%`, marginTop: '-3px' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {!isCaseStudyOpen && !isEntered && (
             <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
           )}
