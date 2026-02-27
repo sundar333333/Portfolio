@@ -399,11 +399,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               Back
             </button>
           )}
-          {zoomProgress >= 0.85 && !isEntered && postZoomProgress === 0 && (
+          {zoomProgress >= 0.85 && !isEntered && postZoomProgress < 0.5 && (
             <button
               className="group relative flex items-center justify-center cursor-pointer"
               style={{
-                opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
+                opacity: postZoomProgress > 0.3 
+                  ? Math.max(0, 1 - (postZoomProgress - 0.3) / 0.2)
+                  : Math.min(1, (zoomProgress - 0.85) / 0.15),
               }}
               onClick={() => onEnter?.()}
               data-testid="button-enter"
@@ -427,10 +429,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               </div>
             </button>
           )}
-          {postZoomProgress > 0 && !isEntered && (
+          {postZoomProgress > 0.3 && !isEntered && (
             <div 
               className="fixed inset-0 z-40 bg-black"
-              style={{ opacity: Math.min(1, postZoomProgress * 3) }}
+              style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             />
           )}
