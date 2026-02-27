@@ -24,12 +24,7 @@ function applyRoomFixes(scene: THREE.Group) {
     mesh.receiveShadow = true;
 
     if (wallMeshNames.has(mesh.name)) {
-      mesh.material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color("#111111"),
-        side: THREE.DoubleSide,
-        roughness: 0.9,
-        metalness: 0.0,
-      });
+      mesh.visible = false;
     }
   });
 }
