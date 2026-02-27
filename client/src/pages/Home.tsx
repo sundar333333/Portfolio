@@ -23,8 +23,18 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: Rea
   }
 }
 
+function hasWebGL(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [webglSupported] = useState(() => hasWebGL());
   const [hoveredText, setHoveredText] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -101,17 +111,24 @@ export default function Home() {
         <>
           <CustomCursor isDark={whiteSectionProgress > 0.5 && zoomProgress < 0.5} />
           
-          <WebGLErrorBoundary>
-            <Scene3D
-              hoveredText={hoveredText}
-              onTVClick={handleTVClick}
-              isVideoPlaying={isVideoPlaying}
-              onWorkSectionChange={handleWorkSectionChange}
-              onScrollProgress={handleScrollProgress}
-              onWhiteSectionProgress={handleWhiteSectionProgress}
-              onCircleProgress={handleCircleProgress}
-            />
-          </WebGLErrorBoundary>
+          {webglSupported && (
+            <WebGLErrorBoundary>
+              <Scene3D
+                hoveredText={hoveredText}
+                onTVClick={handleTVClick}
+                isVideoPlaying={isVideoPlaying}
+                onWorkSectionChange={handleWorkSectionChange}
+                onScrollProgress={handleScrollProgress}
+                onWhiteSectionProgress={handleWhiteSectionProgress}
+                onCircleProgress={handleCircleProgress}
+              />
+            </WebGLErrorBoundary>
+          )}
+          {!webglSupported && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black z-10">
+              <p className="text-white/60 text-sm text-center px-8">Open this site in a browser tab for the full 3D experience</p>
+            </div>
+          )}
 
           <PixelEffect visible={showWorkSection && scrollProgress < 0.9} />
           <AboutHeroSection visible={showWorkSection && scrollProgress < 0.9} scrollProgress={scrollProgress} />
@@ -128,9 +145,15 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 data-testid="room-white-screen"
               >
-                <WebGLErrorBoundary>
-                  <Room3D visible={isEntered} />
-                </WebGLErrorBoundary>
+                {webglSupported ? (
+                  <WebGLErrorBoundary>
+                    <Room3D visible={isEntered} />
+                  </WebGLErrorBoundary>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-black/40 text-sm">Open in a browser tab to view the 3D room</p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
