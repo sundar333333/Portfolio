@@ -1,6 +1,6 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
+import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -401,9 +401,37 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, visible, glitchIntens
           clearcoat={1}
           clearcoatRoughness={0.03}
           transparent
-          opacity={0.15}
+          opacity={isVideoPlaying ? 0 : 0.15}
         />
       </mesh>
+
+      {isVideoPlaying && (
+        <Html
+          position={[-0.08, 0.02, 0.30]}
+          transform
+          occlude={false}
+          style={{
+            width: '320px',
+            height: '240px',
+            pointerEvents: 'auto',
+          }}
+          distanceFactor={0.62}
+        >
+          <div style={{ width: '320px', height: '240px', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+            <iframe
+              width="320"
+              height="240"
+              src="https://www.youtube.com/embed/ZmKy_fnRM_E?autoplay=1&mute=0&controls=1&rel=0"
+              title="YouTube video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ border: 'none' }}
+              data-testid="tv-youtube-player"
+            />
+          </div>
+        </Html>
+      )}
 
       <group position={[0.32, 0, 0.28]}>
         <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
