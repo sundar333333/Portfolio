@@ -615,16 +615,14 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 py-20 flex items-center justify-center" style={{ minHeight: '60vh' }}>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 pt-10 pb-24 flex items-center justify-center" style={{ minHeight: '40vh' }}>
                       <h1
                         className="text-white font-black leading-none select-none whitespace-nowrap text-center"
                         style={{
-                          fontFamily: "'Anton', sans-serif",
+                          fontFamily: "'Archivo Black', sans-serif",
                           fontSize: '12vw',
-                          letterSpacing: '0.15em',
+                          letterSpacing: '0',
                           lineHeight: 0.9,
-                          transform: 'scaleX(1.15)',
-                          transformOrigin: 'center',
                         }}
                         data-testid="text-footer-name"
                       >
