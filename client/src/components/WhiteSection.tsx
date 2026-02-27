@@ -463,7 +463,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
               {(() => {
                 const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
                 const scrollPast = Math.min(1, Math.max(0, (postZoomProgress - 0.7) / 0.3));
-                const translateY = 100 - slideUp * 100 - scrollPast * 30;
+                const translateY = 100 - slideUp * 100 - scrollPast * 20;
                 
                 return (
                   <div
@@ -617,15 +617,15 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 pt-10 pb-24 flex items-center justify-center" style={{ minHeight: '40vh' }}>
+                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 py-10 flex items-center justify-center">
                       <h1
-                        className="text-white font-black leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out group/sr"
+                        className="text-white font-black leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out"
                         style={{
                           fontFamily: "'Archivo Black', sans-serif",
                           fontWeight: 400,
-                          fontSize: '9vw',
+                          fontSize: '2.5vw',
                           letterSpacing: '0.05em',
-                          lineHeight: 0.9,
+                          lineHeight: 1,
                         }}
                         data-testid="text-footer-name"
                         onMouseEnter={(e) => {
@@ -641,7 +641,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           e.currentTarget.style.backgroundClip = 'unset';
                         }}
                       >
-                        SR
+                        SUNDAR RAM
                       </h1>
                     </div>
                   </div>
