@@ -233,6 +233,21 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     }
   }, [isMuted]);
 
+  useEffect(() => {
+    const handleWheel = () => {
+      if (videoElRef.current && !videoElRef.current.paused) {
+        videoElRef.current.muted = true;
+        videoElRef.current.pause();
+      }
+    };
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchmove", handleWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchmove", handleWheel);
+    };
+  }, []);
+
   useFrame((state) => {
     if (!visible) return;
     
