@@ -90,13 +90,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
       let accTarget = 0;
       if (section === 'reset') {
-        isNavigating.current = false;
-        zoomScrollAccumulator.current = 0;
-        targetZoom.current = 0;
-        targetPostZoom.current = 0;
-        setZoomProgress(0);
-        setPostZoomProgress(0);
-        return;
+        if (zoomScrollAccumulator.current <= 0) {
+          isNavigating.current = false;
+          return;
+        }
+        accTarget = 0;
+      } else if (section === 'works') {
+        accTarget = 0;
       } else if (section === 'room') {
         accTarget = freeScrollThreshold + zoomThreshold;
       } else if (section === 'contact') {

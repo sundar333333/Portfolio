@@ -645,7 +645,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           }, 100);
         }
         if (section === 'works') {
-          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
         }
         if (section === 'landing' || section === 'about') {
           window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
@@ -675,7 +675,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
             }, 200);
           }
           if (section === 'works') {
-            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
           }
           if (section === 'landing' || section === 'about') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
