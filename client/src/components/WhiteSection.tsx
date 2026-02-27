@@ -663,7 +663,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <span className="text-white/30 text-[10px] uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Inter', sans-serif" }}>Back to top</span>
                         </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-8vh' }}>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-14vh' }}>
                         <h1
                           className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out pointer-events-auto"
                           style={{
