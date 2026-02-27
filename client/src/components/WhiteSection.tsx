@@ -373,6 +373,46 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         </div>
       )}
 
+      {zoomProgress > 0.3 && !openCaseStudy && (
+        <div 
+          className="fixed inset-0 z-30 pointer-events-auto flex items-center justify-center"
+          style={{
+            backgroundColor: '#000',
+            opacity: Math.min(1, (zoomProgress - 0.3) / 0.4),
+            transition: 'opacity 0.3s ease-out',
+          }}
+          data-testid="black-screen-section"
+        >
+          {zoomProgress >= 0.85 && (
+            <button
+              className="group relative flex items-center justify-center cursor-pointer"
+              style={{
+                opacity: Math.min(1, (zoomProgress - 0.85) / 0.15),
+              }}
+              onClick={() => window.open('https://sundarram.replit.app', '_blank')}
+              data-testid="button-enter"
+            >
+              <div className="absolute w-44 h-44 md:w-56 md:h-56 rounded-full border border-white/10 group-hover:border-white/30 group-hover:scale-110 transition-all duration-700 ease-out" />
+              <div className="absolute w-52 h-52 md:w-64 md:h-64 rounded-full border border-white/5 group-hover:border-white/15 group-hover:scale-105 transition-all duration-1000 ease-out"
+                style={{ animation: 'pulseRing 3s ease-in-out infinite' }}
+              />
+              <div className="absolute w-60 h-60 md:w-72 md:h-72 rounded-full border border-white/[0.03] group-hover:border-white/10 group-hover:scale-105 transition-all duration-1000 ease-out"
+                style={{ animation: 'pulseRing 4s ease-in-out infinite 1s' }}
+              />
+              <div className="relative flex flex-col items-center gap-2">
+                <span className="font-anton text-white/90 text-3xl md:text-5xl tracking-[0.35em] uppercase group-hover:tracking-[0.5em] group-hover:text-white transition-all duration-500 ease-out"
+                  style={{ textShadow: '0 0 30px rgba(255,255,255,0.15)' }}
+                >
+                  ENTER
+                </span>
+                <span className="text-white/20 text-[10px] md:text-xs tracking-[0.3em] uppercase group-hover:text-white/40 transition-all duration-500">
+                  explore
+                </span>
+              </div>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Case Study Viewer */}
       {openCaseStudy && (
