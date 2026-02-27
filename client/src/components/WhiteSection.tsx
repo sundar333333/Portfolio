@@ -65,6 +65,17 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const zoomScrollAccumulator = useRef(0);
+
+  const handleBackToTop = useCallback(() => {
+    zoomScrollAccumulator.current = 0;
+    targetZoom.current = 0;
+    targetPostZoom.current = 0;
+    setZoomProgress(0);
+    setPostZoomProgress(0);
+    onZoomProgress?.(0);
+    onPostZoomProgress?.(0);
+  }, [onZoomProgress, onPostZoomProgress]);
+
   const isFullyExpanded = circleProgress >= 1;
   const isWorksScreenVisible = circleProgress >= 1 && progress >= 1;
   
@@ -620,27 +631,27 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                     <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative flex justify-between" style={{ height: '50vh', paddingTop: '12vh' }}>
                       <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
                         <div className="flex flex-col gap-4">
-                          <a href="#about" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me</a>
-                          <a href="#works" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works</a>
-                          <a href="#3droom" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room</a>
+                          <a href="#about" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="#works" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="#3droom" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
                         </div>
                         <div className="flex flex-col gap-4">
-                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-twitter">Twitter</a>
-                          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-github">GitHub</a>
-                          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-linkedin">LinkedIn</a>
-                          <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-reddit">Reddit</a>
-                          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube</a>
+                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-twitter">Twitter<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-github">GitHub<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-linkedin">LinkedIn<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-reddit">Reddit<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
                         </div>
                       </div>
                       <div className="flex items-start gap-6 pointer-events-auto" data-testid="footer-right">
                         <div className="flex flex-col gap-4 mr-4">
-                          <a href="https://behance.net" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-behance">Behance</a>
-                          <a href="https://dribbble.com" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-sm transition-colors duration-300" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-dribbble">Dribbble</a>
+                          <a href="https://behance.net" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-behance">Behance<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                          <a href="https://dribbble.com" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-dribbble">Dribbble<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
                         </div>
                         <div className="flex flex-col items-center gap-2">
                           <button
                             className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
-                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            onClick={handleBackToTop}
                             data-testid="button-scroll-top"
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
