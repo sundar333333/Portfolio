@@ -173,77 +173,65 @@ export default function Home() {
           )}
 
           {!isCaseStudyOpen && !isEntered && (() => {
-            const phase1Weight = 0.35;
-            const phase2Weight = 0.25;
-            const phase3Weight = 0.25;
-            const phase4Weight = 0.15;
             const sceneOffset = showWorkSection ? (scrollProgress * 0.9 + whiteSectionProgress * 0.1) : 0;
             const totalProgress =
-              Math.min(1, sceneOffset) * phase1Weight +
-              circleProgress * phase2Weight +
-              zoomProgress * phase3Weight +
-              postZoomProgress * phase4Weight;
+              Math.min(1, sceneOffset) * 0.35 +
+              circleProgress * 0.25 +
+              zoomProgress * 0.25 +
+              postZoomProgress * 0.15;
             const isDark = whiteSectionProgress > 0.5 && zoomProgress < 0.5;
-            const labels = ['Home', 'About', 'Works', 'Contact'];
+            const c = isDark ? '0,0,0' : '255,255,255';
+            const trackH = 220;
+            const thumbY = totalProgress * trackH;
+            const nums = ['01', '02', '03', '04'];
             const positions = [0, 0.33, 0.60, 0.85];
-            const baseColor = isDark ? '0,0,0' : '255,255,255';
             return (
-              <div
-                className="fixed right-6 top-1/2 -translate-y-1/2 z-40"
-                data-testid="scroll-tracker"
-              >
-                <div className="flex flex-col items-end gap-0">
+              <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40" data-testid="scroll-tracker">
+                <div className="relative" style={{ height: `${trackH}px`, width: '40px' }}>
+                  <div className="absolute right-[4px] top-0 bottom-0" style={{ width: '1px', backgroundColor: `rgba(${c},0.1)` }} />
+                  <div
+                    className="absolute right-0 transition-all duration-200 ease-out"
+                    style={{
+                      top: `${thumbY}px`,
+                      width: '9px',
+                      height: '9px',
+                      borderRadius: '50%',
+                      border: `1.5px solid rgba(${c},0.8)`,
+                      backgroundColor: `rgba(${c},0.15)`,
+                      transform: 'translateY(-50%)',
+                    }}
+                  />
                   {positions.map((pos, i) => {
-                    const isActive = totalProgress >= pos;
                     const isCurrent = i === 0 ? totalProgress < positions[1] :
                       i < positions.length - 1 ? totalProgress >= pos && totalProgress < positions[i + 1] :
                       totalProgress >= pos;
-                    const segmentProgress = i < positions.length - 1
-                      ? Math.max(0, Math.min(1, (totalProgress - pos) / (positions[i + 1] - pos)))
-                      : totalProgress >= pos ? 1 : 0;
+                    const y = pos * trackH;
                     return (
-                      <div key={i} className="flex flex-col items-end">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="text-[10px] font-medium tracking-[0.15em] uppercase whitespace-nowrap transition-all duration-500"
-                            style={{
-                              fontFamily: "'Inter', sans-serif",
-                              color: isCurrent ? `rgba(${baseColor},0.7)` : `rgba(${baseColor},0.2)`,
-                              transform: isCurrent ? 'translateX(0)' : 'translateX(4px)',
-                            }}
-                          >
-                            {labels[i]}
-                          </span>
-                          <div
-                            className="rounded-full transition-all duration-400 ease-out"
-                            style={{
-                              width: isCurrent ? '12px' : '6px',
-                              height: isCurrent ? '12px' : '6px',
-                              backgroundColor: isActive ? `rgba(${baseColor},${isCurrent ? 0.8 : 0.35})` : `rgba(${baseColor},0.12)`,
-                              boxShadow: isCurrent ? `0 0 8px rgba(${baseColor},0.3)` : 'none',
-                            }}
-                          />
-                        </div>
-                        {i < positions.length - 1 && (
-                          <div className="flex justify-end" style={{ width: '6px', marginRight: isCurrent ? '3px' : '0px' }}>
-                            <div
-                              className="relative overflow-hidden rounded-full my-1"
-                              style={{
-                                width: '2px',
-                                height: '32px',
-                                backgroundColor: `rgba(${baseColor},0.08)`,
-                              }}
-                            >
-                              <div
-                                className="absolute top-0 left-0 w-full rounded-full transition-all duration-300 ease-out"
-                                style={{
-                                  height: `${segmentProgress * 100}%`,
-                                  backgroundColor: `rgba(${baseColor},0.35)`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
+                      <div
+                        key={i}
+                        className="absolute flex items-center gap-2 transition-all duration-400"
+                        style={{ top: `${y}px`, right: '14px', transform: 'translateY(-50%)' }}
+                      >
+                        <span
+                          className="transition-all duration-400"
+                          style={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: '9px',
+                            fontWeight: isCurrent ? 600 : 400,
+                            letterSpacing: '0.12em',
+                            color: isCurrent ? `rgba(${c},0.7)` : `rgba(${c},0.18)`,
+                          }}
+                        >
+                          {nums[i]}
+                        </span>
+                        <div
+                          className="transition-all duration-300"
+                          style={{
+                            width: isCurrent ? '14px' : '6px',
+                            height: '1px',
+                            backgroundColor: isCurrent ? `rgba(${c},0.6)` : `rgba(${c},0.15)`,
+                          }}
+                        />
                       </div>
                     );
                   })}
