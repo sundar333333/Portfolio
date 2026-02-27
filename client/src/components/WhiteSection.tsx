@@ -623,6 +623,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                       </div>
                     </div>
 
+                    <div className="w-full mt-12">
+                      <hr className="border-white/20" />
+                    </div>
                     </div>
                   </div>
                 );
