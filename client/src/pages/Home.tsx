@@ -176,6 +176,21 @@ export default function Home() {
                 )}
               </AnimatePresence>
 
+              <motion.div
+                className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: scrollProgress < 0.02 ? 1 : 0 }}
+                transition={{ delay: 2.5, duration: 0.5 }}
+                data-testid="scroll-indicator"
+              >
+                <span className="text-white/30 text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+                <motion.div
+                  className="w-[1px] h-6 bg-white/20"
+                  animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.div>
+
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-4 w-full max-w-md">
                 <motion.div
                   className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-white/40 text-xs text-center"
