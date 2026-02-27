@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { X } from "lucide-react";
+
+const Room3D = lazy(() => import("./Room3D"));
 import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
@@ -501,17 +503,29 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           data-testid="black-screen-section"
         >
           {isEntered && (
-            <button
-              className="fixed top-6 left-6 z-40 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm"
-              onClick={() => onBack?.()}
-              data-testid="button-back-home"
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="14" y1="10" x2="6" y2="10" />
-                <polyline points="10,4 4,10 10,16" />
-              </svg>
-              Back
-            </button>
+            <>
+              <Suspense fallback={null}>
+                <Room3D isVisible={true} />
+              </Suspense>
+              <button
+                className="fixed top-6 left-6 z-40 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm shadow-md"
+                onClick={() => onBack?.()}
+                data-testid="button-back-home"
+              >
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="14" y1="10" x2="6" y2="10" />
+                  <polyline points="10,4 4,10 10,16" />
+                </svg>
+                Back
+              </button>
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 text-black/30 text-xs tracking-wider">
+                <span>Drag to rotate</span>
+                <span>•</span>
+                <span>Scroll to zoom</span>
+                <span>•</span>
+                <span>Right-click to pan</span>
+              </div>
+            </>
           )}
           {zoomProgress >= 0.85 && !isEntered && postZoomProgress < 0.5 && (
             <div
