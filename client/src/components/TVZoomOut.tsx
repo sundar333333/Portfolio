@@ -106,7 +106,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   }, []);
 
   useFrame((state) => {
-    if (textureRef.current) {
+    if (!videoStarted && textureRef.current) {
       const data = textureRef.current.image.data as Uint8Array;
       for (let i = 0; i < data.length; i += 4) {
         const noise = Math.random() * 255;
