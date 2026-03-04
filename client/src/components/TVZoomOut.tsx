@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, Environment, ContactShadows } from "@react-three/drei";
-import { useRef, useEffect, useMemo, Suspense } from "react";
+import { useRef, useEffect, useMemo, Suspense, useState } from "react";
 import * as THREE from "three";
 import { motion } from "framer-motion";
 
@@ -58,6 +58,29 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const woodTexture = useWoodTexture();
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { camera } = useThree();
+  
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+  const [videoStarted, setVideoStarted] = useState(false);
+
+  useEffect(() => {
+  const video = document.createElement("video");
+
+  video.src = "/videos/tribute.mp4";
+  video.crossOrigin = "Anonymous";
+  video.loop = true;
+  video.muted = false;
+  video.playsInline = true;
+
+  videoRef.current = video;
+
+  const texture = new THREE.VideoTexture(video);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.format = THREE.RGBFormat;
+
+  videoTextureRef.current = texture;
+}, []);
 
   useEffect(() => {
     const size = 256;
@@ -172,14 +195,25 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
           <meshStandardMaterial color="#050505" />
         </mesh>
 
-        <mesh position={[-0.08, 0.02, 0.295]}>
+        <mesh
+          position={[-0.08, 0.02, 0.295]}
+          onClick={() => {
+            if (videoRef.current) {
+              videoRef.current.play();
+              setVideoStarted(true);
+            }
+          }}
+        >
           <planeGeometry args={[screenWidth, screenHeight]} />
-          {textureRef.current ? (
-            <meshBasicMaterial map={textureRef.current} />
+
+          {videoStarted && videoTextureRef.current ? (
+            <meshBasicMaterial map={videoTextureRef.current} toneMapped={false} />
           ) : (
-            <meshBasicMaterial color="#333333" />
+            <meshBasicMaterial map={textureRef.current} />
           )}
         </mesh>
+        
+          
 
         <mesh position={[-0.08, 0.02, 0.30]}>
           <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
@@ -319,7 +353,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
       className="fixed inset-0 overflow-hidden"
       style={{
         opacity,
-        pointerEvents: "none",
+        pointerEvents: "auto",
         zIndex: 35,
       }}
       data-testid="tv-zoom-out"
@@ -334,7 +368,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
           toneMappingExposure: 0.9,
         }}
         dpr={[1, 2]}
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: "auto" }}
       >
         <Suspense fallback={null}>
           <color attach="background" args={["#050403"]} />
