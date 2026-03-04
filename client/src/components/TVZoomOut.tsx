@@ -71,7 +71,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.autoplay = true;
+  video.autoplay = false;
 
   videoRef.current = video;
 
@@ -82,8 +82,6 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
 
   videoTextureRef.current = texture;
 
-  // important: start video
-  video.play().catch(() => {});
 
 }, []);
 
@@ -111,7 +109,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   }, []);
 
   useFrame((state) => {
-    if (videoTextureRef.current) {
+    if (videoStarted && videoTextureRef.current) {
       videoTextureRef.current.needsUpdate = true;
     }
     if (!videoStarted && textureRef.current) {
@@ -206,9 +204,15 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
         <mesh
           position={[-0.08, 0.02, 0.295]}
           onClick={() => {
-            if (videoRef.current) {
-              videoRef.current.play();
-              setVideoStarted(true);
+            const video = videoRef.current;
+
+            if (video) {
+              video.currentTime = 0;
+              video.play().then(() => {
+                setVideoStarted(true);
+              }).catch((err) => {
+                console.log("Video play blocked:", err);
+              });
             }
           }}
         >
@@ -220,8 +224,6 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
             <meshBasicMaterial map={textureRef.current} />
           )}
         </mesh>
-        
-          
 
         <mesh position={[-0.08, 0.02, 0.30]}>
           <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
