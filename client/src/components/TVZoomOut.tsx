@@ -67,19 +67,24 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const video = document.createElement("video");
 
   video.src = "/videos/tribute.mp4";
-  video.crossOrigin = "Anonymous";
+  video.crossOrigin = "anonymous";
   video.loop = true;
-  video.muted = false;
+  video.muted = true;
   video.playsInline = true;
+  video.autoplay = true;
 
   videoRef.current = video;
 
   const texture = new THREE.VideoTexture(video);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
-  texture.format = THREE.RGBFormat;
+  texture.generateMipmaps = false;
 
   videoTextureRef.current = texture;
+
+  // important: start video
+  video.play().catch(() => {});
+
 }, []);
 
   useEffect(() => {
@@ -106,6 +111,9 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   }, []);
 
   useFrame((state) => {
+    if (videoTextureRef.current) {
+      videoTextureRef.current.needsUpdate = true;
+    }
     if (!videoStarted && textureRef.current) {
       const data = textureRef.current.image.data as Uint8Array;
       for (let i = 0; i < data.length; i += 4) {
