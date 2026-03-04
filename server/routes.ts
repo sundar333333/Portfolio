@@ -42,23 +42,7 @@ export async function registerRoutes(
   serveGLB("/corner_shelves.glb", "corner_shelves.glb");
   serveGLB("/table.glb", "table.glb");
 
-  app.get("/static/tribute.mp4", (_req, res) => {
-    const filePath = path.join(staticDir, "tribute.mp4");
-    try {
-      const stat = fs.statSync(filePath);
-      res.setHeader("Content-Type", "video/mp4");
-      res.setHeader("Content-Length", stat.size);
-      res.setHeader("Accept-Ranges", "bytes");
-      res.setHeader("Cache-Control", "public, max-age=604800, immutable");
-      const stream = fs.createReadStream(filePath, { highWaterMark: 64 * 1024 });
-      stream.on("error", () => {
-        if (!res.headersSent) res.status(500).end();
-      });
-      stream.pipe(res);
-    } catch {
-      res.status(404).end();
-    }
-  });
+  
 
   app.post("/api/contact", async (req, res) => {
     try {
