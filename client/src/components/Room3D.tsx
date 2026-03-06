@@ -24,7 +24,7 @@ function RoomModel({ onModelLoaded }: { onModelLoaded: (center: THREE.Vector3, s
     }
   }, [scene, onModelLoaded]);
 
-  return <primitive object={scene} />;
+  return <primitive object={scene} scale={1} />;
 }
 
 function CameraSetup({ center, size }: { center: THREE.Vector3; size: THREE.Vector3 }) {
@@ -50,6 +50,7 @@ function CameraSetup({ center, size }: { center: THREE.Vector3; size: THREE.Vect
 
   return (
     <OrbitControls
+      makeDefault
       ref={controlsRef}
       target={center ? [center.x, center.y, center.z] : [0, 0, 0]}
       enablePan={true}
@@ -144,7 +145,7 @@ export default function Room3D({ isVisible }: Room3DProps) {
       {!loaded && <LoadingOverlay />}
       <Canvas
         shadows
-        camera={{ fov: 50, near: 0.1, far: 100000 }}
+        camera={{ position: [5, 5, 5], fov: 50 }}
         style={{
           width: '100%',
           height: '100%',
