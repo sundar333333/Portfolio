@@ -603,15 +603,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     };
 
     const handleWheel = () => {
-      if (isVideoPlayingRef.current) {
-        onStopVideoRef.current();
-      }
+      onStopVideoRef.current();
     };
 
     const handleTouchMove = () => {
-      if (isVideoPlayingRef.current) {
-        onStopVideoRef.current();
-      }
+      onStopVideoRef.current();
     };
 
     const handleNavigateTo = (e: Event) => {
