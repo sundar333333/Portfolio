@@ -200,7 +200,7 @@ export default function Home() {
             );
           })()}
 
-          {!isCaseStudyOpen && !isEntered && (
+          {!isCaseStudyOpen && !isEntered && scrollProgress < 0.02 && (
             <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
           )}
 
