@@ -123,7 +123,10 @@ export default function Home() {
   const handleStopVideo = useCallback(() => {
     setIsVideoPlaying(false);
     setIsMuted(true);
-  }, []);
+
+    // stop static noise when leaving landing
+    stopStaticNoise();
+  }, [stopStaticNoise]);
 
   const handleAudioToggle = useCallback(() => {
     setIsMuted((prev) => {
