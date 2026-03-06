@@ -615,6 +615,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     };
 
     const handleNavigateTo = (e: Event) => {
+
+      if (isVideoPlayingRef.current) {
+      onStopVideoRef.current();
+      }
       const section = (e as CustomEvent).detail?.section;
       if (!section) return;
 
