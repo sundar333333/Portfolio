@@ -4,7 +4,7 @@ import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/d
 import * as THREE from "three";
 
 function RoomModel({ onModelLoaded }: { onModelLoaded: (center: THREE.Vector3, size: THREE.Vector3) => void }) {
-  const { scene } = useGLTF("/static/room.glb", false, true);
+  const { scene } = useGLTF("/room.glb");
 
   useEffect(() => {
     if (scene) {
@@ -118,6 +118,13 @@ interface Room3DProps {
 export default function Room3D({ isVisible }: Room3DProps) {
   const [loaded, setLoaded] = useState(false);
   const [sceneInfo, setSceneInfo] = useState<{ center: THREE.Vector3; size: THREE.Vector3 } | null>(null);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoaded(true);
+    }, 8000);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleModelLoaded = useCallback((center: THREE.Vector3, size: THREE.Vector3) => {
     setSceneInfo({ center, size });
@@ -162,3 +169,4 @@ export default function Room3D({ isVisible }: Room3DProps) {
     </div>
   );
 }
+useGLTF.preload("/room.glb");
