@@ -648,7 +648,14 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
         }
         if (section === 'landing' || section === 'about') {
-          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+          window.dispatchEvent(
+            new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } })
+          );
+
+        // force scroll recalculation
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new Event("scroll"));
+          });
         }
         return;
       }
@@ -669,14 +676,22 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animateScroll);
         } else {
+
+          // ✅ Force scroll system to recalculate
+          setTimeout(() => {
+            window.dispatchEvent(new Event("scroll"));
+          }, 50);
+
           if (section === 'contact' || section === 'room') {
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
             }, 200);
           }
+
           if (section === 'works') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
           }
+
           if (section === 'landing' || section === 'about') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
           }
