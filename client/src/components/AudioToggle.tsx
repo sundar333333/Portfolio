@@ -4,9 +4,13 @@ import { Volume2, VolumeX } from "lucide-react";
 interface AudioToggleProps {
   isMuted: boolean;
   onToggle: () => void;
+  visible: boolean;
 }
 
-export function AudioToggle({ isMuted, onToggle }: AudioToggleProps) {
+export function AudioToggle({ isMuted, onToggle, visible }: AudioToggleProps) {
+
+  if (!visible) return null;
+
   return (
     <motion.button
       className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm"
