@@ -86,6 +86,15 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       const section = (e as CustomEvent).detail?.section;
       if (!section) return;
 
+      if (section === 'landing' || section === 'about') {
+        zoomScrollAccumulator.current = 0;
+        targetZoom.current = 0;
+        targetPostZoom.current = 0;
+
+        setZoomProgress(0);
+        setPostZoomProgress(0);
+      }
+
       const freeScrollThreshold = 300;
       const zoomThreshold = 2000;
       const postZoomThreshold = 2500;
@@ -139,8 +148,10 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animate);
-        } else {
+        } 
+        else {
           isNavigating.current = false;
+          navAnimFrame.current = 0;
         }
       };
 
@@ -179,14 +190,18 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   }, [openCaseStudy, onCaseStudyChange]);
 
   useEffect(() => {
-    if (isNavigating.current) return;
-    if (!isWorksScreenVisible || openCaseStudy !== null) {
+    if (!isWorksScreenVisible) {
       zoomScrollAccumulator.current = 0;
+      targetZoom.current = 0;
+      targetPostZoom.current = 0;
+
       setZoomProgress(0);
       setPostZoomProgress(0);
+
       onZoomProgress?.(0);
+      onPostZoomProgress?.(0);
     }
-  }, [isWorksScreenVisible, openCaseStudy, onZoomProgress]);
+  }, [isWorksScreenVisible]);
 
   // Separate scroll handler for zooming into the circle
   useEffect(() => {
