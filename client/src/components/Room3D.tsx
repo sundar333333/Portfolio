@@ -169,4 +169,4 @@ export default function Room3D({ isVisible }: Room3DProps) {
     </div>
   );
 }
-useGLTF.preload("/room.glb");
+useGLTF("/static/room.glb");
