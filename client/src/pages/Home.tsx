@@ -126,8 +126,21 @@ export default function Home() {
   }, []);
 
   const handleAudioToggle = useCallback(() => {
-    setIsMuted((prev) => !prev);
-  }, []);
+    setIsMuted((prev) => {
+      const newMuted = !prev;
+
+      if (!newMuted && !isVideoPlaying) {
+        // If user unmutes while static screen is active
+        resumeStaticNoise();
+      }
+
+      if (newMuted) {
+      stopStaticNoise();
+      }
+
+      return newMuted;
+    });
+  }, [isVideoPlaying, resumeStaticNoise, stopStaticNoise]);
 
   return (
     <div className="relative min-h-screen bg-black" data-testid="home-page">
@@ -200,7 +213,7 @@ export default function Home() {
             );
           })()}
 
-          {!isCaseStudyOpen && !isEntered && scrollProgress < 0.02 && (
+          {!isCaseStudyOpen && !isEntered && !showWorkSection && (
             <AudioToggle isMuted={isMuted} onToggle={handleAudioToggle} />
           )}
 
