@@ -1,13 +1,13 @@
-import { Suspense, useState, useCallback, useEffect } from "react"; // Added useEffect
+import { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress, Center } from "@react-three/drei";
 import * as THREE from "three";
 
-// Using your specific Vercel Blob URL
+// Your verified Vercel Blob URL
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room.glb";
 
 function RoomModel() {
-  // Added Draco decoder support for compressed models
+  // Using the Google CDN for Draco decoders to handle your compressed mesh
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
 
   useEffect(() => {
@@ -18,15 +18,22 @@ function RoomModel() {
           mesh.castShadow = true;
           mesh.receiveShadow = true;
 
-          // Type cast to access material properties and fix TS errors
+          // Casting to MeshStandardMaterial to access and fix material properties
           const material = mesh.material as THREE.MeshStandardMaterial;
           if (material) {
             // FIX: Makes walls and windows visible from both sides (fixes "missing" window)
             material.side = THREE.DoubleSide; 
 
-            // Manually forcing walls to the same dark color if they appear different
+            // FIX: Ensures both walls stay dark like your Blender design
             if (mesh.name.toLowerCase().includes("wall")) {
               material.color.set("#111111");
+              material.roughness = 1; // Reduces glare that makes walls look white
+            }
+
+            // FIX: Ensure glass/window is transparent if it looks like a solid block
+            if (mesh.name.toLowerCase().includes("window") || mesh.name.toLowerCase().includes("glass")) {
+              material.transparent = true;
+              material.opacity = 0.5;
             }
           }
         }
@@ -36,7 +43,7 @@ function RoomModel() {
 
   return (
     <Center top>
-      <primitive object={scene} scale={1.5} /> 
+      <primitive object={scene} scale={1.5} />
     </Center>
   );
 }
@@ -52,7 +59,7 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-[#0a0a0a]">
           <p className="mb-4 text-sm tracking-widest uppercase opacity-50">
-            Loading Immersive Room {Math.round(progress)}%
+            Building Immersive Room {Math.round(progress)}%
           </p>
           <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -60,13 +67,13 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
         </div>
       )}
 
-      <Canvas shadows camera={{ position: [8, 8, 8], fov: 45 }}>
+      <Canvas shadows camera={{ position: [10, 10, 10], fov: 45 }}>
         <color attach="background" args={['#0a0a0a']} />
         
-        {/* Balanced lighting to keep walls dark but room details visible */}
-        <ambientLight intensity={0.5} /> 
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} castShadow />
-        <pointLight position={[-10, -10, -10]} intensity={1} />
+        {/* Balanced lighting: reduced ambient to stop walls from turning white */}
+        <ambientLight intensity={0.4} /> 
+        <spotLight position={[10, 15, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
+        <pointLight position={[-10, 10, -10]} intensity={1} color="#444" />
 
         <Suspense fallback={null}>
           <RoomModel />
@@ -77,7 +84,7 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
           makeDefault 
           enableDamping 
           dampingFactor={0.05}
-          maxPolarAngle={Math.PI / 2} 
+          maxPolarAngle={Math.PI / 2.1} 
         />
       </Canvas>
     </div>
