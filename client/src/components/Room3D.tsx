@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, useProgress, Stage, Center } from "@react-three/drei";
+import { OrbitControls, useGLTF, useProgress, Center, Environment } from "@react-three/drei";
 import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room.glb";
@@ -15,19 +15,18 @@ function RoomModel() {
           const mesh = child as THREE.Mesh;
           const material = mesh.material as THREE.MeshStandardMaterial;
           if (material) {
-            // FIX: Render both sides of every face to prevent "invisible" walls/windows
+            // FIX: Forces both sides of walls/windows to render
             material.side = THREE.DoubleSide;
-            // FIX: Standardize wall colors
-            if (mesh.name.toLowerCase().includes("wall")) {
-              material.color.set("#111111");
-            }
+            // FIX: Increases brightness of the textures directly
+            material.emissive = new THREE.Color(0xffffff);
+            material.emissiveIntensity = 0.05;
           }
         }
       });
     }
   }, [scene]);
 
-  return <primitive object={scene} />;
+  return <primitive object={scene} scale={1} />;
 }
 
 export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
@@ -36,28 +35,29 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#0a0a0a]" style={{ width: '100vw', height: '100vh' }}>
+    <div className="fixed inset-0 z-[100] bg-[#111]" style={{ width: '100vw', height: '100vh' }}>
       {progress < 100 && (
         <div className="absolute inset-0 flex items-center justify-center text-white z-[110] bg-black">
-          Building Room: {Math.round(progress)}%
+          Building Immersive Room: {Math.round(progress)}%
         </div>
       )}
 
-      <Canvas shadows camera={{ position: [0, 0, 15], fov: 45 }}>
+      <Canvas shadows camera={{ position: [15, 15, 15], fov: 50 }}>
+        <color attach="background" args={['#1a1a1a']} />
+        
+        {/* High-intensity lighting to prevent black screens */}
+        <ambientLight intensity={2.5} />
+        <directionalLight position={[10, 10, 10]} intensity={2} />
+        <pointLight position={[-10, 5, -10]} intensity={1.5} />
+
         <Suspense fallback={null}>
-          {/* Corrected Stage props to resolve TypeScript errors */}
-          <Stage 
-            environment="city" 
-            intensity={0.5} 
-            shadows={{ type: 'contact', opacity: 0.7, blur: 2 }}
-            adjustCamera={false} // Prevents Stage from overriding your camera position
-          >
-            <Center>
-              <RoomModel />
-            </Center>
-          </Stage>
+          <Center top>
+            <RoomModel />
+          </Center>
+          <Environment preset="city" />
         </Suspense>
-        <OrbitControls makeDefault enableDamping />
+
+        <OrbitControls makeDefault enableDamping minDistance={2} maxDistance={50} />
       </Canvas>
     </div>
   );
