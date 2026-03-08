@@ -1,8 +1,9 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, useProgress, Center, Environment } from "@react-three/drei";
+import { OrbitControls, useGLTF, Environment, useProgress, Center } from "@react-three/drei";
 import * as THREE from "three";
 
+// Using your confirmed Vercel Blob URL
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room.glb";
 
 function RoomModel() {
@@ -13,20 +14,30 @@ function RoomModel() {
       scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+
           const material = mesh.material as THREE.MeshStandardMaterial;
           if (material) {
-            // FIX: Forces both sides of walls/windows to render
-            material.side = THREE.DoubleSide;
-            // FIX: Increases brightness of the textures directly
-            material.emissive = new THREE.Color(0xffffff);
-            material.emissiveIntensity = 0.05;
+            // FIX: Makes walls and windows visible from both sides
+            material.side = THREE.DoubleSide; 
+
+            // FIX: Stops one wall from looking white by reducing reflections
+            if (mesh.name.toLowerCase().includes("wall")) {
+              material.color.set("#111111");
+              material.roughness = 1; 
+            }
           }
         }
       });
     }
   }, [scene]);
 
-  return <primitive object={scene} scale={1} />;
+  return (
+    <Center top>
+      <primitive object={scene} scale={1.5} />
+    </Center>
+  );
 }
 
 export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
@@ -35,29 +46,31 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#111]" style={{ width: '100vw', height: '100vh' }}>
+    <div className="fixed inset-0 z-[100] bg-[#0a0a0a]" style={{ width: '100vw', height: '100vh' }}>
       {progress < 100 && (
-        <div className="absolute inset-0 flex items-center justify-center text-white z-[110] bg-black">
-          Building Immersive Room: {Math.round(progress)}%
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-[#0a0a0a]">
+          <p className="mb-4 text-sm tracking-widest uppercase opacity-50">
+            Building Immersive Room {Math.round(progress)}%
+          </p>
+          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
+          </div>
         </div>
       )}
 
-      <Canvas shadows camera={{ position: [15, 15, 15], fov: 50 }}>
-        <color attach="background" args={['#1a1a1a']} />
+      <Canvas shadows camera={{ position: [10, 10, 10], fov: 45 }}>
+        <color attach="background" args={['#0a0a0a']} />
         
-        {/* High-intensity lighting to prevent black screens */}
-        <ambientLight intensity={2.5} />
-        <directionalLight position={[10, 10, 10]} intensity={2} />
-        <pointLight position={[-10, 5, -10]} intensity={1.5} />
-
+        {/* Balanced lighting to keep the walls dark like Blender */}
+        <ambientLight intensity={0.4} /> 
+        <spotLight position={[10, 15, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
+        
         <Suspense fallback={null}>
-          <Center top>
-            <RoomModel />
-          </Center>
+          <RoomModel />
           <Environment preset="city" />
         </Suspense>
 
-        <OrbitControls makeDefault enableDamping minDistance={2} maxDistance={50} />
+        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
       </Canvas>
     </div>
   );
