@@ -3,12 +3,14 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress, Center } from "@react-three/drei";
 import * as THREE from "three";
 
-// Pre-loading helps prevent the "empty canvas" look while waiting for the component to mount
-useGLTF.preload("/static/room.glb");
+// Using your specific Vercel Blob URL to bypass GitHub's size limits
+const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room.glb";
+
+// Pre-loading the model for faster initialization
+useGLTF.preload(MODEL_URL);
 
 function RoomModel({ onModelLoaded }: { onModelLoaded: (center: THREE.Vector3, size: THREE.Vector3) => void }) {
-  // Path corrected to match your public/static folder
-  const { scene } = useGLTF("/static/room.glb");
+  const { scene } = useGLTF(MODEL_URL);
 
   useEffect(() => {
     if (scene) {
@@ -42,24 +44,23 @@ function CameraSetup({ center, size }: { center: THREE.Vector3; size: THREE.Vect
     if (!center || !size) return;
 
     const maxDim = Math.max(size.x, size.y, size.z);
-    // Adjusted distance factor for better framing
     const distance = maxDim * 1.5; 
 
     camera.position.set(distance, distance * 0.8, distance);
     camera.near = 0.1;
-    camera.far = 1000;
-    camera.lookAt(0, 0, 0); // Looking at 0,0,0 because <Center> aligns model to origin
+    camera.far = 2000;
+    camera.lookAt(0, 0, 0); 
     (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
   }, [center, size, camera]);
 
   return (
     <OrbitControls
       makeDefault
-      target={[0, 0, 0]} // Orbiting the origin
+      target={[0, 0, 0]} 
       enableDamping={true}
       dampingFactor={0.05}
       minDistance={1}
-      maxDistance={50}
+      maxDistance={100}
     />
   );
 }
@@ -69,12 +70,12 @@ function SceneLights() {
     <>
       <ambientLight intensity={0.8} />
       <directionalLight
-        position={[10, 10, 5]}
-        intensity={1}
+        position={[10, 20, 10]}
+        intensity={1.2}
         castShadow
         shadow-mapSize={[2048, 2048]}
       />
-      <hemisphereLight args={["#ffffff", "#444444", 0.5]} />
+      <hemisphereLight args={["#ffffff", "#444444", 0.6]} />
     </>
   );
 }
@@ -84,7 +85,7 @@ function LoadingOverlay() {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center z-50 bg-white">
       <div className="w-16 h-16 border-4 border-black/10 border-t-black/60 rounded-full animate-spin" />
-      <p className="mt-4 text-black/60 font-medium">Loading 3D Room...</p>
+      <p className="mt-4 text-black/60 font-medium">Downloading 3D Room...</p>
       <p className="mt-2 text-black/40 text-sm">{Math.round(progress)}%</p>
     </div>
   );
@@ -106,17 +107,17 @@ export default function Room3D({ isVisible }: Room3DProps) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-30 bg-[#f0f0f0]" style={{ width: '100vw', height: '100vh' }}>
+    <div className="fixed inset-0 z-30 bg-[#f8f8f8]" style={{ width: '100vw', height: '100vh' }}>
       {!loaded && <LoadingOverlay />}
       
       <Canvas
         shadows
-        camera={{ position: [10, 10, 10], fov: 45 }}
+        camera={{ position: [15, 15, 15], fov: 45 }}
         style={{
           width: '100%',
           height: '100%',
           opacity: loaded ? 1 : 0,
-          transition: 'opacity 1s ease-in-out',
+          transition: 'opacity 1.5s ease-in-out',
         }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       >
