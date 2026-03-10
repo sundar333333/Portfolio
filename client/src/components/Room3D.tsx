@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
-const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room.glb";
+const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room-compressed.glb";
 
 function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
@@ -12,28 +12,29 @@ function RoomModel() {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        
-        // Force double-sided rendering — fixes missing window glass & walls
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((mat) => {
-            mat.side = THREE.DoubleSide;
-            mat.needsUpdate = true;
-          });
-        } else if (mesh.material) {
-          (mesh.material as THREE.Material).side = THREE.DoubleSide;
-          (mesh.material as THREE.Material).needsUpdate = true;
-        }
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
-        // Preserve dark/black material colors — prevent them being washed out
-        if (!Array.isArray(mesh.material)) {
-          const mat = mesh.material as THREE.MeshStandardMaterial;
-          if (mat.color) {
-            // Don't override, just ensure envMapIntensity doesn't blow out darks
-            if (mat.envMapIntensity !== undefined) {
-              mat.envMapIntensity = 0.3;
-            }
+        materials.forEach((mat) => {
+          const m = mat as THREE.MeshPhysicalMaterial;
+          
+          // Fix 1: Correct color space so dark textures don't look grey
+          if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+          if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+          
+          // Fix 2: Reduce env map intensity so black walls stay black
+          m.envMapIntensity = 0.1;
+
+          // Fix 3: Handle transparent materials (window glass)
+          if (m.transmission > 0 || m.name?.toLowerCase().includes('window') || m.name?.toLowerCase().includes('glass')) {
+            m.transparent = true;
+            m.transmission = 1.0;
+            m.roughness = 0;
+            m.thickness = 0.5;
+            m.side = THREE.DoubleSide;
           }
-        }
+
+          m.needsUpdate = true;
+        });
 
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -71,39 +72,27 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
         camera={{ position: [5, 5, 5], fov: 45 }}
         shadows
         gl={{
-          toneMapping: THREE.ACESFilmicToneMapping,  // Preserves dark colors accurately
-          toneMappingExposure: 0.8,                  // Slightly underexposed = darker walls stay dark
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 0.6,
           outputColorSpace: THREE.SRGBColorSpace,
         }}
       >
         <color attach="background" args={['#1a1a1a']} />
         
-        {/*
-          KEY FIX: Reduced ambientLight from 1.5 → 0.4
-          High ambient was washing out black walls to look grey/white.
-          Using targeted lights instead for realistic room lighting.
-        */}
-        <ambientLight intensity={0.4} />
-        
-        {/* Warm ceiling-style key light */}
+        <ambientLight intensity={0.3} />
         <spotLight 
           position={[0, 8, 0]} 
           angle={0.6} 
           penumbra={0.8} 
-          intensity={1.5} 
+          intensity={1.2} 
           castShadow 
           shadow-mapSize={[2048, 2048]}
         />
-        
-        {/* Subtle fill light from front-left — keeps details visible without washing walls */}
-        <directionalLight position={[5, 5, 5]} intensity={0.5} />
-        
-        {/* Dim blue accent from behind — matches your room vibe */}
-        <pointLight position={[-8, 2, -8]} intensity={0.6} color="#4488ff" />
+        <directionalLight position={[5, 5, 5]} intensity={0.4} />
+        <pointLight position={[-6, 2, -6]} intensity={0.5} color="#4488ff" />
 
         <Suspense fallback={null}>
           <RoomModel />
-          {/* 'night' env has lower intensity, better for preserving dark materials */}
           <Environment preset="night" />
           <ContactShadows opacity={0.5} scale={20} blur={2.4} far={4.5} />
         </Suspense>
