@@ -20,17 +20,31 @@ function RoomModel() {
       materials.forEach((mat) => {
         const m = mat as THREE.MeshStandardMaterial;
 
-        // Fix color space
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-
-        // Keep env map very low
         m.envMapIntensity = 0.05;
 
-        // Fix window glass
-        if (m.name === 'PaletteMaterial010') {
+        // Fix the white/beige wall
+        if (m.name === 'phong1') {
+          m.color = new THREE.Color(0x0a0a0a);
+          m.map = null;
+          m.roughness = 0.9;
+          m.metalness = 0;
+          m.needsUpdate = true;
+        }
+
+        // Fix window glass - visible blue tinted glass
+        if (m.name === 'PaletteMaterial010' || m.name === 'PaletteMaterial011') {
           m.emissive = new THREE.Color(0x000000);
           m.emissiveIntensity = 0;
           m.emissiveMap = null;
+          m.transparent = true;
+          m.opacity = 0.25;
+          m.roughness = 0.05;
+          m.metalness = 0.1;
+          m.color = new THREE.Color(0x88aacc);
+          m.map = null;
+          m.side = THREE.DoubleSide;
+          (m as THREE.MeshPhysicalMaterial).transmission = 0;
           m.needsUpdate = true;
         }
       });
@@ -81,12 +95,10 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 0.7,
           outputColorSpace: THREE.SRGBColorSpace,
-          // Limit texture units to prevent shader overflow
           powerPreference: "high-performance",
         }}
       >
         <color attach="background" args={['#111111']} />
-
         <ambientLight intensity={0.4} />
         <spotLight
           position={[0, 8, 0]}
