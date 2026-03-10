@@ -22,10 +22,24 @@ function RoomModel() {
           if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
           
           // Fix 2: Reduce env map intensity so black walls stay black
-          m.envMapIntensity = 0.1;
+          m.envMapIntensity = 0.2;
 
-          // Fix 3: Handle transparent materials (window glass)
-          if (m.transmission > 0 || m.name?.toLowerCase().includes('window') || m.name?.toLowerCase().includes('glass')) {
+          // Fix 3: Force beige/white wall materials to black
+          if (
+            m.name?.toLowerCase().includes('beige') ||
+            m.name?.toLowerCase().includes('white wall') ||
+            m.name === 'Beige Painted Plaster Wall'
+          ) {
+            m.color = new THREE.Color(0x1a1a1a);
+            if (m.map) m.map = null;
+          }
+
+          // Fix 4: Handle transparent materials (window glass)
+          if (
+            m.transmission > 0 ||
+            m.name?.toLowerCase().includes('window') ||
+            m.name?.toLowerCase().includes('glass')
+          ) {
             m.transparent = true;
             m.transmission = 1.0;
             m.roughness = 0;
@@ -73,27 +87,28 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
         shadows
         gl={{
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.6,
+          toneMappingExposure: 1.2,
           outputColorSpace: THREE.SRGBColorSpace,
         }}
       >
         <color attach="background" args={['#1a1a1a']} />
         
-        <ambientLight intensity={0.3} />
+        <ambientLight intensity={1.2} />
         <spotLight 
           position={[0, 8, 0]} 
           angle={0.6} 
           penumbra={0.8} 
-          intensity={1.2} 
+          intensity={2} 
           castShadow 
           shadow-mapSize={[2048, 2048]}
         />
-        <directionalLight position={[5, 5, 5]} intensity={0.4} />
-        <pointLight position={[-6, 2, -6]} intensity={0.5} color="#4488ff" />
+        <directionalLight position={[5, 5, 5]} intensity={1} />
+        <directionalLight position={[-5, 5, -5]} intensity={0.8} />
+        <pointLight position={[0, 4, 0]} intensity={1.5} color="#ffffff" />
 
         <Suspense fallback={null}>
           <RoomModel />
-          <Environment preset="night" />
+          <Environment preset="apartment" />
           <ContactShadows opacity={0.5} scale={20} blur={2.4} far={4.5} />
         </Suspense>
 
