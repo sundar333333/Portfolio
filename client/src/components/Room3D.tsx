@@ -23,24 +23,20 @@ function RoomModel() {
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         m.envMapIntensity = 0.05;
 
-        // Fix the white/beige wall
-        if (m.name === 'phong1') {
-          m.color = new THREE.Color(0x0a0a0a);
-          m.map = null;
+        // Force both wall materials to near-black
+        if (
+          m.name === 'Black Painted Plaster Wall' ||
+          m.name === 'Black painted plaster wall'
+        ) {
+          m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
           m.metalness = 0;
+          m.map = null;
           m.needsUpdate = true;
         }
 
-        // Fix window glass — target by material name AND mesh name (typo in GLB: "WindowFrane")
-        const isWindowMaterial = 
-          m.name === 'PaletteMaterial010' || 
-          m.name === 'PaletteMaterial011';
-        const isWindowMesh = 
-          mesh.name === 'WindowFrane' || 
-          mesh.name === 'WindowFrame';
-
-        if (isWindowMaterial || isWindowMesh) {
+        // Window glass
+        if (m.name === 'Glass_material') {
           m.transparent = true;
           m.opacity = 0.3;
           m.roughness = 0.05;
