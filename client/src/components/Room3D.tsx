@@ -32,17 +32,24 @@ function RoomModel() {
           m.needsUpdate = true;
         }
 
-        // Fix window glass - visible blue tinted glass
-        if (m.name === 'PaletteMaterial010' || m.name === 'PaletteMaterial011') {
-          m.emissive = new THREE.Color(0x000000);
-          m.emissiveIntensity = 0;
-          m.emissiveMap = null;
+        // Fix window glass — target by material name AND mesh name (typo in GLB: "WindowFrane")
+        const isWindowMaterial = 
+          m.name === 'PaletteMaterial010' || 
+          m.name === 'PaletteMaterial011';
+        const isWindowMesh = 
+          mesh.name === 'WindowFrane' || 
+          mesh.name === 'WindowFrame';
+
+        if (isWindowMaterial || isWindowMesh) {
           m.transparent = true;
-          m.opacity = 0.25;
+          m.opacity = 0.3;
           m.roughness = 0.05;
           m.metalness = 0.1;
           m.color = new THREE.Color(0x88aacc);
           m.map = null;
+          m.emissive = new THREE.Color(0x000000);
+          m.emissiveIntensity = 0;
+          m.emissiveMap = null;
           m.side = THREE.DoubleSide;
           (m as THREE.MeshPhysicalMaterial).transmission = 0;
           m.needsUpdate = true;
