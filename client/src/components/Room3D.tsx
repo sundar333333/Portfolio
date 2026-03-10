@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment, useProgress, ContactShadows } from "@react-three/drei";
+import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room-compressed.glb";
@@ -18,27 +18,19 @@ function RoomModel() {
         : [mesh.material];
 
       materials.forEach((mat) => {
-        const m = mat as THREE.MeshPhysicalMaterial;
+        const m = mat as THREE.MeshStandardMaterial;
 
         // Fix color space
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-        if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
 
-        // Very low env map so black walls stay black
+        // Keep env map very low
         m.envMapIntensity = 0.05;
 
         // Fix window glass
-        if (m.name === 'PaletteMaterial010' || mesh.name === 'WindowFrame') {
+        if (m.name === 'PaletteMaterial010') {
           m.emissive = new THREE.Color(0x000000);
           m.emissiveIntensity = 0;
           m.emissiveMap = null;
-          m.transparent = true;
-          m.transmission = 1.0;
-          m.roughness = 0.0;
-          m.thickness = 0.3;
-          m.color = new THREE.Color(0xffffff);
-          m.map = null;
-          m.side = THREE.DoubleSide;
           m.needsUpdate = true;
         }
       });
@@ -65,8 +57,8 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-[#111]"
-      style={{ width: '100vw', height: '100vh' }}
+      className="fixed inset-0 z-[100]"
+      style={{ width: '100vw', height: '100vh', background: '#111' }}
     >
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-black">
@@ -87,30 +79,29 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
         shadows
         gl={{
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.6,
+          toneMappingExposure: 0.7,
           outputColorSpace: THREE.SRGBColorSpace,
+          // Limit texture units to prevent shader overflow
+          powerPreference: "high-performance",
         }}
       >
         <color attach="background" args={['#111111']} />
 
-        {/* Reduced lighting to keep black walls dark */}
-        <ambientLight intensity={0.3} />
+        <ambientLight intensity={0.4} />
         <spotLight
           position={[0, 8, 0]}
           angle={0.5}
           penumbra={1}
-          intensity={1.0}
+          intensity={1.2}
           castShadow
-          shadow-mapSize={[2048, 2048]}
+          shadow-mapSize={[1024, 1024]}
         />
         <directionalLight position={[3, 6, 3]} intensity={0.3} />
         <directionalLight position={[-3, 6, -3]} intensity={0.2} />
-        <pointLight position={[0, 3, 0]} intensity={0.5} color="#ffffff" />
 
         <Suspense fallback={null}>
           <RoomModel />
-          <Environment preset="night" />
-          <ContactShadows opacity={0.4} scale={20} blur={2.4} far={4.5} />
+          <Environment preset="apartment" />
         </Suspense>
 
         <OrbitControls
