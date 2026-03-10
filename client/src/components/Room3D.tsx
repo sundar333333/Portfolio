@@ -9,6 +9,16 @@ function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
 
   useEffect(() => {
+    // First pass: find the Window_Group and collect its mesh UUIDs
+    const windowMeshUUIDs = new Set<string>();
+    scene.traverse((child) => {
+      if (child.name === 'Window_Group' || child.parent?.name === 'Window_Group') {
+        child.traverse((c) => {
+          if ((c as THREE.Mesh).isMesh) windowMeshUUIDs.add(c.uuid);
+        });
+      }
+    });
+
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -17,13 +27,20 @@ function RoomModel() {
         ? mesh.material
         : [mesh.material];
 
+      const isWindowMesh = windowMeshUUIDs.has(mesh.uuid);
+      const isWindowNode =
+        mesh.name === 'Window.L' ||
+        mesh.name === 'Window.R' ||
+        mesh.name === 'WindowFrane' ||
+        mesh.name === 'WindowFrame';
+
       materials.forEach((mat) => {
         const m = mat as THREE.MeshStandardMaterial;
 
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         m.envMapIntensity = 0.05;
 
-        // Force both wall materials to near-black
+        // Force walls to near-black — clear ALL textures
         if (
           m.name === 'Black Painted Plaster Wall' ||
           m.name === 'Black painted plaster wall'
@@ -32,11 +49,17 @@ function RoomModel() {
           m.roughness = 0.9;
           m.metalness = 0;
           m.map = null;
+          m.normalMap = null;
+          m.roughnessMap = null;
+          m.aoMap = null;
           m.needsUpdate = true;
         }
 
-        // Window glass
-        if (m.name === 'Glass_material') {
+        // Window glass — only apply if this mesh is inside Window_Group
+        if (
+          m.name === 'Glass_material' &&
+          (isWindowMesh || isWindowNode)
+        ) {
           m.transparent = true;
           m.opacity = 0.3;
           m.roughness = 0.05;
@@ -50,6 +73,9 @@ function RoomModel() {
           (m as THREE.MeshPhysicalMaterial).transmission = 0;
           m.needsUpdate = true;
         }
+
+        // Leave Material.012 (table leg) untouched
+        // Leave phong1 (chair) untouched
       });
 
       mesh.castShadow = true;
