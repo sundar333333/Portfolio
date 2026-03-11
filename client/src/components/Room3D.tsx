@@ -1,9 +1,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment, useProgress, Center } from "@react-three/drei";
+import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
-// Using the compressed model URL from your latest working version
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room-compressed.glb";
 
 function RoomModel({ onLog }: { onLog: (s: string) => void }) {
@@ -13,48 +12,63 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
     const logs: string[] = [];
 
     scene.traverse((child) => {
-      if (!(child as THREE.Mesh).isMesh) return;
       const mesh = child as THREE.Mesh;
-      
-      // Ensure we handle both single and multi-materials
-      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      if (!mesh.isMesh) return;
+
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : [mesh.material];
 
       materials.forEach((mat) => {
         const m = mat as THREE.MeshStandardMaterial;
-        
-        // Restore standard sRGB color space for textures
-        if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-        m.envMapIntensity = 1.2; // Restore the brightness from your previous working version
 
-        // 1. FIX THE WALLS (Plane, Plane003, Cylinder002_1)
-        // This stops the walls from accidentally taking floor or towel textures
-        if (mesh.name === 'Plane' || mesh.name === 'Plane003' || mesh.name === 'Cylinder002_1') {
-          m.color.set(0x0a0a0a); // Deep black plaster
+        if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+        m.envMapIntensity = 0.05;
+
+        if (m.name === 'Black Painted Plaster Wall') {
+          m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
           m.metalness = 0;
-          m.map = null; // Clear any interchanged textures
+          m.map = null;
+          m.normalMap = null;
+          m.roughnessMap = null;
+          m.aoMap = null;
           m.needsUpdate = true;
-          logs.push(`✅ RESTORED WALL: ${mesh.name}`);
+          logs.push(`✅ WALL FIXED: ${mesh.name} | ${m.name}`);
         }
 
-        // 2. FIX THE WINDOW GLASS (WindowFrame, Object_4005)
-        if (mesh.name === 'WindowFrame' || mesh.name === 'Object_4005') {
+        if (mesh.name === 'Plane003') {
+          m.color = new THREE.Color(0x080808);
+          m.roughness = 0.9;
+          m.metalness = 0;
+          m.map = null;
+          m.normalMap = null;
+          m.roughnessMap = null;
+          m.aoMap = null;
+          m.needsUpdate = true;
+          logs.push(`✅ WALL2 FIXED: ${mesh.name} | ${m.name}`);
+        }
+
+        if (
+          (mesh.name === 'WindowFrame' && m.name === 'PaletteMaterial010') ||
+          (mesh.name === 'Object_4005' && m.name === 'PaletteMaterial011')
+        ) {
           m.transparent = true;
           m.opacity = 0.3;
-          m.color.set(0x88aacc); // Subtle glass tint
-          m.side = THREE.DoubleSide; // Fixes backface culling
           m.roughness = 0.05;
-          m.metalness = 1;
+          m.metalness = 0.1;
+          m.color = new THREE.Color(0x88aacc);
+          m.map = null;
+          m.emissive = new THREE.Color(0x000000);
+          m.emissiveIntensity = 0;
+          m.emissiveMap = null;
+          m.side = THREE.DoubleSide;
+          (m as THREE.MeshPhysicalMaterial).transmission = 0;
           m.needsUpdate = true;
-          logs.push(`✅ RESTORED GLASS: ${mesh.name}`);
+          logs.push(`✅ GLASS FIXED: ${mesh.name} | ${m.name}`);
         }
 
-        // 3. FIX THE FLOOR (Plane006)
-        if (mesh.name === 'Plane006') {
-          m.roughness = 0.8;
-          m.metalness = 0.2;
-          logs.push(`✅ FLOOR VERIFIED: ${mesh.name}`);
-        }
+        logs.push(`MESH: ${mesh.name} | MAT: ${m.name}`);
       });
 
       mesh.castShadow = true;
@@ -62,15 +76,10 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
     });
 
     onLog([...new Set(logs)].join('\n'));
-  }, [scene, onLog]);
+  }, [scene]);
 
   return (
-    <primitive 
-      object={scene} 
-      scale={1} 
-      position={[0, -1, 0]} 
-      rotation={[0, Math.PI / 4, 0]} 
-    />
+    <primitive object={scene} scale={1} position={[0, -1, 0]} rotation={[0, Math.PI / 4, 0]} />
   );
 }
 
@@ -81,37 +90,45 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#111]" style={{ width: '100vw', height: '100vh' }}>
-      {/* Percentage Loader */}
+    <div className="fixed inset-0 z-[100]" style={{ width: '100vw', height: '100vh', background: '#111' }}>
+      {log && (
+        <pre style={{
+          position: 'absolute', top: 0, left: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.9)', color: '#0f0', fontSize: '10px',
+          padding: '8px', maxHeight: '100vh', overflowY: 'auto',
+          whiteSpace: 'pre-wrap', width: '400px',
+        }}>
+          {log}
+        </pre>
+      )}
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-black">
-          <p className="mb-4">Building Space: {Math.round(progress)}%</p>
-          <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500" style={{ width: `${progress}%` }} />
+          <div className="w-48 h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
+            <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
+          <p className="text-sm tracking-widest uppercase">Building Room... {Math.round(progress)}%</p>
         </div>
       )}
-
       <Canvas
-        shadows
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         camera={{ position: [5, 5, 5], fov: 45 }}
+        shadows
+        gl={{
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 0.7,
+          outputColorSpace: THREE.SRGBColorSpace,
+          powerPreference: "high-performance",
+        }}
       >
-        <color attach="background" args={['#0a0a0a']} />
-        
-        {/* Lighting setup based on your working Claude history */}
-        <ambientLight intensity={0.5} />
-        <spotLight position={[0, 10, 0]} angle={0.5} penumbra={1} intensity={2} castShadow />
-        <directionalLight position={[5, 5, 5]} intensity={0.5} />
-
+        <color attach="background" args={['#111111']} />
+        <ambientLight intensity={0.4} />
+        <spotLight position={[0, 8, 0]} angle={0.5} penumbra={1} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
+        <directionalLight position={[3, 6, 3]} intensity={0.3} />
+        <directionalLight position={[-3, 6, -3]} intensity={0.2} />
         <Suspense fallback={null}>
-          <Center top>
-            <RoomModel onLog={setLog} />
-          </Center>
+          <RoomModel onLog={setLog} />
           <Environment preset="apartment" />
         </Suspense>
-
-        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
+        <OrbitControls makeDefault enableDamping minDistance={2} maxDistance={20} />
       </Canvas>
     </div>
   );
