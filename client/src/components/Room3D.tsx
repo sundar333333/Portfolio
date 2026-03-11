@@ -1,16 +1,14 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/room-compressed.glb";
 
-function RoomModel({ onLog }: { onLog: (s: string) => void }) {
+function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
 
   useEffect(() => {
-    const logs: string[] = [];
-
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -25,6 +23,7 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         m.envMapIntensity = 0.05;
 
+        // Wall 1: Plane
         if (m.name === 'Black Painted Plaster Wall') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
@@ -34,9 +33,9 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
           m.roughnessMap = null;
           m.aoMap = null;
           m.needsUpdate = true;
-          logs.push(`✅ WALL FIXED: ${mesh.name} | ${m.name}`);
         }
 
+        // Wall 2: Plane003 — target by mesh name to avoid affecting towel
         if (mesh.name === 'Plane003') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
@@ -46,9 +45,9 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
           m.roughnessMap = null;
           m.aoMap = null;
           m.needsUpdate = true;
-          logs.push(`✅ WALL2 FIXED: ${mesh.name} | ${m.name}`);
         }
 
+        // Window glass
         if (
           (mesh.name === 'WindowFrame' && m.name === 'PaletteMaterial010') ||
           (mesh.name === 'Object_4005' && m.name === 'PaletteMaterial011')
@@ -65,17 +64,12 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
           m.side = THREE.DoubleSide;
           (m as THREE.MeshPhysicalMaterial).transmission = 0;
           m.needsUpdate = true;
-          logs.push(`✅ GLASS FIXED: ${mesh.name} | ${m.name}`);
         }
-
-        logs.push(`MESH: ${mesh.name} | MAT: ${m.name}`);
       });
 
       mesh.castShadow = true;
       mesh.receiveShadow = true;
     });
-
-    onLog([...new Set(logs)].join('\n'));
   }, [scene]);
 
   return (
@@ -85,22 +79,11 @@ function RoomModel({ onLog }: { onLog: (s: string) => void }) {
 
 export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
   const { progress } = useProgress();
-  const [log, setLog] = useState('');
 
   if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100]" style={{ width: '100vw', height: '100vh', background: '#111' }}>
-      {log && (
-        <pre style={{
-          position: 'absolute', top: 0, left: 0, zIndex: 9999,
-          background: 'rgba(0,0,0,0.9)', color: '#0f0', fontSize: '10px',
-          padding: '8px', maxHeight: '100vh', overflowY: 'auto',
-          whiteSpace: 'pre-wrap', width: '400px',
-        }}>
-          {log}
-        </pre>
-      )}
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-black">
           <div className="w-48 h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
@@ -125,7 +108,7 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
         <directionalLight position={[3, 6, 3]} intensity={0.3} />
         <directionalLight position={[-3, 6, -3]} intensity={0.2} />
         <Suspense fallback={null}>
-          <RoomModel onLog={setLog} />
+          <RoomModel />
           <Environment preset="apartment" />
         </Suspense>
         <OrbitControls makeDefault enableDamping minDistance={2} maxDistance={20} />
