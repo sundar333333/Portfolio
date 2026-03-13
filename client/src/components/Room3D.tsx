@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
+import { OrbitControls, useGLTF, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/3DRoomorginal1.compressed.glb";
@@ -21,7 +21,7 @@ function RoomModel() {
         const m = mat as THREE.MeshStandardMaterial;
 
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-        m.envMapIntensity = 0.05;
+        m.envMapIntensity = 0;
 
         if (m.name === 'black_wall') {
           m.color = new THREE.Color(0x080808);
@@ -112,10 +112,9 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <directionalLight position={[-3, 6, -3]} intensity={0.15} />
+        <directionalLight position={[0, 6, 0]} intensity={0.15} />
         <Suspense fallback={null}>
           <RoomModel />
-          <Environment preset="apartment" />
         </Suspense>
         <OrbitControls
           makeDefault
