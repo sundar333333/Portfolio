@@ -1,9 +1,50 @@
-import { Suspense, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useState } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
+import MonitorDesktop from "./MonitorDesktop";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/3DRoomorginal1.compressed.glb";
+
+function MonitorClickHandler({ onMonitorClick }: { onMonitorClick: () => void }) {
+  const { scene, camera, gl } = useThree();
+
+  useEffect(() => {
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const handleClick = (e: MouseEvent) => {
+      const rect = gl.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+      if (intersects.length > 0) {
+        let obj: THREE.Object3D | null = intersects[0].object;
+        while (obj) {
+          const name = obj.name.toLowerCase();
+          if (
+            name.includes("gigabyte") ||
+            name.includes("cube.049") ||
+            name.includes("cube049") ||
+            name.includes("monitor") ||
+            name.includes("screen") ||
+            name.includes("display")
+          ) {
+            onMonitorClick();
+            return;
+          }
+          obj = obj.parent;
+        }
+      }
+    };
+
+    gl.domElement.addEventListener("click", handleClick);
+    return () => gl.domElement.removeEventListener("click", handleClick);
+  }, [scene, camera, gl, onMonitorClick]);
+
+  return null;
+}
 
 function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
@@ -61,6 +102,10 @@ function RoomModel() {
         }
       });
 
+      if (mesh.name === 'Handle.005') {
+        mesh.material = new THREE.MeshBasicMaterial({ color: 0x080808 });
+      }
+
       mesh.castShadow = true;
       mesh.receiveShadow = true;
     });
@@ -71,16 +116,15 @@ function RoomModel() {
   );
 }
 
-// ✅ Added onBack prop
 export default function Room3D({ isVisible = true, onBack }: { isVisible?: boolean; onBack?: () => void }) {
   const { progress } = useProgress();
+  const [desktopOpen, setDesktopOpen] = useState(false);
 
   if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100]" style={{ width: '100vw', height: '100vh', background: '#111' }}>
 
-      {/* ✅ Back button — top left corner */}
       <button
         onClick={onBack}
         style={{
@@ -107,6 +151,28 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
       >
         ← Back
       </button>
+
+      {!desktopOpen && progress >= 100 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '28px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 150,
+          pointerEvents: 'none',
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: '8px',
+          padding: '8px 18px',
+          color: '#aaa',
+          fontSize: '13px',
+          fontFamily: 'inherit',
+          whiteSpace: 'nowrap',
+        }}>
+          🖥️ Click the monitor to interact
+        </div>
+      )}
 
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-black">
@@ -146,7 +212,10 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
           minAzimuthAngle={Math.PI / 6}
           maxAzimuthAngle={Math.PI * 0.75}
         />
+        <MonitorClickHandler onMonitorClick={() => setDesktopOpen(true)} />
       </Canvas>
+
+      {desktopOpen && <MonitorDesktop onClose={() => setDesktopOpen(false)} />}
     </div>
   );
 }
