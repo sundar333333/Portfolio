@@ -9,20 +9,6 @@ function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
 
   useEffect(() => {
-    // DEBUG — remove after finding the right wall mesh name
-    scene.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (mesh.isMesh) {
-        console.log('MESH:', mesh.name, '| MAT:',
-          Array.isArray(mesh.material)
-            ? mesh.material.map(m => (m as THREE.MeshStandardMaterial).name).join(', ')
-            : (mesh.material as THREE.MeshStandardMaterial).name
-        );
-      }
-    });
-  }, [scene]);
-
-  useEffect(() => {
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -38,6 +24,21 @@ function RoomModel() {
         m.envMapIntensity = 0;
 
         if (m.name === 'black_wall') {
+          m.color = new THREE.Color(0x080808);
+          m.roughness = 1;
+          m.metalness = 0;
+          m.envMapIntensity = 0;
+          m.map = null;
+          m.normalMap = null;
+          m.roughnessMap = null;
+          m.aoMap = null;
+          m.emissive = new THREE.Color(0x000000);
+          m.emissiveIntensity = 0;
+          m.needsUpdate = true;
+        }
+
+        // Right wall fix — Object_6 uses phong1 material
+        if (m.name === 'phong1') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 1;
           m.metalness = 0;
