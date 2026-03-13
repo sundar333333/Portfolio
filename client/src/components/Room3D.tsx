@@ -37,8 +37,8 @@ function RoomModel() {
           m.needsUpdate = true;
         }
 
-        // Right wall fix — Object_6 uses phong1 material
-        if (m.name === 'phong1') {
+        // Right wall — mesh 10M with Material.011
+        if (mesh.name === '10M') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 1;
           m.metalness = 0;
