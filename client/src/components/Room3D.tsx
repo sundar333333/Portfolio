@@ -9,6 +9,20 @@ function RoomModel() {
   const { scene } = useGLTF(MODEL_URL, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
 
   useEffect(() => {
+    // DEBUG — remove after finding the right wall mesh name
+    scene.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (mesh.isMesh) {
+        console.log('MESH:', mesh.name, '| MAT:',
+          Array.isArray(mesh.material)
+            ? mesh.material.map(m => (m as THREE.MeshStandardMaterial).name).join(', ')
+            : (mesh.material as THREE.MeshStandardMaterial).name
+        );
+      }
+    });
+  }, [scene]);
+
+  useEffect(() => {
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -21,8 +35,6 @@ function RoomModel() {
         const m = mat as THREE.MeshStandardMaterial;
 
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-
-        // Set envMapIntensity to 0 for ALL materials globally
         m.envMapIntensity = 0;
 
         if (m.name === 'black_wall') {
