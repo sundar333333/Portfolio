@@ -23,7 +23,6 @@ function RoomModel() {
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         m.envMapIntensity = 0.05;
 
-        // Wall — new file uses 'black_wall'
         if (m.name === 'black_wall') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
@@ -35,7 +34,6 @@ function RoomModel() {
           m.needsUpdate = true;
         }
 
-        // Second wall Plane.003
         if (mesh.name === 'Plane.003') {
           m.color = new THREE.Color(0x080808);
           m.roughness = 0.9;
@@ -47,7 +45,6 @@ function RoomModel() {
           m.needsUpdate = true;
         }
 
-        // Window glass
         if (m.name === 'Glass_material') {
           m.transparent = true;
           m.opacity = 0.3;
@@ -108,7 +105,16 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
           <RoomModel />
           <Environment preset="apartment" />
         </Suspense>
-        <OrbitControls makeDefault enableDamping minDistance={2} maxDistance={20} />
+        <OrbitControls
+          makeDefault
+          enableDamping
+          minDistance={2}
+          maxDistance={20}
+          minPolarAngle={Math.PI / 6}
+          maxPolarAngle={Math.PI / 2.2}
+          minAzimuthAngle={-Math.PI / 2}
+          maxAzimuthAngle={Math.PI / 2}
+        />
       </Canvas>
     </div>
   );
