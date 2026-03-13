@@ -521,7 +521,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           {isEntered && (
             <>
               <Suspense fallback={null}>
-                <Room3D isVisible={true} />
+                <Room3D isVisible={true} onBack={() => onBack?.()} />
               </Suspense>
               <button
                 className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm hover:bg-black/5 transition-colors text-black/60 hover:text-black/90 text-sm shadow-md"

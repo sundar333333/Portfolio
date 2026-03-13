@@ -71,13 +71,43 @@ function RoomModel() {
   );
 }
 
-export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
+// ✅ Added onBack prop
+export default function Room3D({ isVisible = true, onBack }: { isVisible?: boolean; onBack?: () => void }) {
   const { progress } = useProgress();
 
   if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100]" style={{ width: '100vw', height: '100vh', background: '#111' }}>
+
+      {/* ✅ Back button — top left corner */}
+      <button
+        onClick={onBack}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 200,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          color: '#ffffff',
+          padding: '10px 18px',
+          borderRadius: '999px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          fontFamily: 'inherit',
+          backdropFilter: 'blur(8px)',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+      >
+        ← Back
+      </button>
+
       {progress < 100 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-[110] bg-black">
           <div className="w-48 h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
@@ -86,6 +116,7 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
           <p className="text-sm tracking-widest uppercase">Building Room... {Math.round(progress)}%</p>
         </div>
       )}
+
       <Canvas
         camera={{ position: [5, 5, 5], fov: 45 }}
         shadows
