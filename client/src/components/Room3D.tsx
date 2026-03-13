@@ -24,22 +24,7 @@ function RoomModel() {
         m.envMapIntensity = 0;
 
         if (m.name === 'black_wall') {
-          m.color = new THREE.Color(0x080808);
-          m.roughness = 1;
-          m.metalness = 0;
-          m.envMapIntensity = 0;
-          m.map = null;
-          m.normalMap = null;
-          m.roughnessMap = null;
-          m.aoMap = null;
-          m.emissive = new THREE.Color(0x000000);
-          m.emissiveIntensity = 0;
-          m.needsUpdate = true;
-        }
-
-        // Right wall — mesh 10M with Material.011
-        if (mesh.name === '10M') {
-          m.color = new THREE.Color(0x080808);
+          m.color = new THREE.Color(0x030303);
           m.roughness = 1;
           m.metalness = 0;
           m.envMapIntensity = 0;
@@ -53,7 +38,7 @@ function RoomModel() {
         }
 
         if (mesh.name === 'Plane.003') {
-          m.color = new THREE.Color(0x080808);
+          m.color = new THREE.Color(0x030303);
           m.roughness = 1;
           m.metalness = 0;
           m.envMapIntensity = 0;
@@ -112,22 +97,22 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
         shadows
         gl={{
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.7,
+          toneMappingExposure: 0.5,
           outputColorSpace: THREE.SRGBColorSpace,
           powerPreference: "high-performance",
         }}
       >
         <color attach="background" args={['#111111']} />
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.3} />
         <spotLight
           position={[0, 8, 0]}
           angle={0.5}
           penumbra={1}
-          intensity={1.5}
+          intensity={1.2}
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <directionalLight position={[0, 5, 2]} intensity={0.3} />
+        <directionalLight position={[0, 5, 0]} intensity={0.2} />
         <Suspense fallback={null}>
           <RoomModel />
           <Environment preset="apartment" />
