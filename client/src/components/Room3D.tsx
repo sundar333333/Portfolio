@@ -19,37 +19,8 @@ function RoomModel() {
 
       materials.forEach((mat) => {
         const m = mat as THREE.MeshStandardMaterial;
-
         if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         m.envMapIntensity = 0;
-
-        if (m.name === 'black_wall') {
-          m.color = new THREE.Color(0x030303);
-          m.roughness = 1;
-          m.metalness = 0;
-          m.envMapIntensity = 0;
-          m.map = null;
-          m.normalMap = null;
-          m.roughnessMap = null;
-          m.aoMap = null;
-          m.emissive = new THREE.Color(0x000000);
-          m.emissiveIntensity = 0;
-          m.needsUpdate = true;
-        }
-
-        if (mesh.name === 'Plane.003') {
-          m.color = new THREE.Color(0x030303);
-          m.roughness = 1;
-          m.metalness = 0;
-          m.envMapIntensity = 0;
-          m.map = null;
-          m.normalMap = null;
-          m.roughnessMap = null;
-          m.aoMap = null;
-          m.emissive = new THREE.Color(0x000000);
-          m.emissiveIntensity = 0;
-          m.needsUpdate = true;
-        }
 
         if (m.name === 'Glass_material') {
           m.transparent = true;
@@ -66,6 +37,11 @@ function RoomModel() {
           m.needsUpdate = true;
         }
       });
+
+      // Replace wall material with MeshBasicMaterial so lighting never affects it
+      if (mesh.name === 'Handle.005') {
+        mesh.material = new THREE.MeshBasicMaterial({ color: 0x080808 });
+      }
 
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -115,7 +91,7 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
         <directionalLight position={[0, 5, 0]} intensity={0.2} />
         <Suspense fallback={null}>
           <RoomModel />
-          <Environment preset="apartment" />
+          <Environment preset="night" />
         </Suspense>
         <OrbitControls
           makeDefault
