@@ -112,8 +112,8 @@ export default function Room3D({ isVisible = true }: { isVisible?: boolean }) {
           maxDistance={20}
           minPolarAngle={Math.PI / 6}
           maxPolarAngle={Math.PI / 2.2}
-          minAzimuthAngle={-Math.PI / 2}
-          maxAzimuthAngle={Math.PI / 2}
+          minAzimuthAngle={-Math.PI / 6}
+          maxAzimuthAngle={Math.PI * 0.75}
         />
       </Canvas>
     </div>
