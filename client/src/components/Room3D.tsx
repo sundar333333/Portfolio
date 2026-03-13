@@ -103,10 +103,16 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
         }}
       >
         <color attach="background" args={['#111111']} />
-        <ambientLight intensity={0.4} />
-        <spotLight position={[0, 8, 0]} angle={0.5} penumbra={1} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
-        <directionalLight position={[3, 6, 3]} intensity={0.3} />
-        <directionalLight position={[-3, 6, -3]} intensity={0.2} />
+        <ambientLight intensity={0.3} />
+        <spotLight
+          position={[0, 8, 0]}
+          angle={0.5}
+          penumbra={1}
+          intensity={1.0}
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+        />
+        <directionalLight position={[-3, 6, -3]} intensity={0.15} />
         <Suspense fallback={null}>
           <RoomModel />
           <Environment preset="apartment" />
