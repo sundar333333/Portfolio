@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { X } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 const Room3D = lazy(() => import("./Room3D"));
 import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812385134.png";
@@ -10,6 +11,7 @@ import tickingCaseStudy from "@assets/image_1769954947300.png";
 import currentCaseStudy from "@assets/image_1769954987397.png";
 import eventifyCaseStudy from "@assets/image_1769955050232.png";
 import spaceJumpCaseStudy from "@assets/image_1769955092024.png";
+
 
 interface TrailPoint {
   x: number;
@@ -690,24 +692,37 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         </h3>
                         <form onSubmit={async (e) => {
                           e.preventDefault();
+
                           if (!contactForm.email || !contactForm.message) return;
+
                           setFormStatus('sending');
-                          try {
-                            const res = await fetch('/api/contact', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(contactForm),
-                            });
-                            if (res.ok) {
-                              setFormStatus('sent');
-                              setContactForm({ firstName: '', lastName: '', email: '', message: '' });
-                            } else {
-                              setFormStatus('error');
-                            }
-                          } catch {
-                            setFormStatus('error');
-                          }
-                        }} className="space-y-6">
+
+                        try {
+                          await emailjs.send(
+                            "service_z7sb6nl",
+                            "template_8ma62rt",
+                            {
+                              first_name: contactForm.firstName,
+                              last_name: contactForm.lastName,
+                              email: contactForm.email,
+                              message: contactForm.message,
+                            },
+                            "ElNxWglFQUyAx-On3"
+                            );
+
+                          setFormStatus('sent');
+                          setContactForm({
+                            firstName: "",
+                            lastName: "",
+                            email: "",
+                            message: ""
+                          });
+
+                        } catch (error) {
+                          console.error(error);
+                          setFormStatus('error');
+                        }
+                      }} className="space-y-6">
                           <div className="flex gap-4">
                             <div className="flex-1">
                               <label className="text-white/60 text-sm block mb-2">First Name</label>
