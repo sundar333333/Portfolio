@@ -5,7 +5,7 @@ import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/3DRoomorginal1.compressed.glb";
 
-// ─── Sky dome ─────────────────────────────────────────────────────
+// ─── Sky dome — deep blue with clear stars + Saturn ───────────────
 function SkyDome() {
   const texture = useMemo(() => {
     const W = 2048, H = 1024;
@@ -13,113 +13,159 @@ function SkyDome() {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
+    // Rich deep blue base — NOT black
     const base = ctx.createLinearGradient(0, 0, 0, H);
-    base.addColorStop(0,   "#00061a");
-    base.addColorStop(0.4, "#000d28");
-    base.addColorStop(0.7, "#000a20");
-    base.addColorStop(1,   "#000510");
+    base.addColorStop(0,   "#020d2e");
+    base.addColorStop(0.3, "#031240");
+    base.addColorStop(0.6, "#020e35");
+    base.addColorStop(1,   "#010a22");
     ctx.fillStyle = base;
     ctx.fillRect(0, 0, W, H);
 
+    // Horizontal blue depth variation
     const horiz = ctx.createLinearGradient(0, 0, W, 0);
-    horiz.addColorStop(0,   "rgba(0,5,20,0.6)");
-    horiz.addColorStop(0.5, "rgba(0,15,45,0.2)");
-    horiz.addColorStop(1,   "rgba(0,5,20,0.6)");
+    horiz.addColorStop(0,   "rgba(2,8,40,0.5)");
+    horiz.addColorStop(0.4, "rgba(5,20,70,0.3)");
+    horiz.addColorStop(0.6, "rgba(5,20,70,0.3)");
+    horiz.addColorStop(1,   "rgba(2,8,40,0.5)");
     ctx.fillStyle = horiz;
     ctx.fillRect(0, 0, W, H);
 
-    const glow = (x: number, y: number, r: number, a: number) => {
+    // Blue nebula glow zones — visible, not subtle
+    const glow = (x: number, y: number, r: number, ri: number, gi: number, bi: number, a: number) => {
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `rgba(5,20,80,${a})`);
+      g.addColorStop(0, `rgba(${ri},${gi},${bi},${a})`);
+      g.addColorStop(0.5, `rgba(${ri},${gi},${bi},${a * 0.4})`);
       g.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     };
-    glow(600,  200, 450, 0.35);
-    glow(1400, 300, 500, 0.3);
-    glow(300,  700, 350, 0.25);
-    glow(1700, 600, 400, 0.28);
+    glow(500,  150, 500, 10, 40, 140, 0.55);
+    glow(1200, 200, 600, 8,  35, 130, 0.5);
+    glow(800,  600, 450, 12, 45, 150, 0.45);
+    glow(200,  500, 380, 6,  25, 110, 0.4);
+    glow(1700, 700, 420, 10, 38, 135, 0.42);
+    glow(1000, 400, 350, 15, 55, 160, 0.35);
+
+    // Milky way blue band
+    const mw = ctx.createLinearGradient(0, 350, 0, 680);
+    mw.addColorStop(0,   "rgba(0,0,0,0)");
+    mw.addColorStop(0.4, "rgba(10,30,90,0.25)");
+    mw.addColorStop(0.6, "rgba(10,30,90,0.25)");
+    mw.addColorStop(1,   "rgba(0,0,0,0)");
+    ctx.fillStyle = mw; ctx.fillRect(0, 0, W, H);
 
     const seed = (n: number) => {
       let x = Math.sin(n * 127.1) * 43758.5453;
       return x - Math.floor(x);
     };
 
-    // Tier 1 — many faint dots
-    for (let i = 0; i < 3000; i++) {
+    // Tier 1 — 2000 small but VISIBLE stars (brighter than before)
+    for (let i = 0; i < 2000; i++) {
       const sx = seed(i * 3.1) * W;
       const sy = seed(i * 7.3) * H;
-      const br = 60 + seed(i * 4.1) * 100;
-      const al = 0.15 + seed(i * 6.2) * 0.35;
-      ctx.fillStyle = `rgba(${br},${br},${Math.min(255, br + 30)},${al})`;
-      ctx.fillRect(sx, sy, 1, 1);
-    }
-
-    // Tier 2 — medium brightness
-    for (let i = 0; i < 500; i++) {
-      const sx = seed(i * 5.7 + 100) * W;
-      const sy = seed(i * 2.9 + 100) * H;
-      const br = 140 + seed(i * 8.3) * 100;
-      const al = 0.4 + seed(i * 3.4) * 0.4;
-      ctx.fillStyle = `rgba(${Math.max(0, br - 20)},${Math.max(0, br - 10)},${Math.min(255, br + 20)},${al})`;
+      const br = 160 + seed(i * 4.1) * 95;
+      const al = 0.5 + seed(i * 6.2) * 0.5;
+      const rb = Math.max(150, br - 20);
+      ctx.fillStyle = `rgba(${rb},${rb},${br},${al})`;
       ctx.fillRect(sx, sy, 1.5, 1.5);
     }
 
-    // Tier 3 — bright stars with soft circular halo only
-    for (let i = 0; i < 80; i++) {
-      const sx = seed(i * 9.1 + 200) * W;
-      const sy = seed(i * 4.7 + 200) * H;
-      const br = 200 + seed(i * 6.1) * 55;
-      const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, 3.5);
-      halo.addColorStop(0,   `rgba(${br},${br},255,0.9)`);
-      halo.addColorStop(0.5, `rgba(${br},${br},255,0.2)`);
-      halo.addColorStop(1,   "rgba(0,0,0,0)");
-      ctx.fillStyle = halo;
-      ctx.fillRect(sx - 4, sy - 4, 8, 8);
+    // Tier 2 — 600 medium bright stars
+    for (let i = 0; i < 600; i++) {
+      const sx = seed(i * 5.7 + 100) * W;
+      const sy = seed(i * 2.9 + 100) * H;
+      const br = 200 + seed(i * 8.3) * 55;
+      const al = 0.7 + seed(i * 3.4) * 0.3;
+      ctx.fillStyle = `rgba(${Math.max(180, br - 20)},${Math.max(185, br - 15)},${br},${al})`;
+      ctx.fillRect(sx - 0.5, sy - 0.5, 2.5, 2.5);
     }
 
-    // Saturn — top right
-    const px = 1760, py = 95, pr = 52;
-    const patm = ctx.createRadialGradient(px, py, pr * 0.9, px, py, pr * 2.3);
-    patm.addColorStop(0, "rgba(40,60,150,0.2)");
-    patm.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = patm; ctx.beginPath(); ctx.arc(px, py, pr * 2.3, 0, Math.PI * 2); ctx.fill();
-    const pbody = ctx.createRadialGradient(px - 14, py - 14, 3, px, py, pr);
-    pbody.addColorStop(0,    "#ccd8f8");
-    pbody.addColorStop(0.3,  "#8899dd");
-    pbody.addColorStop(0.65, "#4455aa");
-    pbody.addColorStop(1,    "#1a2060");
-    ctx.fillStyle = pbody; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(px, py); ctx.rotate(-0.2); ctx.scale(1, 0.25);
+    // Tier 3 — 100 bright stars with clear glow halo
+    for (let i = 0; i < 100; i++) {
+      const sx = seed(i * 9.1 + 200) * W;
+      const sy = seed(i * 4.7 + 200) * H;
+      const br = 230 + seed(i * 6.1) * 25;
+      // Outer soft glow
+      const outer = ctx.createRadialGradient(sx, sy, 0, sx, sy, 6);
+      outer.addColorStop(0,   `rgba(${br},${br},255,0.6)`);
+      outer.addColorStop(0.5, `rgba(${br},${br},255,0.15)`);
+      outer.addColorStop(1,   "rgba(0,0,0,0)");
+      ctx.fillStyle = outer; ctx.fillRect(sx - 6, sy - 6, 12, 12);
+      // Bright core
+      const inner = ctx.createRadialGradient(sx, sy, 0, sx, sy, 2);
+      inner.addColorStop(0, "rgba(255,255,255,1)");
+      inner.addColorStop(1, `rgba(${br},${br},255,0)`);
+      ctx.fillStyle = inner; ctx.fillRect(sx - 2, sy - 2, 4, 4);
+    }
+
+    // ── SATURN — large, clearly visible, positioned where window is ──
+    // Window is on the right wall of room — place Saturn top-right of sky
+    const px = 1580, py = 160, pr = 80;
+
+    // Outer atmosphere glow
+    const satAtm = ctx.createRadialGradient(px, py, pr * 0.8, px, py, pr * 3);
+    satAtm.addColorStop(0,   "rgba(100,130,220,0.3)");
+    satAtm.addColorStop(0.5, "rgba(60,90,180,0.12)");
+    satAtm.addColorStop(1,   "rgba(0,0,0,0)");
+    ctx.fillStyle = satAtm; ctx.beginPath(); ctx.arc(px, py, pr * 3, 0, Math.PI * 2); ctx.fill();
+
+    // Planet body
+    const satBody = ctx.createRadialGradient(px - 22, py - 22, 5, px, py, pr);
+    satBody.addColorStop(0,    "#dde8ff");
+    satBody.addColorStop(0.2,  "#aabbee");
+    satBody.addColorStop(0.5,  "#7788cc");
+    satBody.addColorStop(0.75, "#4455aa");
+    satBody.addColorStop(1,    "#1a2060");
+    ctx.fillStyle = satBody; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
+
+    // Surface bands
+    ctx.save();
+    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.clip();
+    const bands = [
+      { y: -0.3, h: 0.12, a: 0.12 },
+      { y: -0.1, h: 0.08, a: 0.08 },
+      { y:  0.1, h: 0.1,  a: 0.1  },
+      { y:  0.3, h: 0.07, a: 0.06 },
+    ];
+    bands.forEach(({ y, h, a }) => {
+      ctx.fillStyle = `rgba(80,100,180,${a})`;
+      ctx.fillRect(px - pr, py + y * pr, pr * 2, h * pr);
+    });
+    ctx.restore();
+
+    // Rings — 3 layers, tilted
+    ctx.save();
+    ctx.translate(px, py); ctx.rotate(-0.18); ctx.scale(1, 0.28);
     [
-      { ri: 1.1,  ro: 1.42, a: 0.3,  r: 150, g: 162, b: 228 },
-      { ri: 1.48, ro: 1.78, a: 0.18, r: 120, g: 135, b: 210 },
-      { ri: 1.82, ro: 2.02, a: 0.1,  r: 100, g: 115, b: 195 },
+      { ri: 1.15, ro: 1.55, a: 0.5,  r: 180, g: 190, b: 240 },
+      { ri: 1.60, ro: 2.00, a: 0.35, r: 150, g: 165, b: 220 },
+      { ri: 2.05, ro: 2.35, a: 0.2,  r: 120, g: 138, b: 205 },
     ].forEach(({ ri, ro, a, r, g, b }) => {
       const rg = ctx.createRadialGradient(0, 0, pr * ri, 0, 0, pr * ro);
       rg.addColorStop(0,   `rgba(${r},${g},${b},0)`);
-      rg.addColorStop(0.3, `rgba(${r},${g},${b},${a})`);
-      rg.addColorStop(0.7, `rgba(${r},${g},${b},${a * 0.5})`);
+      rg.addColorStop(0.2, `rgba(${r},${g},${b},${a})`);
+      rg.addColorStop(0.8, `rgba(${r},${g},${b},${a * 0.7})`);
       rg.addColorStop(1,   `rgba(${r},${g},${b},0)`);
       ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, pr * ro, 0, Math.PI * 2); ctx.fill();
     });
     ctx.restore();
 
-    // Mars — left
-    const mx = 90, my = 480, mr = 28;
-    const matm = ctx.createRadialGradient(mx, my, mr, mx, my, mr * 2);
-    matm.addColorStop(0, "rgba(170,50,20,0.15)");
+    // Mars — left side, smaller
+    const mx = 90, my = 500, mr = 32;
+    const matm = ctx.createRadialGradient(mx, my, mr, mx, my, mr * 2.2);
+    matm.addColorStop(0, "rgba(180,60,25,0.22)");
     matm.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = matm; ctx.beginPath(); ctx.arc(mx, my, mr * 2, 0, Math.PI * 2); ctx.fill();
-    const mbody = ctx.createRadialGradient(mx - 7, my - 7, 2, mx, my, mr);
-    mbody.addColorStop(0,   "#f09070");
-    mbody.addColorStop(0.5, "#c04530");
+    ctx.fillStyle = matm; ctx.beginPath(); ctx.arc(mx, my, mr * 2.2, 0, Math.PI * 2); ctx.fill();
+    const mbody = ctx.createRadialGradient(mx - 9, my - 9, 2, mx, my, mr);
+    mbody.addColorStop(0,   "#f5a080");
+    mbody.addColorStop(0.4, "#d05535");
     mbody.addColorStop(1,   "#4a1010");
     ctx.fillStyle = mbody; ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
 
-    // Vignette
-    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H * 0.9);
+    // Vignette — dark edges but NOT black centre
+    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.15, W / 2, H / 2, H * 0.85);
     vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(0,0,15,0.85)");
+    vig.addColorStop(1, "rgba(0,0,20,0.7)");
     ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
     const tex = new THREE.CanvasTexture(canvas);
@@ -135,11 +181,11 @@ function SkyDome() {
   );
 }
 
-// ─── Star field ───────────────────────────────────────────────────
+// ─── Star field (3D points) ───────────────────────────────────────
 function StarField() {
   const ref = useRef<THREE.Points>(null);
   const { positions, colors } = useMemo(() => {
-    const count = 500;
+    const count = 700;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const seed = (n: number) => { let x = Math.sin(n * 91.3) * 43758.5; return x - Math.floor(x); };
@@ -150,8 +196,8 @@ function StarField() {
       pos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
-      const b = 0.55 + seed(i * 4.3) * 0.45;
-      col[i * 3] = b * 0.8; col[i * 3 + 1] = b * 0.85; col[i * 3 + 2] = b;
+      const b = 0.75 + seed(i * 4.3) * 0.25;
+      col[i * 3] = b * 0.85; col[i * 3 + 1] = b * 0.9; col[i * 3 + 2] = b;
     }
     return { positions: pos, colors: col };
   }, []);
@@ -162,12 +208,12 @@ function StarField() {
         <bufferAttribute attach="attributes-position" array={positions} count={positions.length / 3} itemSize={3} />
         <bufferAttribute attach="attributes-color"    array={colors}    count={colors.length / 3}    itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.06} vertexColors transparent opacity={0.55} sizeAttenuation />
+      <pointsMaterial size={0.1} vertexColors transparent opacity={0.9} sizeAttenuation />
     </points>
   );
 }
 
-// ─── RGB lights — found at runtime, shifted left behind monitor ───
+// ─── RGB lights — runtime mesh detection ─────────────────────────
 function RGBLights() {
   const { scene } = useThree();
   const r1 = useRef<THREE.PointLight>(null);
@@ -182,12 +228,10 @@ function RGBLights() {
         if (name.includes("cube.049") || name.includes("cube049")) {
           const mp = new THREE.Vector3();
           obj.getWorldPosition(mp);
-
           if (r1.current && r2.current && r3.current) {
-            // Shift much further left (monitor is left of CPU tower)
-            r1.current.position.set(mp.x - 1.4, mp.y + 0.1, mp.z - 0.3); // behind monitor centre
-            r2.current.position.set(mp.x - 1.6, mp.y + 0.4, mp.z - 0.4); // upper left wall
-            r3.current.position.set(mp.x - 1.2, mp.y - 0.2, mp.z - 0.2); // lower desk strip
+            r1.current.position.set(mp.x - 1.4, mp.y + 0.1, mp.z - 0.3);
+            r2.current.position.set(mp.x - 1.6, mp.y + 0.4, mp.z - 0.4);
+            r3.current.position.set(mp.x - 1.2, mp.y - 0.2, mp.z - 0.2);
           }
         }
       });
@@ -235,8 +279,8 @@ function RoomModel() {
           m.needsUpdate = true;
         }
         if (m.name === "Glass_material") {
-          m.transparent = true; m.opacity = 0.3; m.roughness = 0.05; m.metalness = 0.1;
-          m.color = new THREE.Color(0x88aacc); m.map = null;
+          m.transparent = true; m.opacity = 0.15; m.roughness = 0.0; m.metalness = 0.0;
+          m.color = new THREE.Color(0xaaccff); m.map = null;
           m.emissive = new THREE.Color(0x000000); m.emissiveIntensity = 0; m.emissiveMap = null;
           m.side = THREE.DoubleSide;
           (m as THREE.MeshPhysicalMaterial).transmission = 0;
@@ -258,7 +302,7 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]" style={{ width: "100vw", height: "100vh", background: "#00061a" }}>
+    <div className="fixed inset-0 z-[100]" style={{ width: "100vw", height: "100vh", background: "#020d2e" }}>
       <button
         onClick={onBack}
         style={{
@@ -292,7 +336,7 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
           powerPreference: "high-performance",
         }}
       >
-        <color attach="background" args={["#00061a"]} />
+        <color attach="background" args={["#020d2e"]} />
         <SkyDome />
         <StarField />
         <ambientLight intensity={0.4} />
@@ -306,14 +350,10 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
           <Environment preset="apartment" />
         </Suspense>
         <OrbitControls
-          makeDefault
-          enableDamping
-          minDistance={2}
-          maxDistance={20}
-          minPolarAngle={Math.PI / 6}
-          maxPolarAngle={Math.PI / 2.2}
-          minAzimuthAngle={Math.PI / 6}
-          maxAzimuthAngle={Math.PI * 0.75}
+          makeDefault enableDamping
+          minDistance={2} maxDistance={20}
+          minPolarAngle={Math.PI / 6} maxPolarAngle={Math.PI / 2.2}
+          minAzimuthAngle={Math.PI / 6} maxAzimuthAngle={Math.PI * 0.75}
         />
       </Canvas>
     </div>
