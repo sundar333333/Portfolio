@@ -5,141 +5,184 @@ import * as THREE from "three";
 
 const MODEL_URL = "https://rgd8w4vqllunko1j.public.blob.vercel-storage.com/3DRoomorginal1.compressed.glb";
 
-// ─── Procedural nebula sky dome ───────────────────────────────────
+// ─── Cosmic nebula sky dome ───────────────────────────────────────
 function SkyDome() {
   const texture = useMemo(() => {
     const W = 2048, H = 1024;
     const canvas = document.createElement("canvas");
-    canvas.width = W; canvas.height = H;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
     // Deep space base
     const base = ctx.createLinearGradient(0, 0, W, H);
-    base.addColorStop(0,    "#020614");
-    base.addColorStop(0.25, "#03091f");
-    base.addColorStop(0.5,  "#050d28");
-    base.addColorStop(0.75, "#030818");
-    base.addColorStop(1,    "#020614");
+    base.addColorStop(0,    "#010510");
+    base.addColorStop(0.2,  "#02071a");
+    base.addColorStop(0.5,  "#030c22");
+    base.addColorStop(0.8,  "#020818");
+    base.addColorStop(1,    "#010510");
     ctx.fillStyle = base;
     ctx.fillRect(0, 0, W, H);
 
-    // Helper: paint a soft glowing nebula cloud
-    const nebula = (
+    // Helper: soft radial nebula blob
+    const blob = (
       x: number, y: number, rx: number, ry: number,
-      r: number, g: number, b: number, alpha: number
+      r: number, g: number, b: number, alpha: number, angle = 0
     ) => {
       ctx.save();
       ctx.translate(x, y);
-      ctx.scale(rx / 200, ry / 200);
-      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 200);
-      grad.addColorStop(0,   `rgba(${r},${g},${b},${alpha})`);
-      grad.addColorStop(0.4, `rgba(${r},${g},${b},${alpha * 0.6})`);
-      grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+      ctx.rotate(angle);
+      ctx.scale(rx / 260, ry / 260);
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 260);
+      grad.addColorStop(0,    `rgba(${r},${g},${b},${alpha})`);
+      grad.addColorStop(0.35, `rgba(${r},${g},${b},${alpha * 0.7})`);
+      grad.addColorStop(0.7,  `rgba(${r},${g},${b},${alpha * 0.25})`);
+      grad.addColorStop(1,    `rgba(${r},${g},${b},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(0, 0, 200, 0, Math.PI * 2);
+      ctx.arc(0, 0, 260, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     };
 
-    // ── Pink/magenta clouds (left side like reference) ──
-    nebula(180,  420, 380, 260,  220, 40,  150, 0.55);
-    nebula(280,  600, 300, 200,  200, 20,  120, 0.45);
-    nebula(100,  300, 250, 180,  180, 30,  130, 0.4);
-    nebula(350,  750, 280, 160,  230, 50,  160, 0.35);
+    // Deep blue base clouds
+    blob(400,  300, 600, 350, 10,  40, 120, 0.55,  0.2);
+    blob(900,  200, 700, 400, 8,   30, 110, 0.5,  -0.1);
+    blob(1500, 400, 580, 320, 12,  35, 130, 0.45,  0.3);
+    blob(600,  700, 500, 300, 5,   25, 100, 0.4,  -0.2);
+    blob(1800, 700, 480, 280, 10,  28, 115, 0.4,   0.1);
 
-    // ── Cyan/blue clouds (centre-top like reference) ──
-    nebula(700,  200, 420, 260,  20,  160, 220, 0.5);
-    nebula(820,  350, 340, 220,  10,  140, 200, 0.45);
-    nebula(600,  150, 300, 180,  30,  180, 230, 0.4);
-    nebula(950,  280, 260, 180,  15,  120, 190, 0.38);
+    // Cyan/teal clouds (top-centre)
+    blob(750,  180, 480, 300, 0,   200, 240, 0.6,   0.15);
+    blob(620,  120, 360, 220, 10,  180, 220, 0.55, -0.1);
+    blob(900,  250, 400, 250, 5,   170, 210, 0.5,   0.2);
+    blob(1050, 160, 340, 200, 20,  190, 230, 0.45,  0.0);
+    blob(500,  200, 300, 180, 0,   160, 200, 0.4,  -0.2);
 
-    // ── Gold/yellow accent (bottom-left like reference) ──
-    nebula(250,  820, 320, 200,  200, 140, 30,  0.4);
-    nebula(150,  700, 260, 160,  180, 120, 20,  0.35);
-    nebula(420,  900, 240, 140,  210, 160, 40,  0.3);
+    // Pink/magenta clouds (left diagonal)
+    blob(220,  350, 440, 280, 230, 40,  160, 0.65,  0.3);
+    blob(350,  500, 380, 240, 210, 30,  140, 0.6,   0.1);
+    blob(150,  480, 320, 200, 200, 20,  130, 0.55, -0.1);
+    blob(480,  620, 360, 220, 220, 50,  150, 0.5,   0.2);
+    blob(280,  700, 300, 180, 215, 35,  145, 0.45, -0.15);
+    blob(100,  280, 260, 160, 240, 60,  170, 0.4,   0.0);
 
-    // ── Deep purple/indigo fills ──
-    nebula(1400, 300, 380, 280,  80,  20,  160, 0.45);
-    nebula(1600, 500, 300, 220,  60,  10,  140, 0.4);
-    nebula(1200, 600, 340, 240,  100, 30,  180, 0.35);
+    // Hot pink right side
+    blob(1750, 350, 420, 260, 220, 30,  130, 0.6,  -0.2);
+    blob(1900, 500, 360, 220, 210, 25,  120, 0.55,  0.15);
+    blob(1600, 550, 380, 240, 215, 40,  140, 0.5,  -0.1);
+    blob(1850, 200, 300, 180, 200, 20,  110, 0.45,  0.0);
 
-    // ── Right side pink accent ──
-    nebula(1750, 400, 320, 240,  210, 40,  140, 0.5);
-    nebula(1850, 600, 260, 180,  200, 30,  120, 0.4);
-    nebula(1650, 700, 280, 200,  190, 50,  150, 0.35);
+    // Gold/amber bottom-left
+    blob(300,  820, 380, 240, 200, 145, 25,  0.55,  0.1);
+    blob(180,  720, 320, 200, 185, 130, 20,  0.5,  -0.1);
+    blob(480,  880, 300, 180, 210, 155, 30,  0.45,  0.2);
+    blob(650,  900, 260, 160, 195, 140, 22,  0.4,   0.0);
 
-    // ── Extra cyan wisps ──
-    nebula(1100, 150, 280, 160,  20,  200, 240, 0.35);
-    nebula(1300, 400, 220, 140,  15,  170, 210, 0.3);
+    // Purple/indigo deep fills
+    blob(1350, 300, 420, 280, 90,  20,  180, 0.5,   0.1);
+    blob(1550, 500, 360, 240, 70,  15,  160, 0.45, -0.2);
+    blob(1200, 600, 380, 240, 100, 25,  190, 0.4,   0.15);
+    blob(1700, 800, 320, 200, 80,  18,  170, 0.38, -0.1);
 
-    // ── Bright core glow (centre — like the bright white-cyan in reference) ──
-    nebula(680,  220, 160, 120,  180, 230, 255, 0.6);
-    nebula(720,  190, 100, 80,   230, 250, 255, 0.5);
+    // Bright white-cyan core glow
+    blob(720,  200, 200, 140, 150, 230, 255, 0.75,  0.0);
+    blob(740,  185, 120, 90,  210, 250, 255, 0.65,  0.0);
+    blob(760,  175, 70,  50,  240, 255, 255, 0.55,  0.0);
 
-    // ── Scattered small bright stars ──
-    const rng = (n: number) => Math.floor(Math.random() * n);
-    for (let i = 0; i < 1800; i++) {
-      const x = rng(W), y = rng(H);
-      const size = Math.random() < 0.05 ? 2 : 1;
-      const brightness = Math.floor(180 + Math.random() * 75);
-      ctx.fillStyle = `rgba(${brightness},${brightness},${Math.min(255, brightness + 20)},${0.6 + Math.random() * 0.4})`;
-      ctx.fillRect(x, y, size, size);
+    // Diagonal cyan wisp streak
+    for (let i = 0; i < 8; i++) {
+      const t = i / 7;
+      blob(100 + t * 650, 400 - t * 220, 180 - t * 40, 80, 20, 180, 230, 0.2 + t * 0.15, -0.4);
+    }
+    // Pink streak left diagonal
+    for (let i = 0; i < 6; i++) {
+      const t = i / 5;
+      blob(80 + t * 400, 200 + t * 400, 160, 70, 220, 40, 150, 0.18 + t * 0.1, 0.6);
     }
 
-    // ── A few large bright star sparkles ──
-    const sparkle = (x: number, y: number, size: number) => {
+    // Stars (deterministic)
+    const seed = (n: number) => {
+      let x = Math.sin(n * 127.1) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    for (let i = 0; i < 2200; i++) {
+      const sx = seed(i * 3.1) * W;
+      const sy = seed(i * 7.3) * H;
+      const size = seed(i * 2.7) < 0.04 ? 2.5 : seed(i * 5.9) < 0.15 ? 1.5 : 1;
+      const bright = Math.floor(160 + seed(i * 4.1) * 95);
+      ctx.fillStyle = `rgba(${bright},${bright},${Math.min(255, bright + 15)},${0.5 + seed(i * 6.2) * 0.5})`;
+      ctx.fillRect(sx, sy, size, size);
+    }
+
+    // Sparkle stars
+    const sparkle = (x: number, y: number, len: number, alpha: number) => {
       ctx.save();
       ctx.translate(x, y);
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#ffffff";
       for (let a = 0; a < 4; a++) {
         ctx.save();
         ctx.rotate((a * Math.PI) / 4);
-        ctx.fillRect(-size / 2, -1, size, 2);
+        ctx.beginPath();
+        ctx.moveTo(0, -len); ctx.lineTo(1.5, 0);
+        ctx.lineTo(0, len);  ctx.lineTo(-1.5, 0);
+        ctx.closePath();
+        ctx.fill();
         ctx.restore();
       }
       ctx.restore();
     };
-    sparkle(1900, 80,  18);
-    sparkle(420,  120, 12);
-    sparkle(1100, 500, 10);
-    sparkle(780,  780, 8);
+    sparkle(1920, 90,  18, 0.9);
+    sparkle(420,  110, 13, 0.8);
+    sparkle(1100, 480, 9,  0.75);
+    sparkle(seed(1) * W, seed(2) * H * 0.5, 20, 0.95);
+    sparkle(seed(3) * W, seed(4) * H * 0.5, 14, 0.85);
 
-    // ── Saturn-like planet (top right like reference) ──
-    const px = 1760, py = 130, pr = 52;
-    const planetGrad = ctx.createRadialGradient(px - 12, py - 12, 4, px, py, pr);
-    planetGrad.addColorStop(0,   "#aabbee");
-    planetGrad.addColorStop(0.4, "#5566bb");
-    planetGrad.addColorStop(1,   "#1a2060");
+    // Saturn planet (top right)
+    const px = 1780, py = 115, pr = 58;
+    const atmGrad = ctx.createRadialGradient(px, py, pr * 0.8, px, py, pr * 2.2);
+    atmGrad.addColorStop(0, "rgba(80,100,200,0.25)");
+    atmGrad.addColorStop(1, "rgba(20,40,140,0)");
+    ctx.fillStyle = atmGrad;
+    ctx.beginPath(); ctx.arc(px, py, pr * 2.2, 0, Math.PI * 2); ctx.fill();
+    const planetGrad = ctx.createRadialGradient(px - 14, py - 14, 5, px, py, pr);
+    planetGrad.addColorStop(0,    "#c0ccee");
+    planetGrad.addColorStop(0.3,  "#7788cc");
+    planetGrad.addColorStop(0.65, "#4455aa");
+    planetGrad.addColorStop(1,    "#1a2060");
     ctx.fillStyle = planetGrad;
-    ctx.beginPath();
-    ctx.arc(px, py, pr, 0, Math.PI * 2);
-    ctx.fill();
-    // rings
+    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
     ctx.save();
-    ctx.translate(px, py);
-    ctx.rotate(-0.25);
-    ctx.scale(1, 0.28);
-    for (let ring = 0; ring < 3; ring++) {
-      const ri = pr * (1.1 + ring * 0.28);
-      const ro = pr * (1.35 + ring * 0.28);
-      const ringAlpha = 0.35 - ring * 0.08;
-      const ringGrad = ctx.createRadialGradient(0, 0, ri, 0, 0, ro);
-      ringGrad.addColorStop(0,   `rgba(130,150,220,0)`);
-      ringGrad.addColorStop(0.3, `rgba(130,150,220,${ringAlpha})`);
-      ringGrad.addColorStop(0.7, `rgba(100,120,200,${ringAlpha * 0.7})`);
-      ringGrad.addColorStop(1,   `rgba(80,100,180,0)`);
-      ctx.fillStyle = ringGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, ro, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.translate(px, py); ctx.rotate(-0.22); ctx.scale(1, 0.26);
+    [
+      { ri: 1.12, ro: 1.42, a: 0.38, r: 140, g: 155, b: 220 },
+      { ri: 1.45, ro: 1.72, a: 0.28, r: 110, g: 130, b: 200 },
+      { ri: 1.75, ro: 1.98, a: 0.18, r: 90,  g: 110, b: 185 },
+    ].forEach(({ ri, ro, a, r, g, b }) => {
+      const rg = ctx.createRadialGradient(0, 0, pr * ri, 0, 0, pr * ro);
+      rg.addColorStop(0,   `rgba(${r},${g},${b},0)`);
+      rg.addColorStop(0.3, `rgba(${r},${g},${b},${a})`);
+      rg.addColorStop(0.7, `rgba(${r},${g},${b},${a * 0.6})`);
+      rg.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(0, 0, pr * ro, 0, Math.PI * 2); ctx.fill();
+    });
     ctx.restore();
 
-    // ── Vignette edges ──
-    const vig = ctx.createRadialGradient(W/2, H/2, H * 0.3, W/2, H/2, H * 0.9);
+    // Small red planet (mid-left)
+    const p2x = 120, p2y = 600, p2r = 28;
+    const p2Grad = ctx.createRadialGradient(p2x - 6, p2y - 6, 3, p2x, p2y, p2r);
+    p2Grad.addColorStop(0, "#ee9988");
+    p2Grad.addColorStop(0.5, "#cc5544");
+    p2Grad.addColorStop(1, "#441122");
+    ctx.fillStyle = p2Grad;
+    ctx.beginPath(); ctx.arc(p2x, p2y, p2r, 0, Math.PI * 2); ctx.fill();
+
+    // Vignette
+    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H);
     vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(0,0,10,0.55)");
+    vig.addColorStop(1, "rgba(0,0,8,0.65)");
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
 
@@ -156,31 +199,33 @@ function SkyDome() {
   );
 }
 
-// ─── Starfield (extra stars on top of dome) ───────────────────────
+// ─── Starfield ────────────────────────────────────────────────────
 function StarField() {
   const starsRef = useRef<THREE.Points>(null);
 
   const { positions, colors } = useMemo(() => {
-    const count = 1200;
+    const count = 1000;
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
+    const seed = (n: number) => {
+      let x = Math.sin(n * 91.3) * 43758.5;
+      return x - Math.floor(x);
+    };
     for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 44 + Math.random() * 10;
+      const theta = seed(i * 2.3) * Math.PI * 2;
+      const phi   = Math.acos(2 * seed(i * 3.7) - 1);
+      const r     = 44 + seed(i * 5.1) * 10;
       pos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
-      const b = 0.75 + Math.random() * 0.25;
-      col[i * 3]     = b * 0.88;
-      col[i * 3 + 1] = b * 0.92;
-      col[i * 3 + 2] = b;
+      const b = 0.7 + seed(i * 4.3) * 0.3;
+      col[i * 3] = b * 0.87; col[i * 3 + 1] = b * 0.92; col[i * 3 + 2] = b;
     }
     return { positions: pos, colors: col };
   }, []);
 
   useFrame((_, delta) => {
-    if (starsRef.current) starsRef.current.rotation.y += delta * 0.004;
+    if (starsRef.current) starsRef.current.rotation.y += delta * 0.003;
   });
 
   return (
@@ -189,34 +234,38 @@ function StarField() {
         <bufferAttribute attach="attributes-position" array={positions} count={positions.length / 3} itemSize={3} />
         <bufferAttribute attach="attributes-color"    array={colors}    count={colors.length / 3}    itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.1} vertexColors transparent opacity={0.8} sizeAttenuation />
+      <pointsMaterial size={0.09} vertexColors transparent opacity={0.75} sizeAttenuation />
     </points>
   );
 }
 
-// ─── RGB lights — behind monitor + wall accents ───────────────────
+// ─── RGB lights — ONLY behind monitor + left wall near PC ─────────
 function RGBLights() {
-  const light1 = useRef<THREE.PointLight>(null);
-  const light2 = useRef<THREE.PointLight>(null);
-  const light3 = useRef<THREE.PointLight>(null);
-  const light4 = useRef<THREE.PointLight>(null);
+  const monitorBack  = useRef<THREE.PointLight>(null);
+  const monitorUnder = useRef<THREE.PointLight>(null);
+  const wallLeft     = useRef<THREE.PointLight>(null);
+  const pcTower      = useRef<THREE.PointLight>(null);
   const timeRef = useRef(0);
 
   useFrame((_, delta) => {
-    timeRef.current += delta * 0.6;
+    timeRef.current += delta * 0.5;
     const t = timeRef.current;
-    light1.current?.color.setHSL((t * 0.08) % 1, 1, 0.5);
-    light2.current?.color.setHSL(((t * 0.08) + 0.25) % 1, 1, 0.5);
-    light3.current?.color.setHSL(((t * 0.08) + 0.5) % 1, 1, 0.5);
-    light4.current?.color.setHSL(((t * 0.08) + 0.75) % 1, 1, 0.5);
+    monitorBack.current?.color.setHSL((t * 0.07) % 1, 1, 0.5);
+    monitorUnder.current?.color.setHSL(((t * 0.07) + 0.2) % 1, 1, 0.5);
+    wallLeft.current?.color.setHSL(((t * 0.07) + 0.45) % 1, 1, 0.5);
+    pcTower.current?.color.setHSL(((t * 0.07) + 0.65) % 1, 1, 0.5);
   });
 
   return (
     <>
-      <pointLight ref={light1} position={[0.6,  0.8, -1.8]} intensity={3}   distance={3.5} decay={2} color="#ff0080" />
-      <pointLight ref={light2} position={[1.4,  0.2, -1.6]} intensity={2.5} distance={3}   decay={2} color="#00aaff" />
-      <pointLight ref={light3} position={[-0.5, 1.2, -2.0]} intensity={2}   distance={4}   decay={2} color="#aa00ff" />
-      <pointLight ref={light4} position={[2.5,  0.5, -0.5]} intensity={1.5} distance={3}   decay={2} color="#00ffaa" />
+      {/* Behind monitor screen */}
+      <pointLight ref={monitorBack}  position={[0.0,  0.9, -1.9]} intensity={4}   distance={2.8} decay={2} color="#ff00aa" />
+      {/* Under-desk RGB strip */}
+      <pointLight ref={monitorUnder} position={[0.2, -0.2, -1.6]} intensity={2.5} distance={2.2} decay={2} color="#00aaff" />
+      {/* Left wall near PC */}
+      <pointLight ref={wallLeft}     position={[-1.2, 0.8, -1.5]} intensity={3}   distance={3.5} decay={2} color="#aa00ff" />
+      {/* PC tower side glow */}
+      <pointLight ref={pcTower}      position={[0.6,  0.4, -1.4]} intensity={2}   distance={2.0} decay={2} color="#00ffcc" />
     </>
   );
 }
@@ -273,12 +322,10 @@ function RoomModel() {
 // ─── Main export ──────────────────────────────────────────────────
 export default function Room3D({ isVisible = true, onBack }: { isVisible?: boolean; onBack?: () => void }) {
   const { progress } = useProgress();
-
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]" style={{ width: "100vw", height: "100vh", background: "#030a1a" }}>
-
+    <div className="fixed inset-0 z-[100]" style={{ width: "100vw", height: "100vh", background: "#010510" }}>
       <button
         onClick={onBack}
         style={{
@@ -314,7 +361,7 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
           powerPreference: "high-performance",
         }}
       >
-        <color attach="background" args={["#030a1a"]} />
+        <color attach="background" args={["#010510"]} />
         <SkyDome />
         <StarField />
         <ambientLight intensity={0.4} />
