@@ -13,11 +13,9 @@ function SkyDome() {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
-    // Near-black deep space base
     ctx.fillStyle = "#000816";
     ctx.fillRect(0, 0, W, H);
 
-    // Dark blue depth zones — subtle, not bright
     const zone = (x: number, y: number, r: number, ri: number, gi: number, bi: number, a: number) => {
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
       g.addColorStop(0, `rgba(${ri},${gi},${bi},${a})`);
@@ -26,16 +24,14 @@ function SkyDome() {
       ctx.fillRect(0, 0, W, H);
     };
 
-    // Deep blue zones matching reference image
-    zone(512,  200, 500,  5, 18, 70,  0.65);
-    zone(1024, 100, 650,  3, 12, 55,  0.55);
-    zone(300,  600, 400,  4, 10, 45,  0.45);
-    zone(1600, 400, 500,  6, 15, 65,  0.5);
-    zone(900,  700, 380,  5, 14, 50,  0.42);
-    zone(1800, 800, 300,  4, 10, 40,  0.38);
-    zone(100,  300, 350,  3, 8,  35,  0.4);
+    zone(512,  200, 500,  5, 18, 70, 0.65);
+    zone(1024, 100, 650,  3, 12, 55, 0.55);
+    zone(300,  600, 400,  4, 10, 45, 0.45);
+    zone(1600, 400, 500,  6, 15, 65, 0.5);
+    zone(900,  700, 380,  5, 14, 50, 0.42);
+    zone(1800, 800, 300,  4, 10, 40, 0.38);
+    zone(100,  300, 350,  3,  8, 35, 0.4);
 
-    // Faint horizontal milky way smear
     const mw = ctx.createLinearGradient(0, 380, 0, 620);
     mw.addColorStop(0,   "rgba(0,0,0,0)");
     mw.addColorStop(0.5, "rgba(8,14,42,0.2)");
@@ -43,18 +39,16 @@ function SkyDome() {
     ctx.fillStyle = mw;
     ctx.fillRect(0, 0, W, H);
 
-    // Very faint nebula colour hints (barely visible like real space)
-    zone(700,  250, 280, 30, 5,  60,  0.12);
-    zone(1400, 350, 240, 5,  20, 55,  0.1);
-    zone(400,  500, 200, 50, 8,  40,  0.1);
+    zone(700,  250, 280, 30,  5, 60, 0.12);
+    zone(1400, 350, 240,  5, 20, 55, 0.1);
+    zone(400,  500, 200, 50,  8, 40, 0.1);
 
-    // Stars — realistic varied sizes and brightness
     const seed = (n: number) => {
       let x = Math.sin(n * 127.1) * 43758.5453;
       return x - Math.floor(x);
     };
 
-    // Layer 1: many dim tiny stars
+    // Dim tiny stars
     for (let i = 0; i < 2500; i++) {
       const sx = seed(i * 3.1) * W;
       const sy = seed(i * 7.3) * H;
@@ -64,7 +58,7 @@ function SkyDome() {
       ctx.fillRect(sx, sy, 1, 1);
     }
 
-    // Layer 2: medium stars
+    // Medium stars
     for (let i = 0; i < 400; i++) {
       const sx = seed(i * 5.7 + 1) * W;
       const sy = seed(i * 2.9 + 1) * H;
@@ -75,40 +69,30 @@ function SkyDome() {
       ctx.fillRect(sx - 0.5, sy - 0.5, 1.5, 1.5);
     }
 
-    // Layer 3: bright stars with soft glow
+    // Bright stars with glow
     for (let i = 0; i < 60; i++) {
       const sx = seed(i * 9.1 + 2) * W;
       const sy = seed(i * 4.7 + 2) * H;
       const bright = 210 + seed(i * 6.1) * 45;
-      // Glow halo
       const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 4);
       glow.addColorStop(0,   `rgba(${bright},${bright},255,0.8)`);
       glow.addColorStop(0.4, `rgba(${bright},${bright},255,0.3)`);
       glow.addColorStop(1,   "rgba(0,0,0,0)");
       ctx.fillStyle = glow;
       ctx.fillRect(sx - 4, sy - 4, 8, 8);
-      // Core
-      ctx.fillStyle = `rgba(255,255,255,0.95)`;
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.fillRect(sx, sy, 1, 1);
     }
 
-    // Saturn planet — top right corner
+    // Saturn — top right
     const px = 1760, py = 95, pr = 52;
-    // Atmosphere
     const atm = ctx.createRadialGradient(px, py, pr, px, py, pr * 2.4);
-    atm.addColorStop(0, "rgba(50,70,160,0.22)");
-    atm.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = atm;
-    ctx.beginPath(); ctx.arc(px, py, pr * 2.4, 0, Math.PI * 2); ctx.fill();
-    // Body
+    atm.addColorStop(0, "rgba(50,70,160,0.22)"); atm.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = atm; ctx.beginPath(); ctx.arc(px, py, pr * 2.4, 0, Math.PI * 2); ctx.fill();
     const pbg = ctx.createRadialGradient(px - 14, py - 14, 3, px, py, pr);
-    pbg.addColorStop(0,    "#d0dcf8");
-    pbg.addColorStop(0.3,  "#8899dd");
-    pbg.addColorStop(0.65, "#4455aa");
-    pbg.addColorStop(1,    "#1a2060");
-    ctx.fillStyle = pbg;
-    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
-    // Rings
+    pbg.addColorStop(0, "#d0dcf8"); pbg.addColorStop(0.3, "#8899dd");
+    pbg.addColorStop(0.65, "#4455aa"); pbg.addColorStop(1, "#1a2060");
+    ctx.fillStyle = pbg; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.translate(px, py); ctx.rotate(-0.2); ctx.scale(1, 0.25);
     [
       { ri: 1.1,  ro: 1.42, a: 0.32, r: 150, g: 162, b: 228 },
@@ -120,12 +104,11 @@ function SkyDome() {
       rg.addColorStop(0.3, `rgba(${r},${g},${b},${a})`);
       rg.addColorStop(0.7, `rgba(${r},${g},${b},${a * 0.5})`);
       rg.addColorStop(1,   `rgba(${r},${g},${b},0)`);
-      ctx.fillStyle = rg;
-      ctx.beginPath(); ctx.arc(0, 0, pr * ro, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, pr * ro, 0, Math.PI * 2); ctx.fill();
     });
     ctx.restore();
 
-    // Mars-like rocky planet — left side
+    // Mars — left side
     const p2x = 90, p2y = 480, p2r = 30;
     const p2a = ctx.createRadialGradient(p2x, p2y, p2r, p2x, p2y, p2r * 1.9);
     p2a.addColorStop(0, "rgba(180,55,25,0.18)"); p2a.addColorStop(1, "rgba(0,0,0,0)");
@@ -134,10 +117,8 @@ function SkyDome() {
     p2g.addColorStop(0, "#f09870"); p2g.addColorStop(0.5, "#c04530"); p2g.addColorStop(1, "#4a1010");
     ctx.fillStyle = p2g; ctx.beginPath(); ctx.arc(p2x, p2y, p2r, 0, Math.PI * 2); ctx.fill();
 
-    // Vignette edges — dark corners like reference
     const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.18, W / 2, H / 2, H * 0.85);
-    vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(0,0,10,0.75)");
+    vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, "rgba(0,0,10,0.75)");
     ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
     const tex = new THREE.CanvasTexture(canvas);
@@ -153,7 +134,7 @@ function SkyDome() {
   );
 }
 
-// ─── Subtle 3D star points ────────────────────────────────────────
+// ─── Star field ───────────────────────────────────────────────────
 function StarField() {
   const ref = useRef<THREE.Points>(null);
   const { positions, colors } = useMemo(() => {
@@ -185,37 +166,33 @@ function StarField() {
   );
 }
 
-// ─── RGB lights — LEFT WALL behind monitor only ───────────────────
-// From GLB analysis + room rotY(PI/4) + pos[0,-1,0]:
-//   Monitor world:    ( 0.04,  0.69, -5.15)
-//   PC tower world:   (-0.64,  0.47, -4.39)
-//   Messi/right wall: ( 3.55,  1.75, -2.08)  ← must NOT light this
+// ─── RGB Lights — visually placed at PC desk (left/back of room) ──
+// The desk with monitor is on the LEFT wall (back-left corner).
+// Camera is at [5,5,5] looking toward origin.
+// Room rotated PI/4 — PC corner is at world approx (-3, y, -3).
+// Keep distance SHORT (1.5) and decay HIGH (3) so light CANNOT reach right wall.
 function RGBLights() {
-  const r1 = useRef<THREE.PointLight>(null); // behind monitor screen
-  const r2 = useRef<THREE.PointLight>(null); // PC tower
-  const r3 = useRef<THREE.PointLight>(null); // left wall strip
-  const r4 = useRef<THREE.PointLight>(null); // under desk
+  const r1 = useRef<THREE.PointLight>(null);
+  const r2 = useRef<THREE.PointLight>(null);
+  const r3 = useRef<THREE.PointLight>(null);
   const t  = useRef(0);
 
   useFrame((_, dt) => {
     t.current += dt * 0.45;
     const s = t.current;
-    r1.current?.color.setHSL((s * 0.06)         % 1, 1, 0.5);
-    r2.current?.color.setHSL(((s * 0.06) + 0.25) % 1, 1, 0.5);
-    r3.current?.color.setHSL(((s * 0.06) + 0.5)  % 1, 1, 0.5);
-    r4.current?.color.setHSL(((s * 0.06) + 0.75) % 1, 1, 0.5);
+    r1.current?.color.setHSL((s * 0.06)          % 1, 1, 0.5);
+    r2.current?.color.setHSL(((s * 0.06) + 0.33) % 1, 1, 0.5);
+    r3.current?.color.setHSL(((s * 0.06) + 0.66) % 1, 1, 0.5);
   });
 
   return (
     <>
-      {/* Behind monitor — left wall cluster, z ~ -5 */}
-      <pointLight ref={r1} position={[ 0.41, 1.5, -5.53]} intensity={5}   distance={2.5} decay={2.5} color="#ff00aa" />
-      {/* PC tower glow */}
-      <pointLight ref={r2} position={[-0.53, 0.8, -4.49]} intensity={4}   distance={2.0} decay={2.5} color="#00aaff" />
-      {/* Left wall LED strip */}
-      <pointLight ref={r3} position={[-0.71, 1.2, -4.95]} intensity={3.5} distance={2.5} decay={2.5} color="#aa00ff" />
-      {/* Under desk floor glow */}
-      <pointLight ref={r4} position={[-0.28, 0.0, -4.53]} intensity={3}   distance={2.0} decay={2.5} color="#00ffcc" />
+      {/* Behind monitor — back-left wall */}
+      <pointLight ref={r1} position={[-3.0, 1.2, -3.8]} intensity={6}   distance={1.8} decay={3} color="#ff00aa" />
+      {/* PC tower side */}
+      <pointLight ref={r2} position={[-2.8, 0.6, -3.2]} intensity={5}   distance={1.5} decay={3} color="#00aaff" />
+      {/* Left wall LED strip above desk */}
+      <pointLight ref={r3} position={[-3.5, 1.5, -3.0]} intensity={4}   distance={1.8} decay={3} color="#aa00ff" />
     </>
   );
 }
@@ -286,12 +263,14 @@ export default function Room3D({ isVisible = true, onBack }: { isVisible?: boole
       )}
 
       <Canvas camera={{ position: [5, 5, 5], fov: 45 }} shadows
-        gl={{ toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.7, outputColorSpace: THREE.SRGBColorSpace, powerPreference: "high-performance" }}>
+        gl={{ toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.7,
+              outputColorSpace: THREE.SRGBColorSpace, powerPreference: "high-performance" }}>
         <color attach="background" args={["#000816"]} />
         <SkyDome />
         <StarField />
         <ambientLight intensity={0.4} />
-        <spotLight position={[0, 8, 0]} angle={0.5} penumbra={1} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
+        <spotLight position={[0, 8, 0]} angle={0.5} penumbra={1} intensity={1.2}
+          castShadow shadow-mapSize={[1024, 1024]} />
         <directionalLight position={[3, 6, 3]} intensity={0.3} />
         <directionalLight position={[-3, 6, -3]} intensity={0.2} />
         <RGBLights />
