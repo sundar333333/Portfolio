@@ -21,7 +21,7 @@ function useStaticTexture() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    const size = 1024;
+    const size = 256;
     const data = new Uint8Array(size * size * 4);
     for (let i = 0; i < data.length; i += 4) {
       const noise = Math.random() * 255;
@@ -114,16 +114,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
-
-  
-  useEffect(() => {
-    tvScene.traverse((child: any) => {
-      if (child.isMesh) {
-        console.log("Mesh:", child.name);
-      }
-    });
-  }, [tvScene]);
-
 
   useEffect(() => {
     tvScene.traverse((child: any) => {
@@ -232,13 +222,33 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       if (ctx) {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        for (let i = 0; i < 600; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const gray = Math.random() * 60;
+          ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
         ctx.fillStyle = "white";
         ctx.font = "bold 28px Arial, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(hoveredText, canvas.width / 2, canvas.height / 2);
-
+        ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+        ctx.shadowBlur = 15;
+        const words = hoveredText.split(" ");
+        const lines: string[] = [];
+        for (let i = 0; i < words.length; i += 3) {
+          lines.push(words.slice(i, i + 3).join(" "));
+        }
+        const lineHeight = 40;
+        const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
+        lines.forEach((line, i) => {
+          ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
+        });
+        for (let y = 0; y < canvas.height; y += 2) {
+          ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+          ctx.fillRect(0, y, canvas.width, 1);
+        }
         canvasTextureRef.current.needsUpdate = true;
       }
     } else if (!isVideoPlaying) {
@@ -247,22 +257,17 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   });
 
   const screenMaterial = useMemo(() => {
-  if (isVideoPlaying && videoTextureRef.current) {
-    return new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
-  }
-
-  if (hoveredText && canvasTextureRef.current) {
-    return new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
-  }
-
-  if (staticTexture) {
-    return new THREE.MeshBasicMaterial({ map: staticTexture });
-  }
-
-  return null; // ❗ IMPORTANT
-}, [staticTexture, hoveredText, isVideoPlaying]);
-
-
+    if (isVideoPlaying && videoTextureRef.current) {
+      return new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
+    }
+    if (hoveredText && canvasTextureRef.current) {
+      return new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
+    }
+    if (staticTexture) {
+      return new THREE.MeshBasicMaterial({ map: staticTexture });
+    }
+    return null;
+  }, [staticTexture, hoveredText, isVideoPlaying]);
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
@@ -282,25 +287,24 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
+      {/* Screen sits INSIDE the recessed area — bezel clips the edges naturally */}
       {screenMaterial && (
-        <mesh position={[-0.18, -0.05, 1.26]}>
+        <mesh position={[-0.18, 0.05, 1.05]} renderOrder={-1}>
           <planeGeometry args={[1.75, 1.25]} />
           <primitive object={screenMaterial} attach="material" />
         </mesh>
       )}
 
-      {/* ❌ REMOVED: screen plane */}
-
       <pointLight
         ref={screenGlowRef}
-        position={[0, -0.16, 2]}
+        position={[-0.18, 0.05, 1.5]}
         intensity={0.3}
         color="#aaccff"
         distance={5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[0, -0.16, 3]} intensity={0.2} color="#ffddcc" distance={6} />
+        <pointLight position={[-0.18, 0.05, 2]} intensity={0.2} color="#ffddcc" distance={6} />
       )}
     </group>
   );
