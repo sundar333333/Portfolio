@@ -23,7 +23,6 @@ function useStaticTexture() {
   useEffect(() => {
     const size = 256;
     const data = new Uint8Array(size * size * 4);
-
     for (let i = 0; i < data.length; i += 4) {
       const noise = Math.random() * 255;
       data[i] = noise;
@@ -31,17 +30,11 @@ function useStaticTexture() {
       data[i + 2] = noise;
       data[i + 3] = 255;
     }
-
     const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
     tex.needsUpdate = true;
     textureRef.current = tex;
     forceUpdate(n => n + 1);
-
-    return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose();
-      }
-    };
+    return () => { if (textureRef.current) textureRef.current.dispose(); };
   }, []);
 
   const updateTexture = useCallback(() => {
@@ -66,24 +59,15 @@ function useTileTexture() {
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext("2d")!;
-
     ctx.fillStyle = "#0a0908";
     ctx.fillRect(0, 0, 512, 512);
-
     const tileSize = 128;
     const groutWidth = 4;
-
     for (let x = 0; x < 512; x += tileSize) {
       for (let y = 0; y < 512; y += tileSize) {
         const brightness = 12 + Math.random() * 8;
         ctx.fillStyle = `rgb(${brightness}, ${brightness * 0.95}, ${brightness * 0.9})`;
-        ctx.fillRect(
-          x + groutWidth / 2,
-          y + groutWidth / 2,
-          tileSize - groutWidth,
-          tileSize - groutWidth
-        );
-
+        ctx.fillRect(x + groutWidth / 2, y + groutWidth / 2, tileSize - groutWidth, tileSize - groutWidth);
         for (let i = 0; i < 30; i++) {
           const px = x + groutWidth / 2 + Math.random() * (tileSize - groutWidth);
           const py = y + groutWidth / 2 + Math.random() * (tileSize - groutWidth);
@@ -93,29 +77,20 @@ function useTileTexture() {
         }
       }
     }
-
     ctx.strokeStyle = "#030302";
     ctx.lineWidth = groutWidth;
     for (let x = 0; x <= 512; x += tileSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, 512);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 512); ctx.stroke();
     }
     for (let y = 0; y <= 512; y += tileSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(512, y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke();
     }
-
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(8, 8);
     return tex;
   }, []);
-
   return texture;
 }
 
@@ -195,9 +170,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   }, [isVideoPlaying]);
 
   useEffect(() => {
-    if (videoElRef.current) {
-      videoElRef.current.muted = isMuted;
-    }
+    if (videoElRef.current) videoElRef.current.muted = isMuted;
   }, [isMuted]);
 
   useEffect(() => {
@@ -220,7 +193,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
-
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
@@ -245,11 +217,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
-
       if (ctx) {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         for (let i = 0; i < 600; i++) {
           const x = Math.random() * canvas.width;
           const y = Math.random() * canvas.height;
@@ -257,35 +227,26 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
           ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
           ctx.fillRect(x, y, 2, 2);
         }
-
         ctx.fillStyle = "white";
         ctx.font = "bold 28px Arial, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-
         ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
         ctx.shadowBlur = 15;
-
         const words = hoveredText.split(" ");
-        const maxWordsPerLine = 3;
         const lines: string[] = [];
-
-        for (let i = 0; i < words.length; i += maxWordsPerLine) {
-          lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
+        for (let i = 0; i < words.length; i += 3) {
+          lines.push(words.slice(i, i + 3).join(" "));
         }
-
         const lineHeight = 40;
         const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
-
         lines.forEach((line, i) => {
           ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
         });
-
         for (let y = 0; y < canvas.height; y += 2) {
           ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
           ctx.fillRect(0, y, canvas.width, 1);
         }
-
         canvasTextureRef.current.needsUpdate = true;
       }
     } else if (!isVideoPlaying) {
@@ -316,30 +277,30 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   return (
     <group
       ref={groupRef}
-      position={[0, 0.0, 0]}
-      scale={0.018}
+      position={[0, 0.22, 0]}
+      scale={0.18}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay plane */}
-      <mesh position={[-2, 12, 14]}>
-        <planeGeometry args={[20, 15]} />
+      {/* Screen overlay — precisely matched to tv_low front face */}
+      <mesh position={[0, -0.16, 1.25]}>
+        <planeGeometry args={[2.8, 1.8]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
       <pointLight
         ref={screenGlowRef}
-        position={[0, 10, 50]}
+        position={[0, -0.16, 2]}
         intensity={0.3}
         color="#aaccff"
-        distance={200}
+        distance={5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[0, 10, 80]} intensity={0.2} color="#ffddcc" distance={250} />
+        <pointLight position={[0, -0.16, 3]} intensity={0.2} color="#ffddcc" distance={6} />
       )}
     </group>
   );
@@ -347,29 +308,21 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
 function TiledFloor({ visible }: { visible: boolean }) {
   const tileTexture = useTileTexture();
-
   if (!visible) return null;
-
   return (
     <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <planeGeometry args={[30, 30]} />
-      <meshStandardMaterial
-        map={tileTexture}
-        roughness={0.85}
-        metalness={0.05}
-      />
+      <meshStandardMaterial map={tileTexture} roughness={0.85} metalness={0.05} />
     </mesh>
   );
 }
 
 function GlitchOverlay({ intensity }: { intensity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
+  useFrame(() => {
     if (meshRef.current && intensity > 0.1) {
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
       material.opacity = intensity * 0.3 * (0.5 + Math.random() * 0.5);
-
       if (Math.random() < intensity * 0.3) {
         meshRef.current.position.x = (Math.random() - 0.5) * 0.1;
         meshRef.current.position.y = (Math.random() - 0.5) * 0.1;
@@ -379,9 +332,7 @@ function GlitchOverlay({ intensity }: { intensity: number }) {
       }
     }
   });
-
   if (intensity < 0.1) return null;
-
   return (
     <mesh ref={meshRef} position={[0, 0, 0.3]}>
       <planeGeometry args={[3, 3]} />
@@ -428,101 +379,60 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
       targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
     };
-
-    const handleWheel = () => {
-      onStopVideoRef.current();
-    };
-
-    const handleTouchMove = () => {
-      onStopVideoRef.current();
-    };
-
+    const handleWheel = () => { onStopVideoRef.current(); };
+    const handleTouchMove = () => { onStopVideoRef.current(); };
     const handleNavigateTo = (e: Event) => {
-      if (isVideoPlayingRef.current) {
-        onStopVideoRef.current();
-      }
+      if (isVideoPlayingRef.current) onStopVideoRef.current();
       const section = (e as CustomEvent).detail?.section;
       if (!section) return;
-
       const targetOffsets: Record<string, number> = {
-        landing: 0,
-        about: 0.20,
-        works: 1.0,
-        room: 1.0,
-        contact: 1.0,
+        landing: 0, about: 0.20, works: 1.0, room: 1.0, contact: 1.0,
       };
-
       const targetOffset = targetOffsets[section];
       if (targetOffset === undefined) return;
-
       const el = scroll.el;
       const maxScroll = el.scrollHeight - el.clientHeight;
       const targetScrollTop = targetOffset * maxScroll;
-
       cancelAnimationFrame(navAnimFrame.current);
-
       const startScrollTop = el.scrollTop;
       const distance = targetScrollTop - startScrollTop;
-
       if (Math.abs(distance) < 5) {
         if (section === 'contact' || section === 'room') {
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
-          }, 100);
+          setTimeout(() => { window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } })); }, 100);
         }
         if (section === 'works') {
           window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
         }
         if (section === 'landing' || section === 'about') {
-          window.dispatchEvent(
-            new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } })
-          );
-          requestAnimationFrame(() => {
-            window.dispatchEvent(new Event("scroll"));
-          });
+          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+          requestAnimationFrame(() => { window.dispatchEvent(new Event("scroll")); });
         }
         return;
       }
-
       const duration = Math.min(3000, Math.max(1200, Math.abs(distance) * 0.8));
       const startTime = performance.now();
-
-      const easeInOutCubic = (t: number) =>
-        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
+      const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       const animateScroll = (now: number) => {
         const elapsed = now - startTime;
         const rawProgress = Math.min(1, elapsed / duration);
-        const easedProgress = easeInOutCubic(rawProgress);
-
-        el.scrollTop = startScrollTop + distance * easedProgress;
-
+        el.scrollTop = startScrollTop + distance * easeInOutCubic(rawProgress);
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animateScroll);
         } else {
-          setTimeout(() => {
-            window.dispatchEvent(new Event("scroll"));
-          }, 50);
-
+          setTimeout(() => { window.dispatchEvent(new Event("scroll")); }, 50);
           if (section === 'contact' || section === 'room') {
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } }));
-            }, 200);
+            setTimeout(() => { window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } })); }, 200);
           }
-
           if (section === 'works') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
           }
-
           if (section === 'landing' || section === 'about') {
             window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
           }
         }
       };
-
       navAnimFrame.current = requestAnimationFrame(animateScroll);
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("wheel", handleWheel, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
@@ -538,16 +448,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useFrame(() => {
     const offset = scroll.offset;
-
     const startZ = 1.8;
     const screenZ = 0.3;
     const tvScreenY = 0.22;
-
     let targetZ: number;
     let targetY: number;
     let lookAtY: number;
     let targetX = -0.05;
-
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
@@ -558,57 +465,39 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetY = tvScreenY;
       lookAtY = tvScreenY;
     }
-
     camera.position.x += (targetX - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
-
     camera.lookAt(targetX, lookAtY, 0);
-
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
-
     const isWorkVisible = offset > transitionThreshold;
-
     setShowWorkSection(isWorkVisible);
     onWorkSectionChange?.(isWorkVisible);
-
     if (isWorkVisible) {
-      const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
-      onScrollProgress?.(workProgress);
+      onScrollProgress?.((offset - transitionThreshold) / (1 - transitionThreshold));
     } else {
       onScrollProgress?.(0);
     }
-
     if (offset > whiteSectionStart) {
-      const whiteProgress = (offset - whiteSectionStart) / (1 - whiteSectionStart);
-      onWhiteSectionProgress?.(Math.min(1, whiteProgress));
+      onWhiteSectionProgress?.(Math.min(1, (offset - whiteSectionStart) / (1 - whiteSectionStart)));
     } else {
       onWhiteSectionProgress?.(0);
     }
-
     if (offset > circleStart) {
-      const circleProgress = (offset - circleStart) / (1 - circleStart);
-      onCircleProgress?.(Math.min(1, circleProgress));
+      onCircleProgress?.(Math.min(1, (offset - circleStart) / (1 - circleStart)));
     } else {
       onCircleProgress?.(0);
     }
   });
 
   const showLandingTV = !showWorkSection;
-
-  const getBackgroundColor = () => {
-    if (showWorkSection) return "#0066FF";
-    return "#050403";
-  };
-
-  const bgColor = getBackgroundColor();
+  const bgColor = showWorkSection ? "#0066FF" : "#050403";
 
   return (
     <>
       <color attach="background" args={[bgColor]} />
       <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : 12]} />
-
       <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
       <spotLight
         position={[0, 3.5, 1.5]}
@@ -628,22 +517,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         intensity={showLandingTV ? 3 : 1}
         color="#aab8cc"
       />
-
       <Environment preset="night" background={false} />
-
       <TiledFloor visible={showLandingTV} />
-
       {showLandingTV && (
-        <ContactShadows
-          position={[0, 0, 0]}
-          opacity={0.6}
-          scale={10}
-          blur={2}
-          far={4}
-          color="#000000"
-        />
+        <ContactShadows position={[0, 0, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#000000" />
       )}
-
       <VintageTV
         hoveredText={hoveredText}
         onClick={onTVClick}
@@ -652,9 +530,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         visible={showLandingTV}
         glitchIntensity={glitchIntensity}
       />
-
       <GlitchOverlay intensity={glitchIntensity} />
-
       <WorkSection visible={showWorkSection} />
     </>
   );
@@ -676,9 +552,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
         }}
         dpr={[1, 1.5]}
         onCreated={({ gl }) => {
-          gl.domElement.addEventListener("webglcontextlost", (e) => {
-            e.preventDefault();
-          });
+          gl.domElement.addEventListener("webglcontextlost", (e) => { e.preventDefault(); });
           gl.domElement.addEventListener("webglcontextrestored", () => {});
         }}
       >
