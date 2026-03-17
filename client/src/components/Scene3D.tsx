@@ -285,22 +285,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay */}
-      <mesh position={[-0.25, 0.05, 1.20]}>
-        <planeGeometry args={[2.4, 1.6]} />
+      {/* Screen overlay - fitted inside curved bezel */}
+      <mesh position={[-0.55, 0.15, 1.20]}>
+        <planeGeometry args={[1.85, 1.45]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
       <pointLight
         ref={screenGlowRef}
-        position={[0, -0.16, 2]}
+        position={[-0.55, 0.15, 2]}
         intensity={0.3}
         color="#aaccff"
         distance={5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[0, -0.16, 3]} intensity={0.2} color="#ffddcc" distance={6} />
+        <pointLight position={[-0.55, 0.15, 3]} intensity={0.2} color="#ffddcc" distance={6} />
       )}
     </group>
   );
