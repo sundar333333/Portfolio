@@ -115,10 +115,25 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
 
+  const screenMeshRef = useRef<THREE.Mesh | null>(null); // ✅ ADDED
+
   useEffect(() => {
     tvScene.traverse((child: any) => {
-      child.castShadow = true;
-      child.receiveShadow = true;
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        const name = child.name.toLowerCase();
+
+        // ✅ ADDED: detect screen mesh
+        if (
+          name.includes("screen") ||
+          name.includes("display") ||
+          name.includes("glass")
+        ) {
+          screenMeshRef.current = child;
+        }
+      }
     });
   }, [tvScene]);
 
@@ -220,33 +235,13 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       if (ctx) {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < 600; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * canvas.height;
-          const gray = Math.random() * 60;
-          ctx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
-          ctx.fillRect(x, y, 2, 2);
-        }
+
         ctx.fillStyle = "white";
         ctx.font = "bold 28px Arial, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
-        ctx.shadowBlur = 15;
-        const words = hoveredText.split(" ");
-        const lines: string[] = [];
-        for (let i = 0; i < words.length; i += 3) {
-          lines.push(words.slice(i, i + 3).join(" "));
-        }
-        const lineHeight = 40;
-        const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
-        lines.forEach((line, i) => {
-          ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
-        });
-        for (let y = 0; y < canvas.height; y += 2) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-          ctx.fillRect(0, y, canvas.width, 1);
-        }
+        ctx.fillText(hoveredText, canvas.width / 2, canvas.height / 2);
+
         canvasTextureRef.current.needsUpdate = true;
       }
     } else if (!isVideoPlaying) {
@@ -267,6 +262,20 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     return new THREE.MeshBasicMaterial({ color: 0x333333 });
   }, [staticTexture, hoveredText, isVideoPlaying]);
 
+  // ✅ ADDED: apply material to real screen mesh
+  useEffect(() => {
+    if (!screenMeshRef.current) return;
+
+    const mesh = screenMeshRef.current;
+
+    if ((mesh.material as any).map !== undefined) {
+      (mesh.material as any).map = (screenMaterial as any).map;
+      (mesh.material as THREE.Material).needsUpdate = true;
+    } else {
+      mesh.material = screenMaterial;
+    }
+  }, [screenMaterial]);
+
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
     onClick();
@@ -285,11 +294,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay exactly matching the curved glass area */}
-      <mesh position={[0, -0.16, 1.22]}>
-        <planeGeometry args={[2.3, 1.75]} />
-        <primitive object={screenMaterial} attach="material" />
-      </mesh>
+      {/* ❌ REMOVED: screen plane */}
 
       <pointLight
         ref={screenGlowRef}
