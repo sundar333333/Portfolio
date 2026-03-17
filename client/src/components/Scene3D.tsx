@@ -114,8 +114,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
+  const screenMeshRef = useRef<THREE.Mesh | null>(null);
 
-  const screenMeshRef = useRef<THREE.Mesh | null>(null); // ✅ ADDED
 
   useEffect(() => {
     tvScene.traverse((child: any) => {
@@ -125,11 +125,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
         const name = child.name.toLowerCase();
 
-        // ✅ ADDED: detect screen mesh
+        // ✅ ONLY target real screen (NOT glass)
         if (
           name.includes("screen") ||
-          name.includes("display") ||
-          name.includes("glass")
+          name.includes("display")
         ) {
           screenMeshRef.current = child;
         }
@@ -275,6 +274,16 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       mesh.material = screenMaterial;
     }
   }, [screenMaterial]);
+
+  useEffect(() => {
+  if (!screenMeshRef.current) return;
+
+  const mesh = screenMeshRef.current;
+
+  // ✅ FORCE apply material (fixes blank issue)
+  mesh.material = screenMaterial;
+}, [screenMaterial]);
+
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
