@@ -116,8 +116,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
   useEffect(() => {
     if (textureRef.current) {
-      textureRef.current.repeat.set(1, 1);
-      textureRef.current.offset.set(0, 0);
+      textureRef.current.repeat.set(0.2334, 0.2982);
+      textureRef.current.offset.set(0.3984, 0.6607);
       textureRef.current.wrapS = THREE.ClampToEdgeWrapping;
       textureRef.current.wrapT = THREE.ClampToEdgeWrapping;
       textureRef.current.needsUpdate = true;
@@ -151,20 +151,20 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     canvas.height = 384;
     canvasRef.current = canvas;
     const tex = new THREE.CanvasTexture(canvas);
-    tex.repeat.set(1, 1);
+    tex.repeat.set(0.2334, 0.2982);
+    tex.offset.set(0.3984, 0.6607);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
-    canvasTextureRef.current = tex;
 
     const videoCanvas = document.createElement("canvas");
     videoCanvas.width = 1024;
     videoCanvas.height = 768;
     videoCanvasRef.current = videoCanvas;
     const videoTex = new THREE.CanvasTexture(videoCanvas);
-    videoTex.repeat.set(1, 1);
+    videoTex.repeat.set(0.2334, 0.2982);
+    videoTex.offset.set(0.3984, 0.6607);
     videoTex.wrapS = THREE.ClampToEdgeWrapping;
     videoTex.wrapT = THREE.ClampToEdgeWrapping;
-    videoTextureRef.current = videoTex;
 
     const video = document.createElement("video");
     video.src = "/static/tribute.mp4?v=2";
