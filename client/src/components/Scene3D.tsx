@@ -21,7 +21,7 @@ function useStaticTexture() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    const size = 256;
+    const size = 1024;
     const data = new Uint8Array(size * size * 4);
     for (let i = 0; i < data.length; i += 4) {
       const noise = Math.random() * 255;
@@ -259,20 +259,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     return new THREE.MeshBasicMaterial({ color: 0x333333 });
   }, [staticTexture, hoveredText, isVideoPlaying]);
 
-  useEffect(() => {
-    if (!tvScene) return;
-
-    tvScene.traverse((child: any) => {
-      if (child.isMesh) {
-        if (child.name.includes("tv-b")) { // 👈 YOUR REAL SCREEN
-          child.material = new THREE.MeshBasicMaterial({
-            map: (screenMaterial as any).map,
-            toneMapped: false,
-          });
-        }
-      }
-    });
-  }, [screenMaterial, tvScene]);
 
 
   const handleClick = useCallback((e: any) => {
@@ -292,6 +278,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       onPointerOut={() => setIsHovered(false)}
     >
       <primitive object={tvScene} />
+
+      <mesh position={[0, -0.16, 1.28]}>
+        <planeGeometry args={[2.1, 1.55]} />
+        <meshBasicMaterial 
+          map={(screenMaterial as any).map} 
+          toneMapped={false} 
+        />
+      </mesh>
 
       {/* ❌ REMOVED: screen plane */}
 
