@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { RoundedBox, Environment, ContactShadows } from "@react-three/drei";
+import { RoundedBox, Environment, ContactShadows, useGLTF } from "@react-three/drei";
 import { useRef, useEffect, useMemo, Suspense, useState } from "react";
 import * as THREE from "three";
 import { motion } from "framer-motion";
@@ -58,6 +58,14 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const woodTexture = useWoodTexture();
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { camera } = useThree();
+  const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
+
+  useEffect(() => {
+    tvScene.traverse((child: any) => {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    });
+  }, [tvScene]);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
@@ -131,6 +139,16 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05;
     }
 
+  tvScene.traverse((child: any) => {
+    if (child.isMesh && child.name === "tv_low_tv-retro_0") {
+      if (videoStarted && videoTextureRef.current) {
+        child.material = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, toneMapped: false });
+      } else if (textureRef.current) {
+        child.material = new THREE.MeshBasicMaterial({ map: textureRef.current });
+      }
+    }
+  });
+
     const startZ = 0.35;
     const endZ = 1.8;
     const targetZ = startZ + zoomProgress * (endZ - startZ);
@@ -187,107 +205,15 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
 
   return (
     <>
-      <group ref={groupRef} position={[0, 0.22, 0]} scale={0.85}>
-        <RoundedBox args={[0.85, 0.65, 0.55]} radius={0.03} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
-          <primitive object={cabinetMaterial} attach="material" />
-        </RoundedBox>
-
-        <RoundedBox args={[0.58, 0.46, 0.08]} radius={0.02} smoothness={4} position={[-0.08, 0.02, 0.25]} castShadow>
-          <primitive object={bezelMaterial} attach="material" />
-        </RoundedBox>
-
-        <mesh position={[-0.08, 0.02, 0.22]}>
-          <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.08]} />
-          <meshStandardMaterial color="#050505" />
-        </mesh>
-
-        <mesh
-          position={[-0.08, 0.02, 0.295]}
-          onClick={() => {
-            const video = videoRef.current;
-
-            if (video) {
-              video.currentTime = 0;
-              video.play().then(() => {
-                setVideoStarted(true);
-              }).catch((err) => {
-                console.log("Video play blocked:", err);
-              });
-            }
-          }}
-        >
-          <planeGeometry args={[screenWidth, screenHeight]} />
-
-          {videoStarted && videoTextureRef.current ? (
-            <meshBasicMaterial map={videoTextureRef.current} toneMapped={false} />
-          ) : (
-            <meshBasicMaterial map={textureRef.current} />
-          )}
-        </mesh>
-
-        <mesh position={[-0.08, 0.02, 0.30]}>
-          <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
-          <meshPhysicalMaterial
-            color="#111111"
-            roughness={0.02}
-            metalness={0}
-            transmission={0.05}
-            thickness={0.01}
-            clearcoat={1}
-            clearcoatRoughness={0.03}
-            transparent
-            opacity={0.15}
-          />
-        </mesh>
-
-        <group position={[0.32, 0, 0.28]}>
-          <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
-            <primitive object={plasticMaterial} attach="material" />
-          </RoundedBox>
-
-          {[-0.12, -0.05, 0.02, 0.09, 0.16].map((y, i) => (
-            <mesh key={i} position={[0, y, 0.025]}>
-              <boxGeometry args={[0.1, 0.015, 0.01]} />
-              <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
-            </mesh>
-          ))}
-
-          <group position={[0, -0.18, 0.025]}>
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.035, 0.035, 0.025, 32]} />
-              <primitive object={metalMaterial} attach="material" />
-            </mesh>
-            <mesh position={[0.012, 0, 0.015]}>
-              <boxGeometry args={[0.008, 0.02, 0.005]} />
-              <meshStandardMaterial color="#333333" />
-            </mesh>
-          </group>
-
-          <mesh position={[0.04, -0.18, 0.03]}>
-            <sphereGeometry args={[0.008, 12, 12]} />
-            <meshBasicMaterial color="#ff2200" />
-          </mesh>
-        </group>
-
-        <mesh position={[-0.2, 0.4, 0]} rotation={[0, 0, -0.35]}>
-          <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-          <primitive object={metalMaterial} attach="material" />
-        </mesh>
-        <mesh position={[0.15, 0.4, 0]} rotation={[0, 0, 0.35]}>
-          <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-          <primitive object={metalMaterial} attach="material" />
-        </mesh>
-
-        <mesh position={[-0.32, 0.55, 0]}>
-          <sphereGeometry args={[0.015, 12, 12]} />
-          <primitive object={metalMaterial} attach="material" />
-        </mesh>
-        <mesh position={[0.27, 0.55, 0]}>
-          <sphereGeometry args={[0.015, 12, 12]} />
-          <primitive object={metalMaterial} attach="material" />
-        </mesh>
-
-        <pointLight ref={screenGlowRef} position={[-0.08, 0.02, 0.5]} intensity={0.3} color="#ffffff" distance={1.5} />
+      <group ref={groupRef} position={[0, 0, 0]} scale={0.008}>
+        <primitive object={tvScene} />
+        <pointLight
+          ref={screenGlowRef}
+          position={[0, 0, 60]}
+          intensity={0.3}
+          color="#ffffff"
+          distance={200}
+        />
       </group>
 
       <ContactShadows
@@ -414,3 +340,4 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
     </motion.div>
   );
 }
+useGLTF.preload("/static/vintage_tv.glb");

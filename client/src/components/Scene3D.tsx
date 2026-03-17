@@ -1,6 +1,6 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll } from "@react-three/drei";
+import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -179,6 +179,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const frameRef = useRef(0);
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
+  const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
+
+  useEffect(() => {
+    tvScene.traverse((child: any) => {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    });
+  }, [tvScene]);
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -266,6 +274,18 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (screenGlowRef.current) {
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
+
+    tvScene.traverse((child: any) => {
+      if (child.isMesh && child.name === "tv_low_tv-retro_0") {
+        if (isVideoPlaying && videoTextureRef.current) {
+          child.material = new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
+        } else if (hoveredText && canvasTextureRef.current) {
+          child.material = new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
+        } else if (staticTexture) {
+          child.material = new THREE.MeshBasicMaterial({ map: staticTexture });
+        }
+      }
+    });
 
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
       const canvas = videoCanvasRef.current;
@@ -391,128 +411,26 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   if (!visible) return null;
 
   return (
-    <group 
-      ref={groupRef} 
+     <group
+      ref={groupRef}
       position={[0, 0.22, 0]}
-      scale={0.85}
+      scale={0.008}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
-      <RoundedBox args={[0.85, 0.65, 0.55]} radius={0.03} smoothness={4} position={[0, 0, 0]} castShadow receiveShadow>
-        <primitive object={cabinetMaterial} attach="material" />
-      </RoundedBox>
+      <primitive object={tvScene} />
 
-      <RoundedBox args={[0.58, 0.46, 0.08]} radius={0.02} smoothness={4} position={[-0.08, 0.02, 0.25]} castShadow>
-        <primitive object={bezelMaterial} attach="material" />
-      </RoundedBox>
-
-      <mesh position={[-0.08, 0.02, 0.22]}>
-        <boxGeometry args={[screenWidth + 0.02, screenHeight + 0.02, 0.08]} />
-        <meshStandardMaterial color="#050505" />
-      </mesh>
-
-      <mesh position={[-0.08, 0.02, 0.295]}>
-        <planeGeometry args={[screenWidth, screenHeight]} />
-        <primitive object={screenMaterial} attach="material" />
-      </mesh>
-
-      <mesh position={[-0.08, 0.02, 0.30]}>
-        <planeGeometry args={[screenWidth + 0.01, screenHeight + 0.01]} />
-        <meshPhysicalMaterial
-          color="#111111"
-          roughness={0.02}
-          metalness={0}
-          transmission={0.05}
-          thickness={0.01}
-          clearcoat={1}
-          clearcoatRoughness={0.03}
-          transparent
-          opacity={isVideoPlaying ? 0 : 0.15}
-        />
-      </mesh>
-
-
-      <group position={[0.32, 0, 0.28]}>
-        <RoundedBox args={[0.14, 0.5, 0.04]} radius={0.01} smoothness={4}>
-          <primitive object={plasticMaterial} attach="material" />
-        </RoundedBox>
-
-        {[-0.12, -0.05, 0.02, 0.09, 0.16].map((y, i) => (
-          <mesh key={i} position={[0, y, 0.025]}>
-            <boxGeometry args={[0.1, 0.015, 0.01]} />
-            <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
-          </mesh>
-        ))}
-
-        <group position={[0, -0.18, 0.025]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.035, 0.035, 0.025, 32]} />
-            <primitive object={metalMaterial} attach="material" />
-          </mesh>
-          <mesh position={[0.012, 0, 0.015]}>
-            <boxGeometry args={[0.008, 0.02, 0.005]} />
-            <meshStandardMaterial color="#333333" />
-          </mesh>
-        </group>
-
-        <mesh position={[0.04, -0.18, 0.03]}>
-          <sphereGeometry args={[0.008, 12, 12]} />
-          <meshBasicMaterial color="#ff2200" />
-        </mesh>
-      </group>
-
-      <mesh position={[-0.2, 0.4, 0]} rotation={[0, 0, -0.35]}>
-        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.15, 0.4, 0]} rotation={[0, 0, 0.35]}>
-        <cylinderGeometry args={[0.008, 0.012, 0.45, 8]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-
-      <mesh position={[-0.32, 0.55, 0]}>
-        <sphereGeometry args={[0.015, 12, 12]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.27, 0.55, 0]}>
-        <sphereGeometry args={[0.015, 12, 12]} />
-        <primitive object={metalMaterial} attach="material" />
-      </mesh>
-
-      <mesh position={[-0.025, 0.33, 0]}>
-        <boxGeometry args={[0.08, 0.02, 0.1]} />
-        <meshStandardMaterial color="#1a1510" roughness={0.8} />
-      </mesh>
-
-      <mesh position={[-0.3, -0.38, 0.18]} rotation={[0.08, 0, 0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.3, -0.38, 0.18]} rotation={[0.08, 0, -0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-      <mesh position={[-0.3, -0.38, -0.18]} rotation={[-0.08, 0, 0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-      <mesh position={[0.3, -0.38, -0.18]} rotation={[-0.08, 0, -0.05]}>
-        <cylinderGeometry args={[0.025, 0.04, 0.12, 8]} />
-        <primitive object={cabinetMaterial} attach="material" />
-      </mesh>
-
-      <pointLight 
+      <pointLight
         ref={screenGlowRef}
-        position={[-0.08, 0.02, 0.5]} 
-        intensity={0.3} 
-        color="#aaccff" 
-        distance={1.5} 
-        decay={2} 
+        position={[0, 0, 60]}
+        intensity={0.3}
+        color="#aaccff"
+        distance={200}
+        decay={2}
       />
-      
       {isHovered && (
-        <pointLight position={[0, 0, 0.8]} intensity={0.2} color="#ffddcc" distance={2} />
+        <pointLight position={[0, 0, 80]} intensity={0.2} color="#ffddcc" distance={250} />
       )}
     </group>
   );
@@ -880,3 +798,4 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
     </div>
   );
 }
+useGLTF.preload("/static/vintage_tv.glb");
