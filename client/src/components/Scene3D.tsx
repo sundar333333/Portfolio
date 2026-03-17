@@ -50,7 +50,7 @@ function useStaticTexture() {
     }
   }, []);
 
-  return { texture: textureRef.current, updateTexture };
+  return { texture: textureRef.current, textureRef, updateTexture };
 }
 
 function useTileTexture() {
@@ -105,7 +105,7 @@ interface VintageTVProps {
 
 function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const { texture: staticTexture, updateTexture } = useStaticTexture();
+  const { textureRef, updateTexture } = useStaticTexture();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -117,7 +117,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
-    const mat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     screenMatRef.current = mat;
 
     tvScene.traverse((child: any) => {
@@ -226,6 +226,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
+        mat.color.set(0xffffff);
         mat.needsUpdate = true;
       }
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
@@ -259,12 +260,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         }
         canvasTextureRef.current.needsUpdate = true;
         mat.map = canvasTextureRef.current;
+        mat.color.set(0xffffff);
         mat.needsUpdate = true;
       }
     } else {
       updateTexture();
-      if (staticTexture) {
-        mat.map = staticTexture;
+      if (textureRef.current) {
+        mat.map = textureRef.current;
+        mat.color.set(0xffffff);
         mat.needsUpdate = true;
       }
     }
