@@ -278,7 +278,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     <group
       ref={groupRef}
       position={[0, 0.22, 0]}
-      scale={0.18}
+      scale={0.22}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
@@ -286,21 +286,21 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       <primitive object={tvScene} />
 
       {/* Screen overlay - fitted inside curved bezel */}
-      <mesh position={[-0.55, 0.15, 1.20]}>
-        <planeGeometry args={[1.85, 1.45]} />
+      <mesh position={[-0.2, -0.1, 1.20]}>
+        <planeGeometry args={[2.1, 1.6]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
       <pointLight
         ref={screenGlowRef}
-        position={[-0.55, 0.15, 2]}
+        position={[-0.2, -0.1, 2]}
         intensity={0.3}
         color="#aaccff"
         distance={5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[-0.55, 0.15, 3]} intensity={0.2} color="#ffddcc" distance={6} />
+        <pointLight position={[-0.2, -0.1, 3]} intensity={0.2} color="#ffddcc" distance={6} />
       )}
     </group>
   );
