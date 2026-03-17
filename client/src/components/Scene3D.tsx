@@ -1,6 +1,6 @@
 import { Suspense, useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, RoundedBox, ContactShadows, ScrollControls, useScroll, Scroll, useGLTF } from "@react-three/drei";
+import { Environment, ContactShadows, ScrollControls, useScroll, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
 
@@ -23,7 +23,7 @@ function useStaticTexture() {
   useEffect(() => {
     const size = 256;
     const data = new Uint8Array(size * size * 4);
-    
+
     for (let i = 0; i < data.length; i += 4) {
       const noise = Math.random() * 255;
       data[i] = noise;
@@ -66,24 +66,24 @@ function useTileTexture() {
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext("2d")!;
-    
+
     ctx.fillStyle = "#0a0908";
     ctx.fillRect(0, 0, 512, 512);
-    
+
     const tileSize = 128;
     const groutWidth = 4;
-    
+
     for (let x = 0; x < 512; x += tileSize) {
       for (let y = 0; y < 512; y += tileSize) {
         const brightness = 12 + Math.random() * 8;
         ctx.fillStyle = `rgb(${brightness}, ${brightness * 0.95}, ${brightness * 0.9})`;
         ctx.fillRect(
-          x + groutWidth / 2, 
-          y + groutWidth / 2, 
-          tileSize - groutWidth, 
+          x + groutWidth / 2,
+          y + groutWidth / 2,
+          tileSize - groutWidth,
           tileSize - groutWidth
         );
-        
+
         for (let i = 0; i < 30; i++) {
           const px = x + groutWidth / 2 + Math.random() * (tileSize - groutWidth);
           const py = y + groutWidth / 2 + Math.random() * (tileSize - groutWidth);
@@ -93,7 +93,7 @@ function useTileTexture() {
         }
       }
     }
-    
+
     ctx.strokeStyle = "#030302";
     ctx.lineWidth = groutWidth;
     for (let x = 0; x <= 512; x += tileSize) {
@@ -108,53 +108,14 @@ function useTileTexture() {
       ctx.lineTo(512, y);
       ctx.stroke();
     }
-    
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(8, 8);
     return tex;
   }, []);
-  
-  return texture;
-}
 
-function useWoodTexture() {
-  const texture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext("2d")!;
-    
-    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-    gradient.addColorStop(0, "#2a1a0a");
-    gradient.addColorStop(0.25, "#3a2515");
-    gradient.addColorStop(0.5, "#2d1c0c");
-    gradient.addColorStop(0.75, "#3a2515");
-    gradient.addColorStop(1, "#2a1a0a");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 512);
-    
-    ctx.strokeStyle = "rgba(20, 10, 0, 0.3)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 80; i++) {
-      const y = Math.random() * 512;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.bezierCurveTo(
-        128, y + (Math.random() - 0.5) * 6,
-        384, y + (Math.random() - 0.5) * 6,
-        512, y + (Math.random() - 0.5) * 4
-      );
-      ctx.stroke();
-    }
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    return tex;
-  }, []);
-  
   return texture;
 }
 
@@ -170,13 +131,11 @@ interface VintageTVProps {
 function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { texture: staticTexture, updateTexture } = useStaticTexture();
-  const woodTexture = useWoodTexture();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const videoElRef = useRef<HTMLVideoElement | null>(null);
-  const frameRef = useRef(0);
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
@@ -258,34 +217,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
   useFrame((state) => {
     if (!visible) return;
-    
+
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
-      
+
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = (Math.random() - 0.5) * glitchIntensity * 0.05;
-        groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
+        groupRef.current.position.y = -0.3 + (Math.random() - 0.5) * glitchIntensity * 0.03;
       } else {
         groupRef.current.position.x = 0;
-        groupRef.current.position.y = 0.22;
+        groupRef.current.position.y = -0.3;
       }
     }
 
     if (screenGlowRef.current) {
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
-
-    tvScene.traverse((child: any) => {
-      if (child.isMesh && child.name === "tv_low_tv-retro_0") {
-        if (isVideoPlaying && videoTextureRef.current) {
-          child.material = new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
-        } else if (hoveredText && canvasTextureRef.current) {
-          child.material = new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
-        } else if (staticTexture) {
-          child.material = new THREE.MeshBasicMaterial({ map: staticTexture });
-        }
-      }
-    });
 
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
       const canvas = videoCanvasRef.current;
@@ -298,11 +245,11 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
-      
+
       if (ctx) {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         for (let i = 0; i < 600; i++) {
           const x = Math.random() * canvas.width;
           const y = Math.random() * canvas.height;
@@ -315,30 +262,30 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         ctx.font = "bold 28px Arial, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        
+
         ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
         ctx.shadowBlur = 15;
-        
+
         const words = hoveredText.split(" ");
         const maxWordsPerLine = 3;
         const lines: string[] = [];
-        
+
         for (let i = 0; i < words.length; i += maxWordsPerLine) {
           lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
         }
-        
+
         const lineHeight = 40;
         const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
-        
+
         lines.forEach((line, i) => {
           ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
         });
-        
+
         for (let y = 0; y < canvas.height; y += 2) {
           ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
           ctx.fillRect(0, y, canvas.width, 1);
         }
-        
+
         canvasTextureRef.current.needsUpdate = true;
       }
     } else if (!isVideoPlaying) {
@@ -364,73 +311,35 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     onClick();
   }, [onClick]);
 
-  const cabinetMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      map: woodTexture,
-      color: isHovered ? 0x4a3520 : 0x3a2815,
-      roughness: 0.7,
-      metalness: 0.02,
-      clearcoat: 0.15,
-      clearcoatRoughness: 0.6,
-    });
-  }, [woodTexture, isHovered]);
-
-  const plasticMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0x1a1a1a,
-      roughness: 0.4,
-      metalness: 0.1,
-      clearcoat: 0.3,
-      clearcoatRoughness: 0.2,
-    });
-  }, []);
-
-  const bezelMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0x2a2a2a,
-      roughness: 0.35,
-      metalness: 0.15,
-      clearcoat: 0.4,
-      clearcoatRoughness: 0.15,
-    });
-  }, []);
-
-  const metalMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0x888888,
-      roughness: 0.3,
-      metalness: 0.85,
-      clearcoat: 0.2,
-      clearcoatRoughness: 0.1,
-    });
-  }, []);
-
-  const screenWidth = 0.52;
-  const screenHeight = 0.39;
-
   if (!visible) return null;
 
   return (
-     <group
+    <group
       ref={groupRef}
-      position={[0, 0.22, 0]}
-      scale={0.008}
+      position={[0, -0.3, 0]}
+      scale={0.012}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
       <primitive object={tvScene} />
 
+      {/* Screen overlay plane - sits on top of the TV screen face */}
+      <mesh position={[-1, 18, 10]}>
+        <planeGeometry args={[28, 22]} />
+        <primitive object={screenMaterial} attach="material" />
+      </mesh>
+
       <pointLight
         ref={screenGlowRef}
-        position={[0, 0, 60]}
+        position={[0, 20, 60]}
         intensity={0.3}
         color="#aaccff"
         distance={200}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[0, 0, 80]} intensity={0.2} color="#ffddcc" distance={250} />
+        <pointLight position={[0, 20, 80]} intensity={0.2} color="#ffddcc" distance={250} />
       )}
     </group>
   );
@@ -444,7 +353,7 @@ function TiledFloor({ visible }: { visible: boolean }) {
   return (
     <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <planeGeometry args={[30, 30]} />
-      <meshStandardMaterial 
+      <meshStandardMaterial
         map={tileTexture}
         roughness={0.85}
         metalness={0.05}
@@ -455,12 +364,12 @@ function TiledFloor({ visible }: { visible: boolean }) {
 
 function GlitchOverlay({ intensity }: { intensity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  
+
   useFrame((state) => {
     if (meshRef.current && intensity > 0.1) {
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
       material.opacity = intensity * 0.3 * (0.5 + Math.random() * 0.5);
-      
+
       if (Math.random() < intensity * 0.3) {
         meshRef.current.position.x = (Math.random() - 0.5) * 0.1;
         meshRef.current.position.y = (Math.random() - 0.5) * 0.1;
@@ -476,7 +385,7 @@ function GlitchOverlay({ intensity }: { intensity: number }) {
   return (
     <mesh ref={meshRef} position={[0, 0, 0.3]}>
       <planeGeometry args={[3, 3]} />
-      <meshBasicMaterial 
+      <meshBasicMaterial
         color={Math.random() > 0.5 ? "#ff00ff" : "#00ffff"}
         transparent
         opacity={0}
@@ -529,9 +438,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     };
 
     const handleNavigateTo = (e: Event) => {
-
       if (isVideoPlayingRef.current) {
-      onStopVideoRef.current();
+        onStopVideoRef.current();
       }
       const section = (e as CustomEvent).detail?.section;
       if (!section) return;
@@ -569,10 +477,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           window.dispatchEvent(
             new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } })
           );
-
-        // force scroll recalculation
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new Event("scroll"));
+          requestAnimationFrame(() => {
+            window.dispatchEvent(new Event("scroll"));
           });
         }
         return;
@@ -594,8 +500,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         if (rawProgress < 1) {
           navAnimFrame.current = requestAnimationFrame(animateScroll);
         } else {
-
-          // ✅ Force scroll system to recalculate
           setTimeout(() => {
             window.dispatchEvent(new Event("scroll"));
           }, 50);
@@ -634,16 +538,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useFrame(() => {
     const offset = scroll.offset;
-    
+
     const startZ = 1.8;
     const screenZ = 0.3;
     const tvScreenY = 0.22;
-    
+
     let targetZ: number;
     let targetY: number;
     let lookAtY: number;
     let targetX = -0.05;
-    
+
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
@@ -654,21 +558,21 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetY = tvScreenY;
       lookAtY = tvScreenY;
     }
-    
+
     camera.position.x += (targetX - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
-    
+
     camera.lookAt(targetX, lookAtY, 0);
-    
+
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
-    
+
     const isWorkVisible = offset > transitionThreshold;
-    
+
     setShowWorkSection(isWorkVisible);
     onWorkSectionChange?.(isWorkVisible);
-    
+
     if (isWorkVisible) {
       const workProgress = (offset - transitionThreshold) / (1 - transitionThreshold);
       onScrollProgress?.(workProgress);
@@ -704,7 +608,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     <>
       <color attach="background" args={[bgColor]} />
       <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : 12]} />
-      
+
       <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
       <spotLight
         position={[0, 3.5, 1.5]}
@@ -726,7 +630,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       />
 
       <Environment preset="night" background={false} />
-      
+
       <TiledFloor visible={showLandingTV} />
 
       {showLandingTV && (
@@ -739,7 +643,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           color="#000000"
         />
       )}
-      
+
       <VintageTV
         hoveredText={hoveredText}
         onClick={onTVClick}
@@ -762,8 +666,8 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
       <Canvas
         camera={{ position: [0, 0.55, 1.8], fov: 50 }}
         shadows
-        gl={{ 
-          antialias: true, 
+        gl={{
+          antialias: true,
           alpha: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 0.9,
@@ -775,8 +679,7 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
           gl.domElement.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
           });
-          gl.domElement.addEventListener("webglcontextrestored", () => {
-          });
+          gl.domElement.addEventListener("webglcontextrestored", () => {});
         }}
       >
         <Suspense fallback={null}>
@@ -798,4 +701,5 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
     </div>
   );
 }
+
 useGLTF.preload("/static/vintage_tv.glb");
