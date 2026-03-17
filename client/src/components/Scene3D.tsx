@@ -119,7 +119,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     tvScene.traverse((child: any) => {
       child.castShadow = true;
       child.receiveShadow = true;
-      if (child.isMesh && child.name === "sign_low_tv-retro_0") {
+      if (child.isMesh && child.name === "top_low_tv-retro_0") {
         child.material = new THREE.MeshBasicMaterial({
           map: staticTexture || null,
           color: staticTexture ? undefined : 0x333333,
@@ -214,7 +214,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
     // Update screen texture on the glass mesh every frame
     tvScene.traverse((child: any) => {
-      if (child.isMesh && child.name === "sign_low_tv-retro_0") {
+      if (child.isMesh && child.name === "top_low_tv-retro_0") {
         const mat = child.material as THREE.MeshBasicMaterial;
         if (isVideoPlaying && videoTextureRef.current) {
           mat.map = videoTextureRef.current;
