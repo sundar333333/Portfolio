@@ -115,6 +115,13 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
+    if (textureRef.current) {
+      textureRef.current.repeat.set(1, 1);
+      textureRef.current.offset.set(0, 0);
+      textureRef.current.wrapS = THREE.ClampToEdgeWrapping;
+      textureRef.current.wrapT = THREE.ClampToEdgeWrapping;
+      textureRef.current.needsUpdate = true;
+    }
     const mat = new THREE.MeshBasicMaterial({ 
       color: 0xffffff,
       map: textureRef.current 
@@ -144,6 +151,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     canvas.height = 384;
     canvasRef.current = canvas;
     const tex = new THREE.CanvasTexture(canvas);
+    tex.repeat.set(1, 1);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
     canvasTextureRef.current = tex;
 
     const videoCanvas = document.createElement("canvas");
@@ -151,6 +161,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     videoCanvas.height = 768;
     videoCanvasRef.current = videoCanvas;
     const videoTex = new THREE.CanvasTexture(videoCanvas);
+    videoTex.repeat.set(1, 1);
+    videoTex.wrapS = THREE.ClampToEdgeWrapping;
+    videoTex.wrapT = THREE.ClampToEdgeWrapping;
     videoTextureRef.current = videoTex;
 
     const video = document.createElement("video");
