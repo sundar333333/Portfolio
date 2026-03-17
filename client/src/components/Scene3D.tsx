@@ -133,7 +133,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        if (child.name === "tv_low_tv-retro_0") {
+        if (child.name === "tv_low_tv-retro_0.001") {
           const origMat = child.material as THREE.MeshStandardMaterial;
           const newMat = origMat.clone();
           // Keep original map for the TV body
