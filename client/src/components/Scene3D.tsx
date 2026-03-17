@@ -268,13 +268,16 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   }, [staticTexture, hoveredText, isVideoPlaying]);
 
   useEffect(() => {
-  if (!screenMeshRef.current) return;
+    if (!screenMeshRef.current) return;
 
-  const mesh = screenMeshRef.current;
+    const mesh = screenMeshRef.current;
 
-  // ✅ FORCE apply material (fixes blank issue)
-  mesh.material = screenMaterial;
-}, [screenMaterial]);
+    mesh.material = new THREE.MeshBasicMaterial({
+      map: (screenMaterial as any).map,
+      toneMapped: false, // 🔥 important
+    });
+
+  }, [screenMaterial]);
 
 
   const handleClick = useCallback((e: any) => {
