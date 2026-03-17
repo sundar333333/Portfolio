@@ -140,7 +140,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
     }
 
   tvScene.traverse((child: any) => {
-    if (child.isMesh && child.name === "tv_low_tv-retro_0.001") {
+    if (child.isMesh && child.name === "tv_low_tv-retro_0") {
       if (videoStarted && videoTextureRef.current) {
         child.material = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, toneMapped: false });
       } else if (textureRef.current) {
