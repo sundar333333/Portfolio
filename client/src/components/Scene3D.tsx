@@ -114,41 +114,21 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
-
-  // Canvas to paint static noise into the TV texture's screen UV region
-  const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const screenCanvasTexRef = useRef<THREE.CanvasTexture | null>(null);
+  const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
-    // Create a 2048x2048 canvas matching the TV texture
-    const sc = document.createElement("canvas");
-    sc.width = 2048;
-    sc.height = 2048;
-    screenCanvasRef.current = sc;
-    const tex = new THREE.CanvasTexture(sc);
-    screenCanvasTexRef.current = tex;
+    const mat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    screenMatRef.current = mat;
 
-    // Clone the tv_low material and swap its map to our canvas texture
     tvScene.traverse((child: any) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
         if (child.name === "tv_low_tv-retro_0.001") {
-          const origMat = child.material as THREE.MeshStandardMaterial;
-          const newMat = origMat.clone();
-          // Keep original map for the TV body
-          // We'll draw static noise only in the screen UV region on top
-          newMat.map = origMat.map;
-          child.material = newMat;
-          (child as any).__tvMat = newMat;
-          (child as any).__origTex = origMat.map;
+          child.material = mat;
         }
       }
     });
-
-    return () => {
-      tex.dispose();
-    };
   }, [tvScene]);
 
   useEffect(() => {
@@ -235,70 +215,58 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
 
-    // Paint into the screen UV region of the TV texture every frame
-    const sc = screenCanvasRef.current;
-    const scTex = screenCanvasTexRef.current;
-    if (!sc || !scTex) return;
+    const mat = screenMatRef.current;
+    if (!mat) return;
 
-    const ctx = sc.getContext("2d");
-    if (!ctx) return;
-
-    // Screen UV region in texture: U 0.36-0.64, V 0.02-0.34 on 2048x2048
-    const sx = Math.floor(0.36 * 2048);
-    const sy = Math.floor(0.02 * 2048);
-    const sw = Math.floor((0.64 - 0.36) * 2048);
-    const sh = Math.floor((0.34 - 0.02) * 2048);
-
-    // First draw the original TV texture as base
-    tvScene.traverse((child: any) => {
-      if (child.name === "tv_low_tv-retro_0" && (child as any).__origTex) {
-        const origTex = (child as any).__origTex as THREE.Texture;
-        if (origTex.image && origTex.image.width) {
-          ctx.drawImage(origTex.image, 0, 0, 2048, 2048);
-        }
-      }
-    });
-
-    if (isVideoPlaying && videoCanvasRef.current && videoElRef.current) {
+    if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
+      const canvas = videoCanvasRef.current;
+      const ctx = canvas.getContext("2d");
       const video = videoElRef.current;
-      if (video.readyState >= 2) {
-        ctx.drawImage(video, sx, sy, sw, sh);
-        if (videoTextureRef.current) videoTextureRef.current.needsUpdate = true;
-      }
-    } else if (hoveredText && canvasRef.current) {
-      // Draw hover text in screen region
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(sx, sy, sw, sh);
-      ctx.fillStyle = "white";
-      ctx.font = `bold ${Math.floor(sh * 0.12)}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.shadowColor = "rgba(255,255,255,0.9)";
-      ctx.shadowBlur = 10;
-      ctx.fillText(hoveredText, sx + sw / 2, sy + sh / 2);
-    } else {
-      // Draw static noise in screen region only
-      for (let py = sy; py < sy + sh; py += 4) {
-        for (let px = sx; px < sx + sw; px += 4) {
-          const n = Math.random() * 255 | 0;
-          ctx.fillStyle = `rgb(${n},${n},${n})`;
-          ctx.fillRect(px, py, 4, 4);
-        }
-      }
-    }
-
-    // Apply canvas as texture to tv_low mesh
-    tvScene.traverse((child: any) => {
-      if (child.name === "tv_low_tv-retro_0" && (child as any).__tvMat) {
-        const mat = (child as any).__tvMat as THREE.MeshStandardMaterial;
-        mat.map = scTex;
+      if (ctx && video.readyState >= 2) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        videoTextureRef.current.needsUpdate = true;
+        mat.map = videoTextureRef.current;
         mat.needsUpdate = true;
-        scTex.needsUpdate = true;
       }
-    });
-
-    if (!isVideoPlaying && !hoveredText) {
+    } else if (hoveredText && canvasRef.current && canvasTextureRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 600; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const gray = Math.random() * 60;
+          ctx.fillStyle = `rgb(${gray},${gray},${gray})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+        ctx.fillStyle = "white";
+        ctx.font = "bold 28px Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(255,255,255,0.9)";
+        ctx.shadowBlur = 15;
+        const words = hoveredText.split(" ");
+        const lines: string[] = [];
+        for (let i = 0; i < words.length; i += 3) lines.push(words.slice(i, i + 3).join(" "));
+        const lineHeight = 40;
+        const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
+        lines.forEach((line, i) => ctx.fillText(line, canvas.width / 2, startY + i * lineHeight));
+        for (let y = 0; y < canvas.height; y += 2) {
+          ctx.fillStyle = "rgba(0,0,0,0.1)";
+          ctx.fillRect(0, y, canvas.width, 1);
+        }
+        canvasTextureRef.current.needsUpdate = true;
+        mat.map = canvasTextureRef.current;
+        mat.needsUpdate = true;
+      }
+    } else {
       updateTexture();
+      if (staticTexture) {
+        mat.map = staticTexture;
+        mat.needsUpdate = true;
+      }
     }
   });
 
@@ -319,7 +287,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       onPointerOut={() => setIsHovered(false)}
     >
       <primitive object={tvScene} />
-
       <pointLight
         ref={screenGlowRef}
         position={[0, 0, 1.5]}
