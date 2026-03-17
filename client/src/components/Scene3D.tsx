@@ -285,9 +285,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay — precisely matched to tv_low front face */}
-      <mesh position={[0, -0.16, 1.25]}>
-        <planeGeometry args={[2.8, 1.8]} />
+      {/* Screen overlay */}
+      <mesh position={[-0.25, 0.05, 1.20]}>
+        <planeGeometry args={[2.4, 1.6]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
