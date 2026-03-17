@@ -116,6 +116,15 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
   const screenMeshRef = useRef<THREE.Mesh | null>(null);
 
+  
+  useEffect(() => {
+    tvScene.traverse((child: any) => {
+      if (child.isMesh) {
+        console.log("Mesh:", child.name);
+      }
+    });
+  }, [tvScene]);
+
 
   useEffect(() => {
     tvScene.traverse((child: any) => {
