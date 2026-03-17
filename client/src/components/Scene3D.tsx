@@ -114,7 +114,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
-  const screenMeshRef = useRef<THREE.Mesh | null>(null);
 
   
   useEffect(() => {
@@ -131,13 +130,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-
-        const name = child.name.toLowerCase();
-
-        // ✅ ONLY target real screen (NOT glass)
-        if (child.name === "tv-b_low_tv-retro_0") {
-          screenMeshRef.current = child;
-        }
       }
     });
   }, [tvScene]);
@@ -268,16 +260,19 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   }, [staticTexture, hoveredText, isVideoPlaying]);
 
   useEffect(() => {
-    if (!screenMeshRef.current) return;
+    if (!tvScene) return;
 
-    const mesh = screenMeshRef.current;
-
-    mesh.material = new THREE.MeshBasicMaterial({
-      map: (screenMaterial as any).map,
-      toneMapped: false, // 🔥 important
+    tvScene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (child.name.includes("tv-b")) { // 👈 YOUR REAL SCREEN
+          child.material = new THREE.MeshBasicMaterial({
+            map: (screenMaterial as any).map,
+            toneMapped: false,
+          });
+        }
+      }
     });
-
-  }, [screenMaterial]);
+  }, [screenMaterial, tvScene]);
 
 
   const handleClick = useCallback((e: any) => {
