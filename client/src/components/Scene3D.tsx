@@ -223,10 +223,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = (Math.random() - 0.5) * glitchIntensity * 0.05;
-        groupRef.current.position.y = -0.3 + (Math.random() - 0.5) * glitchIntensity * 0.03;
+        groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
       } else {
         groupRef.current.position.x = 0;
-        groupRef.current.position.y = -0.3;
+        groupRef.current.position.y = 0.22;
       }
     }
 
@@ -316,30 +316,30 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   return (
     <group
       ref={groupRef}
-      position={[0, -0.3, 0]}
-      scale={0.012}
+      position={[0, 0.22, 0]}
+      scale={0.85}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay plane - sits on top of the TV screen face */}
-      <mesh position={[-1, 18, 10]}>
-        <planeGeometry args={[28, 22]} />
+      {/* Screen overlay plane */}
+      <mesh position={[-0.08, 0.02, 0.30]}>
+        <planeGeometry args={[0.52, 0.39]} />
         <primitive object={screenMaterial} attach="material" />
       </mesh>
 
       <pointLight
         ref={screenGlowRef}
-        position={[0, 20, 60]}
+        position={[-0.08, 0.02, 0.5]}
         intensity={0.3}
         color="#aaccff"
-        distance={200}
+        distance={1.5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[0, 20, 80]} intensity={0.2} color="#ffddcc" distance={250} />
+        <pointLight position={[0, 0, 0.8]} intensity={0.2} color="#ffddcc" distance={2} />
       )}
     </group>
   );
