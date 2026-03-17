@@ -234,7 +234,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.scale(1, -1);
-        ctx.drawImage(video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
+        ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
         ctx.restore();
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
