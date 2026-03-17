@@ -283,8 +283,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       <primitive object={tvScene} />
 
       {screenMaterial && (
-        <mesh position={[0, -0.14, 1.26]}>
-          <planeGeometry args={[2.1, 1.55]} />
+        <mesh position={[-0.18, -0.13, 1.26]}>
+          <planeGeometry args={[1.35, 1.05]} />
           <primitive object={screenMaterial} attach="material" />
         </mesh>
       )}
