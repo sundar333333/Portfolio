@@ -18,9 +18,9 @@ interface Scene3DProps {
 
 function useStaticTexture() {
   const textureRef = useRef<THREE.DataTexture | null>(null);
-  const [, forceUpdate] = useState(0);
 
-  useEffect(() => {
+  // Create synchronously so it's available on first render
+  if (!textureRef.current) {
     const size = 256;
     const data = new Uint8Array(size * size * 4);
     for (let i = 0; i < data.length; i += 4) {
@@ -33,9 +33,7 @@ function useStaticTexture() {
     const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
     tex.needsUpdate = true;
     textureRef.current = tex;
-    forceUpdate(n => n + 1);
-    return () => { if (textureRef.current) textureRef.current.dispose(); };
-  }, []);
+  }
 
   const updateTexture = useCallback(() => {
     if (textureRef.current) {
@@ -50,7 +48,7 @@ function useStaticTexture() {
     }
   }, []);
 
-  return { texture: textureRef.current, textureRef, updateTexture };
+  return { textureRef, updateTexture };
 }
 
 function useTileTexture() {
@@ -117,18 +115,27 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const mat = new THREE.MeshBasicMaterial({ 
+      color: 0xffffff,
+      map: textureRef.current 
+    });
     screenMatRef.current = mat;
 
     tvScene.traverse((child: any) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        if (child.name === "tv_low_tv-retro_0.001") {
+        if (child.name === "tv_low_tv-retro_0") {
           child.material = mat;
         }
       }
     });
+
+    // Apply texture immediately if already available
+    if (textureRef.current && mat) {
+      mat.map = textureRef.current;
+      mat.needsUpdate = true;
+    }
   }, [tvScene]);
 
   useEffect(() => {
