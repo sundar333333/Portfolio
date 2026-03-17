@@ -58,7 +58,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const woodTexture = useWoodTexture();
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { camera } = useThree();
-  const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
+  const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
 
   useEffect(() => {
     tvScene.traverse((child: any) => {
@@ -340,4 +340,4 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
     </motion.div>
   );
 }
-useGLTF.preload("/static/vintage_tv.glb");
+useGLTF.preload("/static/vintage_tv_v2.glb");

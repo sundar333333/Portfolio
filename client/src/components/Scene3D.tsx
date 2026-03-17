@@ -113,7 +113,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const screenGlowRef = useRef<THREE.PointLight>(null);
-  const { scene: tvScene } = useGLTF("/static/vintage_tv.glb");
+  const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
@@ -575,4 +575,4 @@ export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onSto
   );
 }
 
-useGLTF.preload("/static/vintage_tv.glb");
+useGLTF.preload("/static/vintage_tv_v2.glb");
