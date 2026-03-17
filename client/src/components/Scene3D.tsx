@@ -230,18 +230,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const ctx = canvas.getContext("2d");
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.scale(1, -1);
-        // Use video's natural dimensions scaled to fit
-        const vw = video.videoWidth || canvas.width;
-        const vh = video.videoHeight || canvas.height;
-        const scale = Math.max(canvas.height / vw, canvas.width / vh);
-        const dw = vw * scale;
-        const dh = vh * scale;
-        ctx.drawImage(video, -dh / 2, -dw / 2, dh, dw);
-        ctx.restore();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
         mat.color.set(0xffffff);
