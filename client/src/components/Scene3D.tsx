@@ -247,17 +247,20 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   });
 
   const screenMaterial = useMemo(() => {
-    if (isVideoPlaying && videoTextureRef.current) {
-      return new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
-    }
-    if (hoveredText && canvasTextureRef.current) {
-      return new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
-    }
-    if (staticTexture) {
-      return new THREE.MeshBasicMaterial({ map: staticTexture });
-    }
-    return new THREE.MeshBasicMaterial({ color: 0x333333 });
-  }, [staticTexture, hoveredText, isVideoPlaying]);
+  if (isVideoPlaying && videoTextureRef.current) {
+    return new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
+  }
+
+  if (hoveredText && canvasTextureRef.current) {
+    return new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
+  }
+
+  if (staticTexture) {
+    return new THREE.MeshBasicMaterial({ map: staticTexture });
+  }
+
+  return null; // ❗ IMPORTANT
+}, [staticTexture, hoveredText, isVideoPlaying]);
 
 
 
@@ -279,13 +282,12 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
-      <mesh position={[0, -0.16, 1.28]}>
-        <planeGeometry args={[2.1, 1.55]} />
-        <meshBasicMaterial 
-          map={(screenMaterial as any).map} 
-          toneMapped={false} 
-        />
-      </mesh>
+      {screenMaterial && (
+        <mesh position={[0, -0.16, 1.28]}>
+          <planeGeometry args={[2.1, 1.55]} />
+          <primitive object={screenMaterial} attach="material" />
+        </mesh>
+      )}
 
       {/* ❌ REMOVED: screen plane */}
 
