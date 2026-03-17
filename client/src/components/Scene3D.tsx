@@ -231,7 +231,11 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
+        ctx.restore();
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
         mat.color.set(0xffffff);
