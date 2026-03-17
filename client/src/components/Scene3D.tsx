@@ -119,8 +119,14 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     tvScene.traverse((child: any) => {
       child.castShadow = true;
       child.receiveShadow = true;
+      if (child.isMesh && child.name === "sign_low_tv-retro_0") {
+        child.material = new THREE.MeshBasicMaterial({
+          map: staticTexture || null,
+          color: staticTexture ? undefined : 0x333333,
+        });
+      }
     });
-  }, [tvScene]);
+  }, [tvScene, staticTexture]);
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -206,6 +212,21 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
 
+    // Update screen texture on the glass mesh every frame
+    tvScene.traverse((child: any) => {
+      if (child.isMesh && child.name === "sign_low_tv-retro_0") {
+        const mat = child.material as THREE.MeshBasicMaterial;
+        if (isVideoPlaying && videoTextureRef.current) {
+          mat.map = videoTextureRef.current;
+        } else if (hoveredText && canvasTextureRef.current) {
+          mat.map = canvasTextureRef.current;
+        } else if (staticTexture) {
+          mat.map = staticTexture;
+        }
+        mat.needsUpdate = true;
+      }
+    });
+
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
       const canvas = videoCanvasRef.current;
       const ctx = canvas.getContext("2d");
@@ -254,19 +275,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     }
   });
 
-  const screenMaterial = useMemo(() => {
-    if (isVideoPlaying && videoTextureRef.current) {
-      return new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
-    }
-    if (hoveredText && canvasTextureRef.current) {
-      return new THREE.MeshBasicMaterial({ map: canvasTextureRef.current });
-    }
-    if (staticTexture) {
-      return new THREE.MeshBasicMaterial({ map: staticTexture });
-    }
-    return new THREE.MeshBasicMaterial({ color: 0x333333 });
-  }, [staticTexture, hoveredText, isVideoPlaying]);
-
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
     onClick();
@@ -285,22 +293,16 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     >
       <primitive object={tvScene} />
 
-      {/* Screen overlay - fitted inside curved bezel */}
-      <mesh position={[-0.2, -0.1, 1.20]}>
-        <planeGeometry args={[2.1, 1.6]} />
-        <primitive object={screenMaterial} attach="material" />
-      </mesh>
-
       <pointLight
         ref={screenGlowRef}
-        position={[-0.2, -0.1, 2]}
+        position={[0, 0, 2]}
         intensity={0.3}
         color="#aaccff"
         distance={5}
         decay={2}
       />
       {isHovered && (
-        <pointLight position={[-0.2, -0.1, 3]} intensity={0.2} color="#ffddcc" distance={6} />
+        <pointLight position={[0, 0, 3]} intensity={0.2} color="#ffddcc" distance={6} />
       )}
     </group>
   );
