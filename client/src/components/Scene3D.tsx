@@ -135,7 +135,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         const name = child.name.toLowerCase();
 
         // ✅ ONLY target real screen (NOT glass)
-        if (child.name === "tv_low_tv-retro_0") {
+        if (child.name === "tv-b_low_tv-retro_0") {
           screenMeshRef.current = child;
         }
       }
