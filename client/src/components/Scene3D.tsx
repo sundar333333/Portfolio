@@ -135,10 +135,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         const name = child.name.toLowerCase();
 
         // ✅ ONLY target real screen (NOT glass)
-        if (
-          name.includes("screen") ||
-          name.includes("display")
-        ) {
+        if (child.name === "tv_low_tv-retro_0") {
           screenMeshRef.current = child;
         }
       }
@@ -269,20 +266,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     }
     return new THREE.MeshBasicMaterial({ color: 0x333333 });
   }, [staticTexture, hoveredText, isVideoPlaying]);
-
-  // ✅ ADDED: apply material to real screen mesh
-  useEffect(() => {
-    if (!screenMeshRef.current) return;
-
-    const mesh = screenMeshRef.current;
-
-    if ((mesh.material as any).map !== undefined) {
-      (mesh.material as any).map = (screenMaterial as any).map;
-      (mesh.material as THREE.Material).needsUpdate = true;
-    } else {
-      mesh.material = screenMaterial;
-    }
-  }, [screenMaterial]);
 
   useEffect(() => {
   if (!screenMeshRef.current) return;
