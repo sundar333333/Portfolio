@@ -277,6 +277,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         ctx.save();
         ctx.translate(sx + sw / 2, sy + sh / 2);
         ctx.rotate(Math.PI / 2);
+        ctx.scale(-1, 1);
         ctx.fillStyle = "white";
         ctx.font = `bold ${Math.round(sh * 0.055)}px Arial, sans-serif`;
         ctx.textAlign = "center";
