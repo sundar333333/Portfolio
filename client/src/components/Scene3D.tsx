@@ -249,11 +249,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
         ctx.clearRect(sx, sy, sw, sh);
-        // The TV screen UV U-axis = world Z (depth), V-axis = world X (vertical)
-        // Video must be rotated -90deg to appear correctly on the curved CRT screen
+        // Rotate +90deg to appear correctly on this CRT model's UV layout
         ctx.save();
         ctx.translate(sx + sw / 2, sy + sh / 2);
-        ctx.rotate(-Math.PI / 2);
+        ctx.rotate(Math.PI / 2);
         ctx.drawImage(video, -sh / 2, -sw / 2, sh, sw);
         ctx.restore();
         videoTextureRef.current.needsUpdate = true;
@@ -274,8 +273,12 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
           ctx.fillStyle = `rgb(${gray},${gray},${gray})`;
           ctx.fillRect(x, y, 2, 2);
         }
+        // Apply same +90deg rotation as video so text appears upright on screen
+        ctx.save();
+        ctx.translate(sx + sw / 2, sy + sh / 2);
+        ctx.rotate(Math.PI / 2);
         ctx.fillStyle = "white";
-        ctx.font = `bold ${Math.round(sw * 0.055)}px Arial, sans-serif`;
+        ctx.font = `bold ${Math.round(sh * 0.055)}px Arial, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.shadowColor = "rgba(255,255,255,0.9)";
@@ -283,13 +286,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         const words = hoveredText.split(" ");
         const lines: string[] = [];
         for (let i = 0; i < words.length; i += 3) lines.push(words.slice(i, i + 3).join(" "));
-        const lineH = Math.round(sh * 0.15);
-        const startY = sy + sh / 2 - ((lines.length - 1) * lineH) / 2;
-        lines.forEach((line, i) => ctx.fillText(line, sx + sw / 2, startY + i * lineH));
-        for (let y = sy; y < sy + sh; y += 2) {
-          ctx.fillStyle = "rgba(0,0,0,0.1)";
-          ctx.fillRect(sx, y, sw, 1);
-        }
+        const lineH = Math.round(sw * 0.15);
+        const startY = -((lines.length - 1) * lineH) / 2;
+        lines.forEach((line, i) => ctx.fillText(line, 0, startY + i * lineH));
+        ctx.restore();
         canvasTextureRef.current.needsUpdate = true;
         mat.map = canvasTextureRef.current;
         mat.color.set(0xffffff);
