@@ -98,10 +98,12 @@ interface VintageTVProps {
   isMuted: boolean;
   visible: boolean;
   glitchIntensity: number;
+  gyroOffset: { x: number; y: number };
 }
 
-function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity }: VintageTVProps) {
+function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity, gyroOffset }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const smoothGyro = useRef({ x: 0, y: 0 });
   const { textureRef, updateTexture } = useStaticTexture();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
@@ -221,13 +223,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (!visible) return;
 
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
+      // Smooth lerp toward the current gyro/mouse offset
+      smoothGyro.current.x += (gyroOffset.x - smoothGyro.current.x) * 0.06;
+      smoothGyro.current.y += (gyroOffset.y - smoothGyro.current.y) * 0.06;
+
+      // TV tilts subtly toward where the mouse points (3D floating feel)
+      groupRef.current.rotation.y =
+        Math.sin(state.clock.elapsedTime * 0.15) * 0.015 + smoothGyro.current.x * 0.18;
+      groupRef.current.rotation.x = smoothGyro.current.y * -0.10;
+
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = 0.003 + (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
       } else {
-        groupRef.current.position.x = 0.003;
-        groupRef.current.position.y = 0.22;
+        // TV drifts slightly opposite to camera — parallax depth cue
+        groupRef.current.position.x = 0.003 + smoothGyro.current.x * -0.04;
+        groupRef.current.position.y = 0.22 + smoothGyro.current.y * 0.03;
       }
     }
 
@@ -404,8 +415,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
+  const [gyroOffset, setGyroOffset] = useState({ x: 0, y: 0 });
   const targetPosition = useRef({ x: 0, y: 0 });
   const gyroRef = useRef({ x: 0, y: 0, active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
+  const isMobile = useRef(typeof window !== "undefined" && window.innerWidth <= 768);
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -418,35 +431,37 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Only use mouse on non-touch devices
       if (!gyroRef.current.active) {
         targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
         targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+
+        // Drive TV gyro parallax — desktop only, landing page only
+        if (!isMobile.current) {
+          const nx = (e.clientX / window.innerWidth - 0.5) * 2;  // -1 to 1
+          const ny = (e.clientY / window.innerHeight - 0.5) * 2; // -1 to 1
+          setGyroOffset({ x: nx, y: ny });
+        }
       }
     };
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
-      const gamma = e.gamma ?? 0; // left-right tilt (-90 to 90)
-      const beta = e.beta ?? 0;   // front-back tilt (-180 to 180)
+      const gamma = e.gamma ?? 0;
+      const beta = e.beta ?? 0;
       const g = gyroRef.current;
       g.active = true;
-      // Calibrate on first reading
       if (!g.calibrated) {
         g.baseGamma = gamma;
         g.baseBeta = beta;
         g.calibrated = true;
       }
-      // Delta from baseline, clamped
       const deltaGamma = Math.max(-30, Math.min(30, gamma - g.baseGamma));
       const deltaBeta = Math.max(-30, Math.min(30, beta - g.baseBeta));
-      // Map to camera offset (subtle)
       g.x = (deltaGamma / 30) * 0.12;
       g.y = (deltaBeta / 30) * 0.08;
       targetPosition.current.x = g.x;
       targetPosition.current.y = g.y;
     };
 
-    // Request permission on iOS 13+
     const requestGyro = async () => {
       if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
         try {
@@ -456,7 +471,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           }
         } catch {}
       } else {
-        // Android and older iOS — no permission needed
         window.addEventListener("deviceorientation", handleOrientation, true);
       }
     };
@@ -481,14 +495,14 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       const startScrollTop = el.scrollTop;
       const distance = targetScrollTop - startScrollTop;
       if (Math.abs(distance) < 5) {
-        if (section === 'contact' || section === 'room') {
-          setTimeout(() => { window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } })); }, 100);
+        if (section === "contact" || section === "room") {
+          setTimeout(() => { window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section } })); }, 100);
         }
-        if (section === 'works') {
-          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
+        if (section === "works") {
+          window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section: "works" } }));
         }
-        if (section === 'landing' || section === 'about') {
-          window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+        if (section === "landing" || section === "about") {
+          window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section: "reset" } }));
           requestAnimationFrame(() => { window.dispatchEvent(new Event("scroll")); });
         }
         return;
@@ -504,23 +518,25 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
           navAnimFrame.current = requestAnimationFrame(animateScroll);
         } else {
           setTimeout(() => { window.dispatchEvent(new Event("scroll")); }, 50);
-          if (section === 'contact' || section === 'room') {
-            setTimeout(() => { window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section } })); }, 200);
+          if (section === "contact" || section === "room") {
+            setTimeout(() => { window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section } })); }, 200);
           }
-          if (section === 'works') {
-            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'works' } }));
+          if (section === "works") {
+            window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section: "works" } }));
           }
-          if (section === 'landing' || section === 'about') {
-            window.dispatchEvent(new CustomEvent('navigateWhiteSection', { detail: { section: 'reset' } }));
+          if (section === "landing" || section === "about") {
+            window.dispatchEvent(new CustomEvent("navigateWhiteSection", { detail: { section: "reset" } }));
           }
         }
       };
       navAnimFrame.current = requestAnimationFrame(animateScroll);
     };
+
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("wheel", handleWheel, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("navigateTo", handleNavigateTo);
+
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("wheel", handleWheel);
@@ -541,11 +557,15 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     let lookAtY: number;
     let targetX = -0.05;
 
-    // Apply gyro/mouse parallax only on landing section
     const isLanding = offset < transitionThreshold;
     const parallaxStrength = isLanding ? 1.0 : 0;
     const px = targetPosition.current.x * parallaxStrength;
     const py = targetPosition.current.y * parallaxStrength;
+
+    // Reset TV gyro offset when no longer on the landing page
+    if (!isLanding) {
+      setGyroOffset({ x: 0, y: 0 });
+    }
 
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
@@ -557,15 +577,19 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetY = tvScreenY;
       lookAtY = tvScreenY;
     }
+
     camera.position.x += (targetX + px - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
     camera.lookAt(targetX, lookAtY, 0);
+
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
+
     const isWorkVisible = offset > transitionThreshold;
     setShowWorkSection(isWorkVisible);
     onWorkSectionChange?.(isWorkVisible);
+
     if (isWorkVisible) {
       onScrollProgress?.((offset - transitionThreshold) / (1 - transitionThreshold));
     } else {
@@ -621,6 +645,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         isMuted={isMuted}
         visible={showLandingTV}
         glitchIntensity={glitchIntensity}
+        gyroOffset={gyroOffset}
       />
       <GlitchOverlay intensity={glitchIntensity} />
       <WorkSection visible={showWorkSection} />
