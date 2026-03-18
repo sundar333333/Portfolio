@@ -223,22 +223,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (!visible) return;
 
     if (groupRef.current) {
-      // Smooth lerp toward the current gyro/mouse offset
-      smoothGyro.current.x += (gyroOffset.x - smoothGyro.current.x) * 0.06;
-      smoothGyro.current.y += (gyroOffset.y - smoothGyro.current.y) * 0.06;
+      // Smooth lerp toward mouse offset
+      smoothGyro.current.x += (gyroOffset.x - smoothGyro.current.x) * 0.05;
+      smoothGyro.current.y += (gyroOffset.y - smoothGyro.current.y) * 0.05;
 
-      // TV tilts subtly toward where the mouse points (3D floating feel)
+      // ONLY rotation — TV rotates to face the mouse, position never changes
       groupRef.current.rotation.y =
-        Math.sin(state.clock.elapsedTime * 0.15) * 0.015 + smoothGyro.current.x * 0.18;
-      groupRef.current.rotation.x = smoothGyro.current.y * -0.10;
+        Math.sin(state.clock.elapsedTime * 0.15) * 0.015 + smoothGyro.current.x * 0.25;
+      groupRef.current.rotation.x = smoothGyro.current.y * 0.12;
 
+      // Position is always fixed — glitch only during transition
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = 0.003 + (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
       } else {
-        // TV drifts slightly opposite to camera — parallax depth cue
-        groupRef.current.position.x = 0.003 + smoothGyro.current.x * -0.04;
-        groupRef.current.position.y = 0.22 + smoothGyro.current.y * 0.03;
+        groupRef.current.position.x = 0.003;
+        groupRef.current.position.y = 0.22;
       }
     }
 
@@ -431,15 +431,15 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Check desktop fresh on every move — no stale ref
+      // Live desktop check on every move
       const isDesktop = window.innerWidth > 768;
       if (!isDesktop) return;
 
-      // Update camera parallax target
+      // Camera parallax target
       targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
       targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
 
-      // Update TV gyro offset — normalized -1 to 1
+      // TV rotation offset — normalized -1 to 1
       const nx = (e.clientX / window.innerWidth - 0.5) * 2;
       const ny = (e.clientY / window.innerHeight - 0.5) * 2;
       setGyroOffset({ x: nx, y: ny });
@@ -563,7 +563,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     const px = targetPosition.current.x * parallaxStrength;
     const py = targetPosition.current.y * parallaxStrength;
 
-    // Reset TV gyro offset when no longer on the landing page
+    // Reset gyro when off landing page
     if (!isLanding) {
       setGyroOffset({ x: 0, y: 0 });
     }
