@@ -243,7 +243,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     }
 
     if (screenGlowRef.current) {
-      screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
+      screenGlowRef.current.intensity =
+        0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05 + glitchIntensity * 0.5;
     }
 
     const mat = screenMatRef.current;
@@ -418,7 +419,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const [gyroOffset, setGyroOffset] = useState({ x: 0, y: 0 });
   const targetPosition = useRef({ x: 0, y: 0 });
   const gyroRef = useRef({ x: 0, y: 0, active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
-  const isMobile = useRef(typeof window !== "undefined" && window.innerWidth <= 768);
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -431,17 +431,18 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!gyroRef.current.active) {
-        targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
-        targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+      // Check desktop fresh on every move — no stale ref
+      const isDesktop = window.innerWidth > 768;
+      if (!isDesktop) return;
 
-        // Drive TV gyro parallax — desktop only, landing page only
-        if (!isMobile.current) {
-          const nx = (e.clientX / window.innerWidth - 0.5) * 2;  // -1 to 1
-          const ny = (e.clientY / window.innerHeight - 0.5) * 2; // -1 to 1
-          setGyroOffset({ x: nx, y: ny });
-        }
-      }
+      // Update camera parallax target
+      targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
+      targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+
+      // Update TV gyro offset — normalized -1 to 1
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      setGyroOffset({ x: nx, y: ny });
     };
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
