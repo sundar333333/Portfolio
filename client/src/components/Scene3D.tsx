@@ -150,10 +150,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       textureRef.current.needsUpdate = true;
     }
 
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      map: tex,
-    });
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: tex });
     screenMatRef.current = mat;
 
     tvScene.traverse((child: any) => {
@@ -221,10 +218,9 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (!visible) return;
 
     if (groupRef.current) {
-      // TV is completely static — gentle idle sway only
+      // TV completely static — gentle idle sway only, no mouse interaction ever
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
       groupRef.current.rotation.x = 0;
-
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = 0.003 + (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
@@ -408,8 +404,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
-  const mouseTarget = useRef({ x: 0, y: 0 });
-  const smoothCamera = useRef({ x: 0, y: 0 });
+  // Rotation target in radians — camera rotates in place, never translates
+  const rotTarget = useRef({ x: 0, y: 0 });
+  const rotSmooth = useRef({ x: 0, y: 0 });
   const gyroRef = useRef({ active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
@@ -424,8 +421,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (window.innerWidth <= 768) return;
-      mouseTarget.current.x = (e.clientX / window.innerWidth - 0.5) * 0.30;
-      mouseTarget.current.y = -(e.clientY / window.innerHeight - 0.5) * 0.16;
+      // Very subtle — max ±0.04 radians (~2.3 degrees) left/right, ±0.02 up/down
+      rotTarget.current.y = (e.clientX / window.innerWidth - 0.5) * 0.08;
+      rotTarget.current.x = -(e.clientY / window.innerHeight - 0.5) * 0.04;
     };
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
@@ -440,8 +438,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       }
       const deltaGamma = Math.max(-30, Math.min(30, gamma - g.baseGamma));
       const deltaBeta = Math.max(-30, Math.min(30, beta - g.baseBeta));
-      mouseTarget.current.x = (deltaGamma / 30) * 0.12;
-      mouseTarget.current.y = (deltaBeta / 30) * 0.08;
+      rotTarget.current.y = (deltaGamma / 30) * 0.06;
+      rotTarget.current.x = (deltaBeta / 30) * 0.03;
     };
 
     const requestGyro = async () => {
@@ -537,15 +535,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     const baseCameraX = -0.05;
     let targetZ: number;
     const isLanding = offset < transitionThreshold;
-    const lerpSpeed = 0.06;
+    const lerpSpeed = 0.05;
 
-    if (isLanding) {
-      smoothCamera.current.x += (mouseTarget.current.x - smoothCamera.current.x) * lerpSpeed;
-      smoothCamera.current.y += (mouseTarget.current.y - smoothCamera.current.y) * lerpSpeed;
-    } else {
-      smoothCamera.current.x += (0 - smoothCamera.current.x) * lerpSpeed;
-      smoothCamera.current.y += (0 - smoothCamera.current.y) * lerpSpeed;
-    }
+    // Lerp camera rotation — zero it out when off landing page
+    const targetRotY = isLanding ? rotTarget.current.y : 0;
+    const targetRotX = isLanding ? rotTarget.current.x : 0;
+    rotSmooth.current.y += (targetRotY - rotSmooth.current.y) * lerpSpeed;
+    rotSmooth.current.x += (targetRotX - rotSmooth.current.x) * lerpSpeed;
 
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
@@ -554,11 +550,16 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       targetZ = screenZ;
     }
 
-    camera.position.x += (baseCameraX + smoothCamera.current.x - camera.position.x) * 0.1;
-    camera.position.y += (tvScreenY + smoothCamera.current.y - camera.position.y) * 0.1;
+    // Camera POSITION never changes due to mouse — only Z changes for scroll zoom
+    camera.position.x += (baseCameraX - camera.position.x) * 0.1;
+    camera.position.y += (tvScreenY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
-    // LookAt follows the camera offset — whole scene pans together, floor stays still
-    camera.lookAt(baseCameraX + smoothCamera.current.x, tvScreenY + smoothCamera.current.y, 0);
+
+    // Camera ROTATION handles the gyro effect — pivots in place like turning your head
+    // This means floor, TV, everything moves together — nothing slides
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = rotSmooth.current.y;
+    camera.rotation.x = rotSmooth.current.x;
 
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
