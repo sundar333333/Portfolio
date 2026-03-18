@@ -98,12 +98,10 @@ interface VintageTVProps {
   isMuted: boolean;
   visible: boolean;
   glitchIntensity: number;
-  gyroOffset: { x: number; y: number };
 }
 
-function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity, gyroOffset }: VintageTVProps) {
+function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, glitchIntensity }: VintageTVProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const smoothGyro = useRef({ x: 0, y: 0 });
   const { textureRef, updateTexture } = useStaticTexture();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
@@ -223,16 +221,11 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (!visible) return;
 
     if (groupRef.current) {
-      // Smooth lerp toward mouse offset
-      smoothGyro.current.x += (gyroOffset.x - smoothGyro.current.x) * 0.05;
-      smoothGyro.current.y += (gyroOffset.y - smoothGyro.current.y) * 0.05;
+      // TV is completely static — only gentle idle sway, no mouse interaction
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
+      groupRef.current.rotation.x = 0;
 
-      // ONLY rotation — TV rotates to face the mouse, position never changes
-      groupRef.current.rotation.y =
-        Math.sin(state.clock.elapsedTime * 0.15) * 0.015 + smoothGyro.current.x * 0.25;
-      groupRef.current.rotation.x = smoothGyro.current.y * 0.12;
-
-      // Position is always fixed — glitch only during transition
+      // Position locked — glitch only during transition
       if (glitchIntensity > 0.1) {
         groupRef.current.position.x = 0.003 + (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
@@ -416,9 +409,10 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
-  const [gyroOffset, setGyroOffset] = useState({ x: 0, y: 0 });
-  const targetPosition = useRef({ x: 0, y: 0 });
-  const gyroRef = useRef({ x: 0, y: 0, active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
+  // Camera target — mouse drives this, TV never touched
+  const mouseTarget = useRef({ x: 0, y: 0 });
+  const smoothCamera = useRef({ x: 0, y: 0 });
+  const gyroRef = useRef({ active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -431,18 +425,13 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Live desktop check on every move
-      const isDesktop = window.innerWidth > 768;
-      if (!isDesktop) return;
-
-      // Camera parallax target
-      targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
-      targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
-
-      // TV rotation offset — normalized -1 to 1
-      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
-      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
-      setGyroOffset({ x: nx, y: ny });
+      // Desktop only — live check
+      if (window.innerWidth <= 768) return;
+      // Map mouse to small camera offset range
+      // x: left=-0.15 center=0 right=+0.15
+      // y: top=+0.08 center=0 bottom=-0.08
+      mouseTarget.current.x = (e.clientX / window.innerWidth - 0.5) * 0.30;
+      mouseTarget.current.y = -(e.clientY / window.innerHeight - 0.5) * 0.16;
     };
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
@@ -457,10 +446,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       }
       const deltaGamma = Math.max(-30, Math.min(30, gamma - g.baseGamma));
       const deltaBeta = Math.max(-30, Math.min(30, beta - g.baseBeta));
-      g.x = (deltaGamma / 30) * 0.12;
-      g.y = (deltaBeta / 30) * 0.08;
-      targetPosition.current.x = g.x;
-      targetPosition.current.y = g.y;
+      mouseTarget.current.x = (deltaGamma / 30) * 0.12;
+      mouseTarget.current.y = (deltaBeta / 30) * 0.08;
     };
 
     const requestGyro = async () => {
@@ -553,36 +540,37 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     const startZ = 1.8;
     const screenZ = 0.3;
     const tvScreenY = 0.22;
+    const baseCameraX = -0.05;
     let targetZ: number;
     let targetY: number;
-    let lookAtY: number;
-    let targetX = -0.05;
-
     const isLanding = offset < transitionThreshold;
-    const parallaxStrength = isLanding ? 1.0 : 0;
-    const px = targetPosition.current.x * parallaxStrength;
-    const py = targetPosition.current.y * parallaxStrength;
 
-    // Reset gyro when off landing page
-    if (!isLanding) {
-      setGyroOffset({ x: 0, y: 0 });
+    // Smoothly lerp camera toward mouse target — only on landing page
+    const lerpSpeed = 0.06;
+    if (isLanding) {
+      smoothCamera.current.x += (mouseTarget.current.x - smoothCamera.current.x) * lerpSpeed;
+      smoothCamera.current.y += (mouseTarget.current.y - smoothCamera.current.y) * lerpSpeed;
+    } else {
+      // Ease back to center when off landing
+      smoothCamera.current.x += (0 - smoothCamera.current.x) * lerpSpeed;
+      smoothCamera.current.y += (0 - smoothCamera.current.y) * lerpSpeed;
     }
 
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
-      targetY = tvScreenY + py;
-      lookAtY = tvScreenY;
+      targetY = tvScreenY;
     } else {
       targetZ = screenZ;
       targetY = tvScreenY;
-      lookAtY = tvScreenY;
     }
 
-    camera.position.x += (targetX + px - camera.position.x) * 0.1;
-    camera.position.y += (targetY - camera.position.y) * 0.1;
+    // Camera moves — TV stays completely still
+    camera.position.x += (baseCameraX + smoothCamera.current.x - camera.position.x) * 0.1;
+    camera.position.y += (targetY + smoothCamera.current.y - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
-    camera.lookAt(targetX, lookAtY, 0);
+    // Always look at the fixed TV centre
+    camera.lookAt(baseCameraX, tvScreenY, 0);
 
     const glitchProgress = Math.max(0, Math.min(1, (offset - 0.15) / 0.3));
     setGlitchIntensity(glitchProgress);
@@ -646,7 +634,6 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         isMuted={isMuted}
         visible={showLandingTV}
         glitchIntensity={glitchIntensity}
-        gyroOffset={gyroOffset}
       />
       <GlitchOverlay intensity={glitchIntensity} />
       <WorkSection visible={showWorkSection} />
