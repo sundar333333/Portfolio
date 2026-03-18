@@ -119,7 +119,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
         const data = imageData.data;
         for (let i = 0; i < data.length; i += 4) {
           const n = Math.random() * 255;
-          data[i] = n; data[i+1] = n; data[i+2] = n; data[i+3] = 255;
+          data[i] = n; data[i + 1] = n; data[i + 2] = n; data[i + 3] = 255;
         }
         ctx.putImageData(imageData, sx, sy);
         canvasTextureRef.current.needsUpdate = true;
@@ -138,9 +138,9 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
     const targetZ = startZ + zoomProgress * (endZ - startZ);
 
     camera.position.z += (targetZ - camera.position.z) * 0.15;
-    camera.position.x += (-0.05 - camera.position.x) * 0.15;
+    camera.position.x += (0.003 - camera.position.x) * 0.15;
     camera.position.y += (0.22 - camera.position.y) * 0.15;
-    camera.lookAt(-0.05, 0.22, 0);
+    camera.lookAt(0.003, 0.22, 0);
   });
 
   const cabinetMaterial = useMemo(() => {
@@ -186,7 +186,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
 
   return (
     <>
-      <group ref={groupRef} position={[0, 0.22, 0]} scale={0.14}>
+      <group ref={groupRef} position={[0.003, 0.22, 0]} scale={0.17}>
         <primitive object={tvScene} />
         <pointLight
           ref={screenGlowRef}
@@ -276,7 +276,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
       data-testid="tv-zoom-out"
     >
       <Canvas
-        camera={{ position: [-0.05, 0.22, 0.35], fov: 50 }}
+        camera={{ position: [0.003, 0.22, 0.35], fov: 50 }}
         shadows
         gl={{
           antialias: true,

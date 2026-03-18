@@ -229,10 +229,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
       if (glitchIntensity > 0.1) {
-        groupRef.current.position.x = (Math.random() - 0.5) * glitchIntensity * 0.05;
+        groupRef.current.position.x = 0.003 + (Math.random() - 0.5) * glitchIntensity * 0.05;
         groupRef.current.position.y = 0.22 + (Math.random() - 0.5) * glitchIntensity * 0.03;
       } else {
-        groupRef.current.position.x = 0;
+        groupRef.current.position.x = 0.003;
         groupRef.current.position.y = 0.22;
       }
     }
@@ -304,7 +304,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
           const data = imageData.data;
           for (let i = 0; i < data.length; i += 4) {
             const n = Math.random() * 255;
-            data[i] = n; data[i+1] = n; data[i+2] = n; data[i+3] = 255;
+            data[i] = n; data[i + 1] = n; data[i + 2] = n; data[i + 3] = 255;
           }
           ctx.putImageData(imageData, sx, sy);
           canvasTextureRef.current.needsUpdate = true;
@@ -326,8 +326,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   return (
     <group
       ref={groupRef}
-      position={[0, 0.22, 0]}
-      scale={0.14}
+      position={[0.003, 0.22, 0]}
+      scale={0.17}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
