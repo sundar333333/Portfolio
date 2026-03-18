@@ -249,7 +249,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
         ctx.clearRect(sx, sy, sw, sh);
-        // Rotate +90deg to appear correctly on this CRT model's UV layout
         ctx.save();
         ctx.translate(sx + sw / 2, sy + sh / 2);
         ctx.rotate(Math.PI / 2);
@@ -273,7 +272,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
           ctx.fillStyle = `rgb(${gray},${gray},${gray})`;
           ctx.fillRect(x, y, 2, 2);
         }
-        // Apply same +90deg rotation as video so text appears upright on screen
         ctx.save();
         ctx.translate(sx + sw / 2, sy + sh / 2);
         ctx.rotate(Math.PI / 2);
@@ -407,6 +405,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   const targetPosition = useRef({ x: 0, y: 0 });
+  const gyroRef = useRef({ x: 0, y: 0, active: false, baseGamma: 0, baseBeta: 0, calibrated: false });
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -419,9 +418,51 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
-      targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+      // Only use mouse on non-touch devices
+      if (!gyroRef.current.active) {
+        targetPosition.current.x = (e.clientX / window.innerWidth - 0.5) * 0.15;
+        targetPosition.current.y = (e.clientY / window.innerHeight - 0.5) * 0.1;
+      }
     };
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      const gamma = e.gamma ?? 0; // left-right tilt (-90 to 90)
+      const beta = e.beta ?? 0;   // front-back tilt (-180 to 180)
+      const g = gyroRef.current;
+      g.active = true;
+      // Calibrate on first reading
+      if (!g.calibrated) {
+        g.baseGamma = gamma;
+        g.baseBeta = beta;
+        g.calibrated = true;
+      }
+      // Delta from baseline, clamped
+      const deltaGamma = Math.max(-30, Math.min(30, gamma - g.baseGamma));
+      const deltaBeta = Math.max(-30, Math.min(30, beta - g.baseBeta));
+      // Map to camera offset (subtle)
+      g.x = (deltaGamma / 30) * 0.12;
+      g.y = (deltaBeta / 30) * 0.08;
+      targetPosition.current.x = g.x;
+      targetPosition.current.y = g.y;
+    };
+
+    // Request permission on iOS 13+
+    const requestGyro = async () => {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
+        try {
+          const permission = await (DeviceOrientationEvent as any).requestPermission();
+          if (permission === "granted") {
+            window.addEventListener("deviceorientation", handleOrientation, true);
+          }
+        } catch {}
+      } else {
+        // Android and older iOS — no permission needed
+        window.addEventListener("deviceorientation", handleOrientation, true);
+      }
+    };
+
+    requestGyro();
+
     const handleWheel = () => { onStopVideoRef.current(); };
     const handleTouchMove = () => { onStopVideoRef.current(); };
     const handleNavigateTo = (e: Event) => {
@@ -485,6 +526,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("navigateTo", handleNavigateTo);
+      window.removeEventListener("deviceorientation", handleOrientation as any, true);
       cancelAnimationFrame(navAnimFrame.current);
     };
   }, []);
@@ -498,17 +540,24 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
     let targetY: number;
     let lookAtY: number;
     let targetX = -0.05;
+
+    // Apply gyro/mouse parallax only on landing section
+    const isLanding = offset < transitionThreshold;
+    const parallaxStrength = isLanding ? 1.0 : 0;
+    const px = targetPosition.current.x * parallaxStrength;
+    const py = targetPosition.current.y * parallaxStrength;
+
     if (offset < transitionThreshold) {
       const progress = offset / transitionThreshold;
       targetZ = startZ - (startZ - screenZ) * progress;
-      targetY = tvScreenY;
+      targetY = tvScreenY + py;
       lookAtY = tvScreenY;
     } else {
       targetZ = screenZ;
       targetY = tvScreenY;
       lookAtY = tvScreenY;
     }
-    camera.position.x += (targetX - camera.position.x) * 0.1;
+    camera.position.x += (targetX + px - camera.position.x) * 0.1;
     camera.position.y += (targetY - camera.position.y) * 0.1;
     camera.position.z += (targetZ - camera.position.z) * 0.1;
     camera.lookAt(targetX, lookAtY, 0);
