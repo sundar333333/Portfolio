@@ -19,7 +19,6 @@ interface Scene3DProps {
 function useStaticTexture() {
   const textureRef = useRef<THREE.DataTexture | null>(null);
 
-  // Create synchronously so it's available on first render
   if (!textureRef.current) {
     const size = 256;
     const data = new Uint8Array(size * size * 4);
@@ -114,17 +113,52 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
+  // The new TV model (vintage_tv_v2.glb) uses a shared UV atlas texture.
+  // The screen mesh "tv_low_tv-retro_0" has UV coordinates in the range:
+  //   U: [0.3984, 0.6318]  V: [0.0411, 0.3393]
+  // To make our dynamic texture fill just that screen region, we use a
+  // full-atlas approach: render the content into the correct sub-region of
+  // a canvas that matches the atlas layout, then apply it as repeat(1,1)/offset(0,0).
+  const UV_MIN_U = 0.3984;
+  const UV_MIN_V = 0.0411;
+  const UV_W = 0.2334;
+  const UV_H = 0.2982;
+  const ATLAS = 1024;
+
   useEffect(() => {
+    const atlas = document.createElement("canvas");
+    atlas.width = ATLAS;
+    atlas.height = ATLAS;
+    canvasRef.current = atlas;
+
+    const tex = new THREE.CanvasTexture(atlas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.flipY = false;
+    canvasTextureRef.current = tex;
+
+    const videoAtlas = document.createElement("canvas");
+    videoAtlas.width = ATLAS;
+    videoAtlas.height = ATLAS;
+    videoCanvasRef.current = videoAtlas;
+
+    const videoTex = new THREE.CanvasTexture(videoAtlas);
+    videoTex.wrapS = THREE.ClampToEdgeWrapping;
+    videoTex.wrapT = THREE.ClampToEdgeWrapping;
+    videoTex.flipY = false;
+    videoTextureRef.current = videoTex;
+
     if (textureRef.current) {
-      textureRef.current.repeat.set(0.2334, 0.2982);
-      textureRef.current.offset.set(0.3984, 0.6607);
+      textureRef.current.repeat.set(1, 1);
+      textureRef.current.offset.set(0, 0);
       textureRef.current.wrapS = THREE.ClampToEdgeWrapping;
       textureRef.current.wrapT = THREE.ClampToEdgeWrapping;
       textureRef.current.needsUpdate = true;
     }
-    const mat = new THREE.MeshBasicMaterial({ 
+
+    const mat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      map: textureRef.current 
+      map: tex,
     });
     screenMatRef.current = mat;
 
@@ -138,36 +172,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       }
     });
 
-    // Apply texture immediately if already available
-    if (textureRef.current && mat) {
-      mat.map = textureRef.current;
-      mat.needsUpdate = true;
-    }
-  }, [tvScene]);
-
-  useEffect(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 384;
-    canvasRef.current = canvas;
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.repeat.set(0.2334, 0.2982);
-    tex.offset.set(0.3984, 0.6607);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-
-    const videoCanvas = document.createElement("canvas");
-    videoCanvas.width = 1024;
-    videoCanvas.height = 768;
-    videoCanvasRef.current = videoCanvas;
-    const videoTex = new THREE.CanvasTexture(videoCanvas);
-    videoTex.repeat.set(0.2334, 0.2982);
-    videoTex.offset.set(0.3984, 0.6607);
-    videoTex.wrapS = THREE.ClampToEdgeWrapping;
-    videoTex.wrapT = THREE.ClampToEdgeWrapping;
-
     const video = document.createElement("video");
-    video.src = "/static/tribute.mp4?v=2";
+    video.src = "/static/tribute.mp4";
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.playsInline = true;
@@ -182,7 +188,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       video.src = "";
       videoElRef.current = null;
     };
-  }, []);
+  }, [tvScene]);
 
   useEffect(() => {
     const video = videoElRef.current;
@@ -238,17 +244,18 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     const mat = screenMatRef.current;
     if (!mat) return;
 
+    const sx = Math.round(UV_MIN_U * ATLAS);
+    const sy = Math.round(UV_MIN_V * ATLAS);
+    const sw = Math.round(UV_W * ATLAS);
+    const sh = Math.round(UV_H * ATLAS);
+
     if (isVideoPlaying && videoCanvasRef.current && videoTextureRef.current && videoElRef.current) {
       const canvas = videoCanvasRef.current;
       const ctx = canvas.getContext("2d");
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(Math.PI / 2);
-        ctx.drawImage(video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
-        ctx.restore();
+        ctx.clearRect(sx, sy, sw, sh);
+        ctx.drawImage(video, sx, sy, sw, sh);
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
         mat.color.set(0xffffff);
@@ -259,29 +266,29 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < 600; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * canvas.height;
+        ctx.fillRect(sx, sy, sw, sh);
+        for (let i = 0; i < 300; i++) {
+          const x = sx + Math.random() * sw;
+          const y = sy + Math.random() * sh;
           const gray = Math.random() * 60;
           ctx.fillStyle = `rgb(${gray},${gray},${gray})`;
           ctx.fillRect(x, y, 2, 2);
         }
         ctx.fillStyle = "white";
-        ctx.font = "bold 28px Arial, sans-serif";
+        ctx.font = `bold ${Math.round(sw * 0.055)}px Arial, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.shadowColor = "rgba(255,255,255,0.9)";
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 10;
         const words = hoveredText.split(" ");
         const lines: string[] = [];
         for (let i = 0; i < words.length; i += 3) lines.push(words.slice(i, i + 3).join(" "));
-        const lineHeight = 40;
-        const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
-        lines.forEach((line, i) => ctx.fillText(line, canvas.width / 2, startY + i * lineHeight));
-        for (let y = 0; y < canvas.height; y += 2) {
+        const lineH = Math.round(sh * 0.15);
+        const startY = sy + sh / 2 - ((lines.length - 1) * lineH) / 2;
+        lines.forEach((line, i) => ctx.fillText(line, sx + sw / 2, startY + i * lineH));
+        for (let y = sy; y < sy + sh; y += 2) {
           ctx.fillStyle = "rgba(0,0,0,0.1)";
-          ctx.fillRect(0, y, canvas.width, 1);
+          ctx.fillRect(sx, y, sw, 1);
         }
         canvasTextureRef.current.needsUpdate = true;
         mat.map = canvasTextureRef.current;
@@ -289,11 +296,22 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         mat.needsUpdate = true;
       }
     } else {
-      updateTexture();
-      if (textureRef.current) {
-        mat.map = textureRef.current;
-        mat.color.set(0xffffff);
-        mat.needsUpdate = true;
+      if (canvasRef.current && canvasTextureRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const imageData = ctx.createImageData(sw, sh);
+          const data = imageData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const n = Math.random() * 255;
+            data[i] = n; data[i+1] = n; data[i+2] = n; data[i+3] = 255;
+          }
+          ctx.putImageData(imageData, sx, sy);
+          canvasTextureRef.current.needsUpdate = true;
+          mat.map = canvasTextureRef.current;
+          mat.color.set(0xffffff);
+          mat.needsUpdate = true;
+        }
       }
     }
   });
@@ -309,7 +327,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     <group
       ref={groupRef}
       position={[0, 0.22, 0]}
-      scale={0.22}
+      scale={0.14}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}

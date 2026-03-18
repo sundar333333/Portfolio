@@ -16,7 +16,7 @@ function useWoodTexture() {
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    
+
     const gradient = ctx.createLinearGradient(0, 0, 512, 512);
     gradient.addColorStop(0, "#4a3520");
     gradient.addColorStop(0.3, "#5a4230");
@@ -25,7 +25,7 @@ function useWoodTexture() {
     gradient.addColorStop(1, "#4a3520");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 512, 512);
-    
+
     ctx.strokeStyle = "rgba(30, 20, 10, 0.3)";
     ctx.lineWidth = 1;
     for (let i = 0; i < 100; i++) {
@@ -39,12 +39,12 @@ function useWoodTexture() {
       );
       ctx.stroke();
     }
-    
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     return tex;
   }, []);
-  
+
   return texture;
 }
 
@@ -60,99 +60,83 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
   const { camera } = useThree();
   const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
 
+  const canvasAtlasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
+
   useEffect(() => {
+    const ATLAS = 1024;
+    const atlas = document.createElement("canvas");
+    atlas.width = ATLAS;
+    atlas.height = ATLAS;
+    canvasAtlasRef.current = atlas;
+
+    const tex = new THREE.CanvasTexture(atlas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.flipY = false;
+    canvasTextureRef.current = tex;
+
+    const mat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff });
+    screenMatRef.current = mat;
+
     tvScene.traverse((child: any) => {
       child.castShadow = true;
       child.receiveShadow = true;
+      if (child.isMesh && child.name === "tv_low_tv-retro_0") {
+        child.material = mat;
+      }
     });
+
+    return () => { tex.dispose(); };
   }, [tvScene]);
-  
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
-  const [videoStarted, setVideoStarted] = useState(false);
-
-  useEffect(() => {
-  const video = document.createElement("video");
-
-  video.src = "/videos/tribute.mp4";
-  video.crossOrigin = "anonymous";
-  video.loop = true;
-  video.muted = true;
-  video.playsInline = true;
-  video.autoplay = false;
-
-  videoRef.current = video;
-
-  const texture = new THREE.VideoTexture(video);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false;
-
-  videoTextureRef.current = texture;
-
-
-}, []);
 
   useEffect(() => {
     const size = 256;
     const data = new Uint8Array(size * size * 4);
-    
     for (let i = 0; i < data.length; i += 4) {
       const noise = Math.random() * 255;
-      data[i] = noise;
-      data[i + 1] = noise;
-      data[i + 2] = noise;
-      data[i + 3] = 255;
+      data[i] = noise; data[i + 1] = noise; data[i + 2] = noise; data[i + 3] = 255;
     }
-
     const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
     tex.needsUpdate = true;
     textureRef.current = tex;
-
-    return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose();
-      }
-    };
+    return () => { if (textureRef.current) textureRef.current.dispose(); };
   }, []);
 
   useFrame((state) => {
-    if (videoStarted && videoTextureRef.current) {
-      videoTextureRef.current.needsUpdate = true;
-    }
-    if (!videoStarted && textureRef.current) {
-      const data = textureRef.current.image.data as Uint8Array;
-      for (let i = 0; i < data.length; i += 4) {
-        const noise = Math.random() * 255;
-        data[i] = noise;
-        data[i + 1] = noise;
-        data[i + 2] = noise;
+    const ATLAS = 1024;
+    const UV_MIN_U = 0.3984, UV_MIN_V = 0.0411, UV_W = 0.2334, UV_H = 0.2982;
+    const sx = Math.round(UV_MIN_U * ATLAS);
+    const sy = Math.round(UV_MIN_V * ATLAS);
+    const sw = Math.round(UV_W * ATLAS);
+    const sh = Math.round(UV_H * ATLAS);
+
+    if (canvasAtlasRef.current && canvasTextureRef.current) {
+      const ctx = canvasAtlasRef.current.getContext("2d");
+      if (ctx) {
+        const imageData = ctx.createImageData(sw, sh);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const n = Math.random() * 255;
+          data[i] = n; data[i+1] = n; data[i+2] = n; data[i+3] = 255;
+        }
+        ctx.putImageData(imageData, sx, sy);
+        canvasTextureRef.current.needsUpdate = true;
       }
-      textureRef.current.needsUpdate = true;
     }
 
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
     }
-
     if (screenGlowRef.current) {
       screenGlowRef.current.intensity = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.05;
     }
 
-  tvScene.traverse((child: any) => {
-    if (child.isMesh && child.name === "tv_low_tv-retro_0") {
-      if (videoStarted && videoTextureRef.current) {
-        child.material = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, toneMapped: false });
-      } else if (textureRef.current) {
-        child.material = new THREE.MeshBasicMaterial({ map: textureRef.current });
-      }
-    }
-  });
-
     const startZ = 0.35;
     const endZ = 1.8;
     const targetZ = startZ + zoomProgress * (endZ - startZ);
-    
+
     camera.position.z += (targetZ - camera.position.z) * 0.15;
     camera.position.x += (-0.05 - camera.position.x) * 0.15;
     camera.position.y += (0.22 - camera.position.y) * 0.15;
@@ -200,12 +184,9 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
     });
   }, []);
 
-  const screenWidth = 0.52;
-  const screenHeight = 0.39;
-
   return (
     <>
-      <group ref={groupRef} position={[0, 0, 0]} scale={0.008}>
+      <group ref={groupRef} position={[0, 0.22, 0]} scale={0.14}>
         <primitive object={tvScene} />
         <pointLight
           ref={screenGlowRef}
@@ -235,14 +216,14 @@ function TiledFloor() {
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    
+
     ctx.fillStyle = "#0a0908";
     ctx.fillRect(0, 0, 512, 512);
-    
+
     const tileSize = 64;
     ctx.strokeStyle = "#1a1815";
     ctx.lineWidth = 2;
-    
+
     for (let x = 0; x <= 512; x += tileSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
@@ -255,7 +236,7 @@ function TiledFloor() {
       ctx.lineTo(512, y);
       ctx.stroke();
     }
-    
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(8, 8);
@@ -277,7 +258,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
 
   const zoomOutStart = 0.88;
   const zoomOutEnd = 1.0;
-  
+
   const zoomProgress = scrollProgress < zoomOutStart ? 0 :
                        scrollProgress > zoomOutEnd ? 1 :
                        (scrollProgress - zoomOutStart) / (zoomOutEnd - zoomOutStart);
@@ -297,8 +278,8 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
       <Canvas
         camera={{ position: [-0.05, 0.22, 0.35], fov: 50 }}
         shadows
-        gl={{ 
-          antialias: true, 
+        gl={{
+          antialias: true,
           alpha: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 0.9,
@@ -309,9 +290,9 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
         <Suspense fallback={null}>
           <color attach="background" args={["#050403"]} />
           <fog attach="fog" args={["#050403", 3, 12]} />
-          
+
           <ambientLight intensity={0.08} color="#1a1820" />
-          
+
           <spotLight
             position={[0, 3.5, 1.5]}
             angle={0.35}
@@ -322,7 +303,7 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
           />
-          
+
           <spotLight
             position={[-1.5, 2, 2]}
             angle={0.5}
@@ -330,9 +311,9 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
             intensity={3}
             color="#aab8cc"
           />
-          
+
           <Environment preset="night" background={false} />
-          
+
           <TiledFloor />
           <ZoomOutTV zoomProgress={zoomProgress} />
         </Suspense>
@@ -340,4 +321,5 @@ export function TVZoomOut({ visible, scrollProgress }: TVZoomOutProps) {
     </motion.div>
   );
 }
+
 useGLTF.preload("/static/vintage_tv_v2.glb");
