@@ -113,12 +113,6 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
-  // The new TV model (vintage_tv_v2.glb) uses a shared UV atlas texture.
-  // The screen mesh "tv_low_tv-retro_0" has UV coordinates in the range:
-  //   U: [0.3984, 0.6318]  V: [0.0411, 0.3393]
-  // To make our dynamic texture fill just that screen region, we use a
-  // full-atlas approach: render the content into the correct sub-region of
-  // a canvas that matches the atlas layout, then apply it as repeat(1,1)/offset(0,0).
   const UV_MIN_U = 0.3984;
   const UV_MIN_V = 0.0411;
   const UV_W = 0.2334;
@@ -255,7 +249,13 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
       const video = videoElRef.current;
       if (ctx && video.readyState >= 2) {
         ctx.clearRect(sx, sy, sw, sh);
-        ctx.drawImage(video, sx, sy, sw, sh);
+        // The TV screen UV U-axis = world Z (depth), V-axis = world X (vertical)
+        // Video must be rotated -90deg to appear correctly on the curved CRT screen
+        ctx.save();
+        ctx.translate(sx + sw / 2, sy + sh / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.drawImage(video, -sh / 2, -sw / 2, sh, sw);
+        ctx.restore();
         videoTextureRef.current.needsUpdate = true;
         mat.map = videoTextureRef.current;
         mat.color.set(0xffffff);
@@ -327,7 +327,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
     <group
       ref={groupRef}
       position={[0.003, 0.22, 0]}
-      scale={0.17}
+      scale={0.19}
       onClick={handleClick}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}

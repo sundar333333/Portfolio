@@ -186,7 +186,7 @@ function ZoomOutTV({ zoomProgress }: ZoomOutTVProps) {
 
   return (
     <>
-      <group ref={groupRef} position={[0.003, 0.22, 0]} scale={0.17}>
+      <group ref={groupRef} position={[0.003, 0.22, 0]} scale={0.19}>
         <primitive object={tvScene} />
         <pointLight
           ref={screenGlowRef}
