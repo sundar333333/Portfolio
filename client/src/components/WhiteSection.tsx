@@ -822,7 +822,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                           <span className="text-white/30 text-[10px] uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Inter', sans-serif" }}>Back to top</span>
                         </div>
                       </div>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ marginTop: '0vh' }}>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <h1
                           className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out pointer-events-auto"
                           style={{
@@ -848,7 +848,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         >
                           SUNDAR RAM
                         </h1>
-                        <p className="text-white/30 text-xs mt-14 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
+                        <p className="text-white/30 text-xs mt-4 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
                           Built & designed by Sundar Ram • © 2026
                         </p>
                       </div>
