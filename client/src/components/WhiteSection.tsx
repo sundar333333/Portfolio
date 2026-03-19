@@ -7,11 +7,6 @@ import currentLogo from "@assets/ChatGPT_Image_Jan_31,_2026,_03_56_26_AM_1769812
 import spaceJumpLogo from "@assets/Group_4_1769812419285.png";
 import eventifyLogo from "@assets/lk_1769812445813.png";
 import tickingLogo from "@assets/Group_27_1769812471632.png";
-import tickingCaseStudy from "@assets/image_1769954947300.png";
-import currentCaseStudy from "@assets/image_1769954987397.png";
-import eventifyCaseStudy from "@assets/image_1769955050232.png";
-import spaceJumpCaseStudy from "@assets/image_1769955092024.png";
-
 
 interface TrailPoint {
   x: number;
@@ -49,10 +44,10 @@ let trailId = 0;
 
 export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZoomProgress, onPostZoomProgress, onScrollToTop, onEnter, onBack, isEntered }: WhiteSectionProps) {
   const translateY = Math.max(0, 100 - progress * 100);
-  
-  const minSize = 150;
-  const maxSize = 460;
-  
+
+  const minSize = typeof window !== "undefined" && window.innerWidth < 768 ? 100 : 150;
+  const maxSize = typeof window !== "undefined" && window.innerWidth < 768 ? 320 : 460;
+
   const [smoothOffset, setSmoothOffset] = useState({ x: 0, y: 0 });
   const [logoOffset, setLogoOffset] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState<TrailPoint[]>([]);
@@ -62,15 +57,12 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   const [postZoomProgress, setPostZoomProgress] = useState(0);
   const [contactForm, setContactForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [footerProgress, setFooterProgress] = useState(0);
   const targetZoom = useRef(0);
   const targetPostZoom = useRef(0);
-  const targetFooter = useRef(0);
   const smoothAnimFrame = useRef<number>(0);
   const targetOffset = useRef({ x: 0, y: 0 });
   const lastTrailPos = useRef({ x: 0, y: 0 });
   const zoomScrollAccumulator = useRef(0);
-
   const navAnimFrame = useRef<number>(0);
   const isNavigating = useRef(false);
 
@@ -92,7 +84,6 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         zoomScrollAccumulator.current = 0;
         targetZoom.current = 0;
         targetPostZoom.current = 0;
-
         setZoomProgress(0);
         setPostZoomProgress(0);
       }
@@ -103,10 +94,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
       let accTarget = 0;
       if (section === 'reset') {
-        if (zoomScrollAccumulator.current <= 0) {
-          isNavigating.current = false;
-          return;
-        }
+        if (zoomScrollAccumulator.current <= 0) { isNavigating.current = false; return; }
         accTarget = 0;
       } else if (section === 'works') {
         accTarget = 0;
@@ -114,26 +102,20 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         accTarget = freeScrollThreshold + zoomThreshold;
       } else if (section === 'contact') {
         accTarget = freeScrollThreshold + zoomThreshold + 1500;
-      } else {
-        return;
-      }
+      } else { return; }
 
       isNavigating.current = true;
       cancelAnimationFrame(navAnimFrame.current);
-
       const startVal = zoomScrollAccumulator.current;
       const distance = accTarget - startVal;
       const duration = Math.min(2500, Math.max(1200, Math.abs(distance) * 0.5));
       const startTime = performance.now();
-
-      const easeInOutCubic = (t: number) =>
-        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       const animate = (now: number) => {
         const elapsed = now - startTime;
         const rawProgress = Math.min(1, elapsed / duration);
         const easedProgress = easeInOutCubic(rawProgress);
-
         const newVal = startVal + distance * easedProgress;
         zoomScrollAccumulator.current = newVal;
 
@@ -148,15 +130,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         onZoomProgress?.(targetZoom.current);
         onPostZoomProgress?.(targetPostZoom.current);
 
-        if (rawProgress < 1) {
-          navAnimFrame.current = requestAnimationFrame(animate);
-        } 
-        else {
-          isNavigating.current = false;
-          navAnimFrame.current = 0;
-        }
+        if (rawProgress < 1) { navAnimFrame.current = requestAnimationFrame(animate); }
+        else { isNavigating.current = false; navAnimFrame.current = 0; }
       };
-
       navAnimFrame.current = requestAnimationFrame(animate);
     };
 
@@ -169,26 +145,21 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
   const isFullyExpanded = circleProgress >= 1;
   const isWorksScreenVisible = circleProgress >= 1 && progress >= 1;
-  
+
   const viewportDiagonal = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
-  const zoomedCircleSize = zoomProgress > 0 
-    ? maxSize + (viewportDiagonal * 1.5 - maxSize) * zoomProgress 
+  const zoomedCircleSize = zoomProgress > 0
+    ? maxSize + (viewportDiagonal * 1.5 - maxSize) * zoomProgress
     : minSize + (maxSize - minSize) * circleProgress;
   const circleSize = zoomedCircleSize;
 
   useEffect(() => {
     onCaseStudyChange?.(openCaseStudy !== null);
-    
-    // Prevent background scrolling when case study is open
     if (openCaseStudy !== null) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [openCaseStudy, onCaseStudyChange]);
 
   useEffect(() => {
@@ -196,49 +167,56 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       zoomScrollAccumulator.current = 0;
       targetZoom.current = 0;
       targetPostZoom.current = 0;
-
       setZoomProgress(0);
       setPostZoomProgress(0);
-
       onZoomProgress?.(0);
       onPostZoomProgress?.(0);
     }
   }, [isWorksScreenVisible]);
 
-  // Separate scroll handler for zooming into the circle
   useEffect(() => {
     if (!isWorksScreenVisible || openCaseStudy !== null) return;
-    
+
     const freeScrollThreshold = 300;
     const zoomThreshold = 2000;
     const postZoomThreshold = 2500;
     const totalThreshold = freeScrollThreshold + zoomThreshold + postZoomThreshold;
-    
+
     const handleWheel = (e: WheelEvent) => {
       if (!isWorksScreenVisible || openCaseStudy !== null) return;
       if (isNavigating.current) return;
       if (isEntered) return;
-      
       const isScrollingUp = e.deltaY < 0;
-      if (isScrollingUp && zoomScrollAccumulator.current <= 0) {
-        return;
-      }
-      
+      if (isScrollingUp && zoomScrollAccumulator.current <= 0) return;
       e.preventDefault();
-      
       const clampedDelta = Math.max(-80, Math.min(80, e.deltaY));
       zoomScrollAccumulator.current += clampedDelta;
       zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
-      
       const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
       targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
-      
       const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
       targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
     };
-    
+
+    // Touch support for zoom scroll on mobile
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isWorksScreenVisible || openCaseStudy !== null || isNavigating.current || isEntered) return;
+      const deltaY = touchStartY - e.touches[0].clientY;
+      touchStartY = e.touches[0].clientY;
+      if (deltaY < 0 && zoomScrollAccumulator.current <= 0) return;
+      e.preventDefault();
+      const clampedDelta = Math.max(-40, Math.min(40, deltaY));
+      zoomScrollAccumulator.current += clampedDelta;
+      zoomScrollAccumulator.current = Math.max(0, Math.min(totalThreshold, zoomScrollAccumulator.current));
+      const zoomStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold);
+      targetZoom.current = Math.min(1, zoomStart / zoomThreshold);
+      const postStart = Math.max(0, zoomScrollAccumulator.current - freeScrollThreshold - zoomThreshold);
+      targetPostZoom.current = Math.min(1, postStart / postZoomThreshold);
+    };
+
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    
     const smoothUpdate = () => {
       setZoomProgress(prev => {
         const next = lerp(prev, targetZoom.current, 0.12);
@@ -255,11 +233,15 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
       smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
     };
     smoothAnimFrame.current = requestAnimationFrame(smoothUpdate);
-    
+
     window.addEventListener('wheel', handleWheel, { passive: false });
-    
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
     return () => {
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(smoothAnimFrame.current);
     };
   }, [isWorksScreenVisible, openCaseStudy, onZoomProgress, isEntered]);
@@ -267,34 +249,25 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
   useEffect(() => {
     let animationId: number;
     let frameCount = 0;
-    
+
     const smoothFollow = () => {
       setSmoothOffset(prev => {
         const dx = targetOffset.current.x - prev.x;
         const dy = targetOffset.current.y - prev.y;
         const easing = 0.08;
-        
         const newX = prev.x + dx * easing;
         const newY = prev.y + dy * easing;
-        
         frameCount++;
         if (frameCount % 2 === 0 && isFullyExpanded) {
-          const distMoved = Math.sqrt(
-            Math.pow(newX - lastTrailPos.current.x, 2) + 
-            Math.pow(newY - lastTrailPos.current.y, 2)
-          );
-          
+          const distMoved = Math.sqrt(Math.pow(newX - lastTrailPos.current.x, 2) + Math.pow(newY - lastTrailPos.current.y, 2));
           if (distMoved > 0.5) {
             trailId++;
             setTrail(t => [...t, { x: newX, y: newY, id: trailId }].slice(-20));
             lastTrailPos.current = { x: newX, y: newY };
           }
         }
-        
         return { x: newX, y: newY };
       });
-      
-      // Logo follows with less sensitivity (40% of circle movement)
       setLogoOffset(prev => {
         const logoSensitivity = 0.4;
         const targetX = targetOffset.current.x * logoSensitivity;
@@ -304,101 +277,76 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         const easing = 0.06;
         return { x: prev.x + dx * easing, y: prev.y + dy * easing };
       });
-      
       animationId = requestAnimationFrame(smoothFollow);
     };
-    
     animationId = requestAnimationFrame(smoothFollow);
-    
     return () => cancelAnimationFrame(animationId);
   }, [isFullyExpanded]);
 
   useEffect(() => {
     if (trail.length === 0) return;
-    
-    const timer = setInterval(() => {
-      setTrail(t => t.slice(1));
-    }, 50);
-    
+    const timer = setInterval(() => { setTrail(t => t.slice(1)); }, 50);
     return () => clearInterval(timer);
   }, [trail.length]);
 
   useEffect(() => {
-    if (!isFullyExpanded) {
-      targetOffset.current = { x: 0, y: 0 };
-      return;
-    }
+    if (!isFullyExpanded) { targetOffset.current = { x: 0, y: 0 }; return; }
 
     const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
       const gamma = e.gamma || 0;
       const beta = e.beta || 0;
-      
       const maxOffset = 100;
       const x = Math.max(-maxOffset, Math.min(maxOffset, gamma * 3.5));
       const y = Math.max(-maxOffset, Math.min(maxOffset, (beta - 45) * 2.5));
-      
       targetOffset.current = { x, y };
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
-      
       const maxOffset = 80;
       const x = ((e.clientX - centerX) / centerX) * maxOffset;
       const y = ((e.clientY - centerY) / centerY) * maxOffset;
-      
       targetOffset.current = { x, y };
     };
 
-    if (typeof DeviceOrientationEvent !== 'undefined' && 
-        typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
       (DeviceOrientationEvent as any).requestPermission()
         .then((permission: string) => {
-          if (permission === 'granted') {
-            window.addEventListener('deviceorientation', handleDeviceOrientation);
-          }
+          if (permission === 'granted') window.addEventListener('deviceorientation', handleDeviceOrientation);
         })
-        .catch(() => {
-          window.addEventListener('mousemove', handleMouseMove);
-        });
+        .catch(() => { window.addEventListener('mousemove', handleMouseMove); });
     } else if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleDeviceOrientation);
     }
-    
     window.addEventListener('mousemove', handleMouseMove);
-
     return () => {
       window.removeEventListener('deviceorientation', handleDeviceOrientation);
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [isFullyExpanded]);
 
-  // Fade out projects as zoom progresses
   const projectsOpacity = Math.max(0, 1 - zoomProgress * 3);
-  
-  // Background transitions from white to black as zoom progresses
-  const bgColor = zoomProgress > 0.3 
+  const bgColor = zoomProgress > 0.3
     ? `rgb(${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))}, ${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))}, ${Math.round(255 * (1 - (zoomProgress - 0.3) / 0.7))})`
     : 'white';
-  
-  const isZoomComplete = zoomProgress >= 1;
 
   return (
     <div
       className="fixed inset-0 z-20 pointer-events-none"
-      style={{
-        transform: `translateY(${translateY}%)`,
-        backgroundColor: bgColor,
-        transition: 'background-color 0.1s ease-out',
-      }}
+      style={{ transform: `translateY(${translateY}%)`, backgroundColor: bgColor, transition: 'background-color 0.1s ease-out' }}
       data-testid="white-section"
     >
+      {/* Project names — responsive sizing and positioning */}
       {progress >= 1 && !openCaseStudy && projectsOpacity > 0 && (
         <div style={{ opacity: projectsOpacity, transition: 'opacity 0.15s ease-out' }}>
-          <div 
-            className="project-name-hover absolute top-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          <div
+            className="project-name-hover absolute cursor-pointer pointer-events-auto text-black font-bold"
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              top: '28%', left: '4%',
+              fontSize: 'clamp(1.4rem, 4vw, 3.75rem)',
+            }}
             onMouseEnter={() => setHoveredProject('current')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('current')}
@@ -406,9 +354,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           >
             Current
           </div>
-          <div 
-            className="project-name-hover absolute top-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          <div
+            className="project-name-hover absolute cursor-pointer pointer-events-auto text-black font-bold text-right"
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              top: '28%', right: '4%',
+              fontSize: 'clamp(1.4rem, 4vw, 3.75rem)',
+            }}
             onMouseEnter={() => setHoveredProject('spacejump')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('spacejump')}
@@ -416,9 +368,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           >
             Space Jump
           </div>
-          <div 
-            className="project-name-hover absolute bottom-[28%] left-4 md:left-12 text-black font-bold text-4xl md:text-6xl cursor-pointer pointer-events-auto"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          <div
+            className="project-name-hover absolute cursor-pointer pointer-events-auto text-black font-bold"
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              bottom: '28%', left: '4%',
+              fontSize: 'clamp(1.4rem, 4vw, 3.75rem)',
+            }}
             onMouseEnter={() => setHoveredProject('eventify')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('eventify')}
@@ -426,9 +382,13 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           >
             Eventify
           </div>
-          <div 
-            className="project-name-hover absolute bottom-[28%] right-4 md:right-12 text-black font-bold text-4xl md:text-6xl text-right cursor-pointer pointer-events-auto"
-            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          <div
+            className="project-name-hover absolute cursor-pointer pointer-events-auto text-black font-bold text-right"
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              bottom: '28%', right: '4%',
+              fontSize: 'clamp(1.4rem, 4vw, 3.75rem)',
+            }}
             onMouseEnter={() => setHoveredProject('ticking')}
             onMouseLeave={() => setHoveredProject(null)}
             onClick={() => setOpenCaseStudy('ticking')}
@@ -439,52 +399,30 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         </div>
       )}
 
-      <svg 
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ filter: 'url(#goo)' }}
-      >
+      {/* SVG circle / trail */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ filter: 'url(#goo)' }}>
         <defs>
           <filter id="goo">
             <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-            <feColorMatrix 
-              in="blur" 
-              mode="matrix" 
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 35 -15" 
-              result="goo" 
-            />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 35 -15" result="goo" />
             <feComposite in="SourceGraphic" in2="goo" operator="atop" />
           </filter>
         </defs>
-        
         {trail.map((point, index) => {
           const opacity = (index + 1) / trail.length * 0.7;
           const scale = 0.85 + (index / trail.length) * 0.15;
           const centerX = window.innerWidth / 2 + point.x;
           const centerY = window.innerHeight / 2 + point.y;
-          
           return (
-            <circle
-              key={point.id}
-              cx={centerX}
-              cy={centerY}
-              r={(circleSize * scale) / 2}
-              fill="black"
-              opacity={opacity}
-            />
+            <circle key={point.id} cx={centerX} cy={centerY} r={(circleSize * scale) / 2} fill="black" opacity={opacity} />
           );
         })}
-        
         {circleProgress > 0 && (
-          <circle
-            cx={window.innerWidth / 2 + smoothOffset.x}
-            cy={window.innerHeight / 2 + smoothOffset.y}
-            r={circleSize / 2}
-            fill="black"
-          />
+          <circle cx={window.innerWidth / 2 + smoothOffset.x} cy={window.innerHeight / 2 + smoothOffset.y} r={circleSize / 2} fill="black" />
         )}
       </svg>
 
-      {/* Logo display inside circle - no mercury effect */}
+      {/* Logo inside circle */}
       {hoveredProject && circleProgress >= 1 && !openCaseStudy && projectsOpacity > 0.5 && (
         <div
           className="absolute pointer-events-none flex items-center justify-center transition-opacity duration-300"
@@ -510,8 +448,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
         </div>
       )}
 
+      {/* Zoom overlay — 3D room / contact */}
       {zoomProgress > 0.3 && !openCaseStudy && (
-        <div 
+        <div
           className="fixed inset-0 z-30 pointer-events-auto flex items-center justify-center"
           style={{
             backgroundColor: isEntered ? '#fff' : '#000',
@@ -536,26 +475,28 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                 </svg>
                 Back
               </button>
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 text-black/30 text-xs tracking-wider">
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 md:gap-4 text-black/30 text-xs tracking-wider">
                 <span>Drag to rotate</span>
                 <span>•</span>
                 <span>Scroll to zoom</span>
-                <span>•</span>
-                <span>Right-click to pan</span>
+                <span className="hidden md:inline">•</span>
+                <span className="hidden md:inline">Right-click to pan</span>
               </div>
             </>
           )}
+
+          {/* Enter button */}
           {zoomProgress >= 0.85 && !isEntered && postZoomProgress < 0.5 && (
             <div
-              className="flex flex-col items-center gap-12"
+              className="flex flex-col items-center gap-8 md:gap-12 px-4"
               style={{
-                opacity: postZoomProgress > 0.3 
+                opacity: postZoomProgress > 0.3
                   ? Math.max(0, 1 - (postZoomProgress - 0.3) / 0.2)
                   : Math.min(1, (zoomProgress - 0.85) / 0.15),
               }}
             >
               <button
-                className="group relative flex items-center justify-center cursor-pointer w-52 h-52 md:w-64 md:h-64"
+                className="group relative flex items-center justify-center cursor-pointer w-40 h-40 md:w-52 md:h-52 lg:w-64 lg:h-64"
                 onClick={() => onEnter?.()}
                 data-testid="button-enter"
               >
@@ -566,37 +507,19 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                   }}
                 />
                 <div className="absolute rounded-full transition-all duration-300 group-hover:opacity-80 opacity-0"
-                  style={{
-                    inset: '-4px',
-                    background: 'transparent',
-                    boxShadow: '0 0 40px rgba(255,0,0,0.4), 0 0 80px rgba(255,0,0,0.15)',
-                    borderRadius: '9999px',
-                  }}
+                  style={{ inset: '-4px', background: 'transparent', boxShadow: '0 0 40px rgba(255,0,0,0.4), 0 0 80px rgba(255,0,0,0.15)', borderRadius: '9999px' }}
                 />
                 <div className="absolute rounded-full border-4 border-gray-800/80 transition-all duration-300"
-                  style={{
-                    inset: '-8px',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.5)',
-                    background: 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)',
-                  }}
+                  style={{ inset: '-8px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.5)', background: 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)' }}
                 />
                 <div className="absolute rounded-full"
-                  style={{
-                    inset: '-14px',
-                    border: '2px solid rgba(60,60,60,0.6)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
-                  }}
+                  style={{ inset: '-14px', border: '2px solid rgba(60,60,60,0.6)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)' }}
                 />
                 <div className="absolute rounded-full pointer-events-none"
-                  style={{
-                    top: '12%', left: '20%', width: '35%', height: '25%',
-                    background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 70%)',
-                    transform: 'rotate(-20deg)',
-                    filter: 'blur(4px)',
-                  }}
+                  style={{ top: '12%', left: '20%', width: '35%', height: '25%', background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 70%)', transform: 'rotate(-20deg)', filter: 'blur(4px)' }}
                 />
                 <div className="relative flex flex-col items-center gap-2 z-10">
-                  <span className="font-anton text-white text-4xl md:text-5xl tracking-[0.25em] uppercase group-hover:tracking-[0.35em] transition-all duration-300 ease-out drop-shadow-lg"
+                  <span className="font-anton text-white text-3xl md:text-4xl lg:text-5xl tracking-[0.25em] uppercase group-hover:tracking-[0.35em] transition-all duration-300 ease-out drop-shadow-lg"
                     style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 0 20px rgba(255,100,100,0.3)' }}
                   >
                     ENTER
@@ -606,77 +529,64 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                   </span>
                 </div>
               </button>
-              <p className="text-white/30 text-xs md:text-sm tracking-wider text-center mt-6"
+              <p className="text-white/30 text-xs md:text-sm tracking-wider text-center mt-2 md:mt-6"
                 style={{ animation: 'enterFadeInUp 1s ease-out 0.5s both' }}
               >
-                Click enter to explore the 3D room or scroll to continue
+                Tap enter to explore the 3D room or scroll to continue
               </p>
             </div>
           )}
+
+          {/* Contact + Footer */}
           {postZoomProgress > 0.3 && !isEntered && (
-            <div 
-              className="fixed inset-0 z-40 bg-black overflow-hidden"
+            <div
+              className="fixed inset-0 z-40 bg-black overflow-y-auto overflow-x-hidden"
               style={{ opacity: Math.min(1, (postZoomProgress - 0.3) / 0.3) }}
               data-testid="post-zoom-section"
             >
               {(() => {
                 const slideUp = Math.max(0, Math.min(1, (postZoomProgress - 0.4) / 0.3));
                 const scrollPast = Math.min(1, Math.max(0, (postZoomProgress - 0.7) / 0.3));
-                const translateY = 100 - slideUp * 100 - scrollPast * 15;
-                
+                const ty = 100 - slideUp * 100 - scrollPast * 15;
+
                 return (
-                  <div
-                    className="absolute left-0 right-0"
-                    style={{
-                      top: 0,
-                      transform: `translateY(${translateY}%)`,
-                      transition: 'transform 0.1s ease-out',
-                    }}
-                  >
-                    <div
-                      className="w-full flex flex-col px-8 md:px-16 lg:px-24 pt-16 md:pt-20 pb-12 bg-black"
-                    >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 min-h-0">
-                      <div className="flex flex-col justify-between flex-1 h-full max-w-2xl">
-                        <div>
+                  <div className="absolute left-0 right-0" style={{ top: 0, transform: `translateY(${ty}%)`, transition: 'transform 0.1s ease-out' }}>
+                    {/* Contact section */}
+                    <div className="w-full flex flex-col px-5 sm:px-8 md:px-16 lg:px-24 pt-16 md:pt-20 pb-12 bg-black">
+                      <div className="flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12">
+                        {/* Left — heading + gif + email */}
+                        <div className="flex flex-col flex-1 w-full max-w-full md:max-w-2xl">
                           <h2
-                            className="text-white font-black text-2xl md:text-3xl lg:text-4xl leading-tight mb-12"
+                            className="text-white font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-tight mb-8 md:mb-12"
                             style={{ fontFamily: "'Anton', sans-serif" }}
                             data-testid="text-contact-heading"
                           >
                             Let's connect and create<br />meaningful digital experiences.
                           </h2>
-                          <img 
+                          <img
                             src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMW1scHhhYmRzczJiYjRmbjlpbjNlNndrNm5oM3cweDhmam5wbndibyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iXDe1s3spQUZG/giphy.gif"
                             alt="Creative animation"
-                            className="w-full max-w-xl object-contain rounded-lg mb-10"
+                            className="w-full max-w-sm md:max-w-xl object-contain rounded-lg mb-8 md:mb-10"
                             data-testid="img-contact-gif"
                           />
                           <div className="group/mail pointer-events-auto">
                             <div className="flex items-center gap-3">
-                              <div className="relative w-8 h-5 md:w-9 md:h-6 flex-shrink-0" style={{ perspective: '200px' }} data-testid="envelope-icon">
+                              <div className="relative w-8 h-5 flex-shrink-0" style={{ perspective: '200px' }}>
                                 <div className="absolute inset-0 bg-white/90 rounded-[2px]" />
                                 <div className="absolute bottom-0 left-0 right-0 h-[55%] z-10">
                                   <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                    <polygon points="0,55 50,0 100,55" fill="rgba(220,220,220,0.95)" stroke="rgba(180,180,180,0.3)" strokeWidth="1" />
+                                    <polygon points="0,55 50,0 100,55" fill="rgba(220,220,220,0.95)" />
                                   </svg>
                                 </div>
-                                <div 
-                                  className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out z-20 group-hover/mail:[transform:rotateX(180deg)]"
-                                  style={{ transformStyle: 'preserve-3d' }}
-                                >
+                                <div className="absolute left-0 right-0 top-0 h-[55%] origin-top transition-transform duration-500 ease-out z-20 group-hover/mail:[transform:rotateX(180deg)]" style={{ transformStyle: 'preserve-3d' }}>
                                   <svg viewBox="0 0 100 55" className="w-full h-full" preserveAspectRatio="none">
-                                    <polygon points="0,0 50,55 100,0" fill="rgba(240,240,240,0.95)" stroke="rgba(200,200,200,0.5)" strokeWidth="1" />
+                                    <polygon points="0,0 50,55 100,0" fill="rgba(240,240,240,0.95)" />
                                   </svg>
                                 </div>
                               </div>
                               <div>
-                                <span className="text-white/50 text-sm md:text-base">Mail : </span>
-                                <a
-                                  href="mailto:leosr1033@gmail.com"
-                                  className="relative text-white text-sm md:text-base"
-                                  data-testid="link-email"
-                                >
+                                <span className="text-white/50 text-sm">Mail: </span>
+                                <a href="mailto:leosr1033@gmail.com" className="relative text-white text-sm" data-testid="link-email">
                                   leosr1033@gmail.com
                                   <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/mail:scale-x-100 transition-transform duration-300 ease-out" />
                                 </a>
@@ -684,151 +594,110 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="w-full max-w-md pointer-events-auto" data-testid="contact-form">
-                        <h3 className="text-white font-bold text-2xl md:text-3xl mb-8" style={{ fontFamily: "'Anton', sans-serif" }}>
-                          Contact
-                        </h3>
-                        <form onSubmit={async (e) => {
-                          e.preventDefault();
-
-                          if (!contactForm.email || !contactForm.message) return;
-
-                          setFormStatus('sending');
-
-                        try {
-                          await emailjs.send(
-                            "service_z7sb6nl",
-                            "template_8ma62rt",
-                            {
-                              first_name: contactForm.firstName,
-                              last_name: contactForm.lastName,
-                              email: contactForm.email,
-                              message: contactForm.message,
-                            },
-                            "ElNxWglFQUyAx-On3"
-                            );
-
-                          setFormStatus('sent');
-                          setContactForm({
-                            firstName: "",
-                            lastName: "",
-                            email: "",
-                            message: ""
-                          });
-
-                        } catch (error) {
-                          console.error(error);
-                          setFormStatus('error');
-                        }
-                      }} className="space-y-6">
-                          <div className="flex gap-4">
-                            <div className="flex-1">
-                              <label className="text-white/60 text-sm block mb-2">First Name</label>
-                              <input
-                                type="text"
-                                value={contactForm.firstName}
-                                onChange={(e) => setContactForm(f => ({ ...f, firstName: e.target.value }))}
-                                className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
-                                data-testid="input-first-name"
-                              />
+                        {/* Right — contact form */}
+                        <div className="w-full md:max-w-md pointer-events-auto" data-testid="contact-form">
+                          <h3 className="text-white font-bold text-2xl md:text-3xl mb-6 md:mb-8" style={{ fontFamily: "'Anton', sans-serif" }}>
+                            Contact
+                          </h3>
+                          <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            if (!contactForm.email || !contactForm.message) return;
+                            setFormStatus('sending');
+                            try {
+                              await emailjs.send("service_z7sb6nl", "template_8ma62rt", {
+                                first_name: contactForm.firstName,
+                                last_name: contactForm.lastName,
+                                email: contactForm.email,
+                                message: contactForm.message,
+                              }, "ElNxWglFQUyAx-On3");
+                              setFormStatus('sent');
+                              setContactForm({ firstName: "", lastName: "", email: "", message: "" });
+                            } catch (error) {
+                              console.error(error);
+                              setFormStatus('error');
+                            }
+                          }} className="space-y-5 md:space-y-6">
+                            <div className="flex gap-3 md:gap-4">
+                              <div className="flex-1">
+                                <label className="text-white/60 text-xs md:text-sm block mb-2">First Name</label>
+                                <input type="text" value={contactForm.firstName} onChange={(e) => setContactForm(f => ({ ...f, firstName: e.target.value }))} className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors text-sm" data-testid="input-first-name" />
+                              </div>
+                              <div className="flex-1">
+                                <label className="text-white/60 text-xs md:text-sm block mb-2">Last Name</label>
+                                <input type="text" value={contactForm.lastName} onChange={(e) => setContactForm(f => ({ ...f, lastName: e.target.value }))} className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors text-sm" data-testid="input-last-name" />
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <label className="text-white/60 text-sm block mb-2">Last Name</label>
-                              <input
-                                type="text"
-                                value={contactForm.lastName}
-                                onChange={(e) => setContactForm(f => ({ ...f, lastName: e.target.value }))}
-                                className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
-                                data-testid="input-last-name"
-                              />
+                            <div>
+                              <label className="text-white/60 text-xs md:text-sm block mb-2">Email *</label>
+                              <input type="email" required value={contactForm.email} onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))} className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors text-sm" data-testid="input-email" />
                             </div>
-                          </div>
-                          <div>
-                            <label className="text-white/60 text-sm block mb-2">Email *</label>
-                            <input
-                              type="email"
-                              required
-                              value={contactForm.email}
-                              onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))}
-                              className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors"
-                              data-testid="input-email"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-white/60 text-sm block mb-2">Write a message</label>
-                            <textarea
-                              rows={3}
-                              required
-                              value={contactForm.message}
-                              onChange={(e) => setContactForm(f => ({ ...f, message: e.target.value }))}
-                              className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors resize-none"
-                              data-testid="input-message"
-                            />
-                          </div>
-                          {formStatus === 'sent' && (
-                            <p className="text-green-400 text-sm" data-testid="text-form-success">Message sent successfully!</p>
-                          )}
-                          {formStatus === 'error' && (
-                            <p className="text-red-400 text-sm" data-testid="text-form-error">Failed to send. Please try again.</p>
-                          )}
-                          <button
-                            type="submit"
-                            disabled={formStatus === 'sending'}
-                            className="px-8 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors text-sm tracking-wider disabled:opacity-50"
-                            data-testid="button-submit-contact"
-                          >
-                            {formStatus === 'sending' ? 'Sending...' : 'Submit'}
-                          </button>
-                        </form>
+                            <div>
+                              <label className="text-white/60 text-xs md:text-sm block mb-2">Write a message</label>
+                              <textarea rows={3} required value={contactForm.message} onChange={(e) => setContactForm(f => ({ ...f, message: e.target.value }))} className="w-full bg-transparent border-b border-white/30 text-white py-2 outline-none focus:border-white/70 transition-colors resize-none text-sm" data-testid="input-message" />
+                            </div>
+                            {formStatus === 'sent' && <p className="text-green-400 text-sm" data-testid="text-form-success">Message sent successfully!</p>}
+                            {formStatus === 'error' && <p className="text-red-400 text-sm" data-testid="text-form-error">Failed to send. Please try again.</p>}
+                            <button type="submit" disabled={formStatus === 'sending'} className="px-6 md:px-8 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors text-sm tracking-wider disabled:opacity-50" data-testid="button-submit-contact">
+                              {formStatus === 'sending' ? 'Sending...' : 'Submit'}
+                            </button>
+                          </form>
+                        </div>
                       </div>
                     </div>
 
-                    </div>
-                    <div className="w-full px-8 md:px-16 lg:px-24 bg-black">
+                    {/* Divider */}
+                    <div className="w-full px-5 sm:px-8 md:px-16 lg:px-24 bg-black">
                       <hr className="border-white/20" />
                     </div>
-                    <div className="w-full bg-black px-8 md:px-16 lg:px-24 relative flex justify-between" style={{ height: '50vh', paddingTop: '12vh' }}>
-                      <div className="flex gap-16 pointer-events-auto" data-testid="footer-nav">
-                        <div className="flex flex-col gap-4">
-                          <button onClick={() => handleFooterNav('about')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-about">About Me<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
-                          <button onClick={() => handleFooterNav('works')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-works">Works<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
-                          <button onClick={() => handleFooterNav('room')} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-3droom">3D Room<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></button>
+
+                    {/* Footer */}
+                    <div className="w-full bg-black px-5 sm:px-8 md:px-16 lg:px-24 pt-10 md:pt-16 pb-8">
+                      {/* Top footer row — nav links */}
+                      <div className="flex flex-wrap gap-8 md:gap-16 mb-10 md:mb-0 pointer-events-auto" data-testid="footer-nav">
+                        <div className="flex flex-col gap-3">
+                          {['about', 'works', 'room'].map((s, i) => (
+                            <button key={s} onClick={() => handleFooterNav(s)} className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit bg-transparent border-none cursor-pointer text-left" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              {['About Me', 'Works', '3D Room'][i]}
+                              <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" />
+                            </button>
+                          ))}
                         </div>
-                        <div className="flex flex-col gap-4">
-                          <a href="https://x.com/303Vj" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-twitter">Twitter<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="https://github.com/sundar333333" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-github">GitHub<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="https://www.linkedin.com/in/sundar-ram-qt/" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-linkedin">LinkedIn<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="https://www.reddit.com/user/Ok_Boysenberry5377/" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-reddit">Reddit<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="https://www.youtube.com/@leosr10" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-youtube">YouTube<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
+                        <div className="flex flex-col gap-3">
+                          {[
+                            { href: "https://x.com/303Vj", label: "Twitter", testid: "link-footer-twitter" },
+                            { href: "https://github.com/sundar333333", label: "GitHub", testid: "link-footer-github" },
+                            { href: "https://www.linkedin.com/in/sundar-ram-qt/", label: "LinkedIn", testid: "link-footer-linkedin" },
+                            { href: "https://www.reddit.com/user/Ok_Boysenberry5377/", label: "Reddit", testid: "link-footer-reddit" },
+                            { href: "https://www.youtube.com/@leosr10", label: "YouTube", testid: "link-footer-youtube" },
+                          ].map(({ href, label, testid }) => (
+                            <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid={testid}>
+                              {label}
+                              <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" />
+                            </a>
+                          ))}
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          {[
+                            { href: "https://www.behance.net/sundarvj1", label: "Behance", testid: "link-footer-behance" },
+                            { href: "https://dribbble.com/leosr10", label: "Dribbble", testid: "link-footer-dribbble" },
+                          ].map(({ href, label, testid }) => (
+                            <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid={testid}>
+                              {label}
+                              <span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" />
+                            </a>
+                          ))}
                         </div>
                       </div>
-                      <div className="flex items-start gap-6 pointer-events-auto" data-testid="footer-right">
-                        <div className="flex flex-col gap-4 mr-4">
-                          <a href="https://www.behance.net/sundarvj1" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-behance">Behance<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                          <a href="https://dribbble.com/leosr10" target="_blank" rel="noopener noreferrer" className="group/link relative text-white/50 hover:text-white text-sm transition-colors duration-300 w-fit" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="link-footer-dribbble">Dribbble<span className="absolute left-0 bottom-0 w-full h-[1px] bg-white origin-left scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 ease-out" /></a>
-                        </div>
-                        <div className="flex flex-col items-center gap-2">
-                          <button
-                            className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
-                            onClick={handleBackToTop}
-                            data-testid="button-scroll-top"
-                          >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M8 14V2M8 2L3 7M8 2L13 7" />
-                            </svg>
-                          </button>
-                          <span className="text-white/30 text-[10px] uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Inter', sans-serif" }}>Back to top</span>
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ marginTop: '-10vh' }}>
+
+                      {/* Big name + back to top */}
+                      <div className="flex flex-col items-center mt-10 md:mt-16 pointer-events-auto">
                         <h1
-                          className="text-white leading-none select-none whitespace-nowrap text-center cursor-pointer transition-all duration-500 ease-out pointer-events-auto"
+                          className="text-white leading-none select-none text-center cursor-pointer transition-all duration-500 ease-out w-full"
                           style={{
                             fontFamily: "'Anton', sans-serif",
                             fontWeight: 400,
-                            fontSize: '7vw',
+                            fontSize: 'clamp(2.5rem, 10vw, 7vw)',
                             letterSpacing: '0.05em',
                             lineHeight: 1,
                           }}
@@ -848,7 +717,21 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
                         >
                           SUNDAR RAM
                         </h1>
-                        <p className="text-white/30 text-xs mt-14 tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
+
+                        <div className="flex flex-col items-center gap-2 mt-8 mb-2 pointer-events-auto" data-testid="footer-right">
+                          <button
+                            className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white/50 hover:text-white hover:border-white transition-all duration-300"
+                            onClick={handleBackToTop}
+                            data-testid="button-scroll-top"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M8 14V2M8 2L3 7M8 2L13 7" />
+                            </svg>
+                          </button>
+                          <span className="text-white/30 text-[10px] uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Inter', sans-serif" }}>Back to top</span>
+                        </div>
+
+                        <p className="text-white/30 text-xs mt-4 tracking-wider text-center" style={{ fontFamily: "'Inter', sans-serif" }} data-testid="text-copyright">
                           Built & designed by Sundar Ram • © 2026
                         </p>
                       </div>
@@ -863,18 +746,9 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
 
       {/* Case Study Viewer */}
       {openCaseStudy && (
-        <div 
+        <div
           className="fixed inset-0 z-[9999] pointer-events-auto"
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw', 
-            height: '100vh',
-            background: '#000',
-            margin: 0,
-            padding: 0,
-          }}
+          style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000', margin: 0, padding: 0 }}
           data-testid="case-study-viewer"
         >
           <button
@@ -887,14 +761,7 @@ export function WhiteSection({ progress, circleProgress, onCaseStudyChange, onZo
           </button>
           <iframe
             src={projectCaseStudies[openCaseStudy]}
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 'none',
-              margin: 0,
-              padding: 0,
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', border: 'none', margin: 0, padding: 0, display: 'block' }}
             allowFullScreen
             title={`${openCaseStudy} Case Study`}
             data-testid="case-study-iframe"
