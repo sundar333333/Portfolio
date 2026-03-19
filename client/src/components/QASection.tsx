@@ -23,56 +23,65 @@ const qaData = [
 export function QASection({ visible, scrollProgress }: QASectionProps) {
   if (!visible) return null;
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
+  // Q&A starts after hero completely disappears (at 0.25)
+  // Q&A ends at 0.88 to leave room for TV zoom-out (0.88-1.0)
   const qaStartProgress = 0.25;
   const qaEndProgress = 0.88;
   const qaTotalRange = qaEndProgress - qaStartProgress;
+  
+  // 3 Q&A pairs × 3 phases each = 9 total phases
   const totalPhases = 9;
   const phaseSize = qaTotalRange / totalPhases;
-
+  
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {qaData.map((qa, index) => {
+        const isLastQuestion = index === qaData.length - 1;
+        
+        // Each Q&A pair gets 3 phases
         const qaPhaseStart = qaStartProgress + (index * 3 * phaseSize);
         const phase1End = qaPhaseStart + phaseSize;
         const phase2End = phase1End + phaseSize;
         const phase3End = phase2End + phaseSize;
-
+        
+        // Calculate phase progress
         let phase1Progress = 0;
         let phase2Progress = 0;
         let phase3Progress = 0;
-
+        
         if (scrollProgress >= qaPhaseStart && scrollProgress < phase1End) {
           phase1Progress = (scrollProgress - qaPhaseStart) / phaseSize;
         } else if (scrollProgress >= phase1End) {
           phase1Progress = 1;
         }
-
+        
         if (scrollProgress >= phase1End && scrollProgress < phase2End) {
           phase2Progress = (scrollProgress - phase1End) / phaseSize;
         } else if (scrollProgress >= phase2End) {
           phase2Progress = 1;
         }
-
+        
         if (scrollProgress >= phase2End && scrollProgress < phase3End) {
           phase3Progress = (scrollProgress - phase2End) / phaseSize;
         } else if (scrollProgress >= phase3End) {
           phase3Progress = 1;
         }
-
+        
+        // Only render if in this Q&A's range
         if (scrollProgress < qaPhaseStart - 0.01 || scrollProgress > phase3End + 0.01) {
           return null;
         }
-
-        // On mobile, slide in from right but allow wrapping
+        
+        // Question X: right to left during phase 1
         const questionX = 105 - phase1Progress * 100;
-
-        let questionY = isMobile ? 15 : 25;
+        
+        // Question Y: stays at 25%, moves up during phase 3 (all questions now)
+        let questionY = 25;
         if (phase3Progress > 0) {
-          questionY = (isMobile ? 15 : 25) - phase3Progress * 80;
+          questionY = 25 - phase3Progress * 80;
         }
-
+        
+        // Question opacity - now ALL questions fade out including last one
         let questionOpacity = 0;
         if (phase1Progress > 0 && phase1Progress < 0.3) {
           questionOpacity = phase1Progress / 0.3;
@@ -81,12 +90,16 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
         } else if (phase3Progress >= 0.7) {
           questionOpacity = Math.max(0, 1 - (phase3Progress - 0.7) / 0.3);
         }
-
-        let answerY = 105 - phase2Progress * (isMobile ? 52 : 67);
+        
+        // Answer Y: bottom to position during phase 2
+        let answerY = 105 - phase2Progress * 67;
+        
+        // Answer moves up during phase 3 (all answers now)
         if (phase3Progress > 0) {
-          answerY = (isMobile ? 53 : 38) - phase3Progress * 80;
+          answerY = 38 - phase3Progress * 80;
         }
-
+        
+        // Answer opacity - now ALL answers fade out including last one
         let answerOpacity = 0;
         if (phase2Progress > 0 && phase2Progress < 0.3) {
           answerOpacity = phase2Progress / 0.3;
@@ -98,48 +111,46 @@ export function QASection({ visible, scrollProgress }: QASectionProps) {
 
         return (
           <div key={index}>
-            {/* Question */}
             <motion.div
               className="absolute"
               style={{
                 left: `${questionX}%`,
                 top: `${questionY}%`,
                 opacity: questionOpacity,
-                maxWidth: isMobile ? "90%" : "80%",
+                whiteSpace: "nowrap",
+                maxWidth: "none",
+                width: "max-content",
               }}
             >
               <span
                 style={{
                   fontFamily: "'Anton', 'Archivo Black', sans-serif",
-                  fontSize: "clamp(1.8rem, 6vw, 4.5rem)",
+                  fontSize: "clamp(1.2rem, 4vw, 3.5rem)",
                   fontWeight: 400,
                   color: "#000000",
                   letterSpacing: "0.02em",
-                  // removed whiteSpace: nowrap — was causing overflow on mobile
+                  whiteSpace: "nowrap",
                   display: "block",
-                  lineHeight: 1.1,
                 }}
               >
                 {qa.question}
               </span>
             </motion.div>
 
-            {/* Answer */}
             <motion.div
               className="absolute"
               style={{
-                left: isMobile ? "4%" : "5%",
-                right: isMobile ? "4%" : "auto",
+                left: "5%",
                 top: `${answerY}%`,
                 opacity: answerOpacity,
-                maxWidth: isMobile ? "92%" : "55%",
+                maxWidth: "55%",
               }}
             >
               <p
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(0.75rem, 2.5vw, 1.1rem)",
-                  lineHeight: 1.7,
+                  fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)",
+                  lineHeight: 1.8,
                   fontWeight: 400,
                   color: "#FFFFFF",
                   whiteSpace: "pre-line",
