@@ -528,6 +528,11 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   });
 
   const showLandingTV = !showWorkSection;
+  useEffect(() => {
+  if (!showLandingTV) {
+    onStopVideoRef.current();
+  }
+}, [showLandingTV]);
   const bgColor = showWorkSection ? "#0066FF" : "#050403";
 
   return (
