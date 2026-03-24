@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getPerformanceProfile } from "@/hooks/usePerformance";
+import { getPerformanceProfile } from "@/hooks/useperformance";
 
 interface LoadingScreenProps {
   onComplete: () => void;

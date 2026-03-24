@@ -3,7 +3,7 @@ import { useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 import posterImage from "@assets/Tabloid_-_2_1769105145589.png";
-import { getPerformanceProfile } from "@/hooks/Useperformance";
+import { getPerformanceProfile } from "@/hooks/useperformance";
 
 interface WorkSectionProps {
   visible: boolean;

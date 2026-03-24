@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, ScrollControls, useScroll, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
-import { getPerformanceProfile } from "@/hooks/usePerformance";
+import { getPerformanceProfile } from "@/hooks/useperformance";
 
 interface Scene3DProps {
   hoveredText: string | null;
