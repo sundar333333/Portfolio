@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getPerformanceProfile } from "@/hooks/usePerformance";
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -25,19 +26,36 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
+    const perf = getPerformanceProfile();
+    // On low-end devices, draw at half resolution and throttle to every 3rd frame
+    const scale = perf.tier === "low" ? 0.5 : 1;
+    let frameCount = 0;
+
     const drawStatic = () => {
-      const imageData = ctx.createImageData(canvas.width, canvas.height);
-      const data = imageData.data;
+      frameCount++;
+      // Throttle: low = every 3rd frame, medium = every 2nd, high = every frame
+      const skip = perf.tier === "low" ? 3 : perf.tier === "medium" ? 2 : 1;
+      if (frameCount % skip === 0) {
+        const w = Math.floor(canvas.width * scale);
+        const h = Math.floor(canvas.height * scale);
+        const imageData = ctx.createImageData(w, h);
+        const data = imageData.data;
 
-      for (let i = 0; i < data.length; i += 4) {
-        const noise = Math.random() * 255;
-        data[i] = noise;
-        data[i + 1] = noise;
-        data[i + 2] = noise;
-        data[i + 3] = 255;
+        for (let i = 0; i < data.length; i += 4) {
+          const noise = Math.random() * 255;
+          data[i] = noise;
+          data[i + 1] = noise;
+          data[i + 2] = noise;
+          data[i + 3] = 255;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // Scale up to fill if we drew at reduced resolution
+        if (scale < 1) {
+          ctx.drawImage(canvas, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+        }
       }
-
-      ctx.putImageData(imageData, 0, 0);
       animationRef.current = requestAnimationFrame(drawStatic);
     };
 

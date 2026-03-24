@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, ScrollControls, useScroll, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { WorkSection } from "./WorkSection";
+import { getPerformanceProfile } from "@/hooks/usePerformance";
 
 interface Scene3DProps {
   hoveredText: string | null;
@@ -112,6 +113,10 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
   const screenGlowRef = useRef<THREE.PointLight>(null);
   const { scene: tvScene } = useGLTF("/static/vintage_tv_v2.glb");
   const screenMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
+  const frameCountRef = useRef(0);
+  const perf = getPerformanceProfile();
+  // Throttle static noise: low=every 4th frame, medium=every 2nd, high=every frame
+  const staticNoiseSkip = perf.tier === "low" ? 4 : perf.tier === "medium" ? 2 : 1;
 
   const UV_MIN_U = 0.3984;
   const UV_MIN_V = 0.0411;
@@ -216,6 +221,7 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
 
   useFrame((state) => {
     if (!visible) return;
+    frameCountRef.current++;
 
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.015;
@@ -295,7 +301,8 @@ function VintageTV({ hoveredText, onClick, isVideoPlaying, isMuted, visible, gli
         mat.needsUpdate = true;
       }
     } else {
-      if (canvasRef.current && canvasTextureRef.current) {
+      // Only redraw static noise on allowed frames (throttled on low/medium)
+      if (frameCountRef.current % staticNoiseSkip === 0 && canvasRef.current && canvasTextureRef.current) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         if (ctx) {
@@ -404,6 +411,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   const { camera } = useThree();
   const [showWorkSection, setShowWorkSection] = useState(false);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
+  const perf = getPerformanceProfile();
   const transitionThreshold = 0.10;
   const whiteSectionStart = 0.88;
   const circleStart = 0.94;
@@ -538,7 +546,7 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
   return (
     <>
       <color attach="background" args={[bgColor]} />
-      <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : 12]} />
+      <fog attach="fog" args={[bgColor, 3, showWorkSection ? 50 : perf.fogFar]} />
       <ambientLight intensity={showLandingTV ? 0.08 : 0.05} color={showLandingTV ? "#1a1820" : "#1a1a40"} />
       <spotLight
         position={[0, 3.5, 1.5]}
@@ -547,8 +555,8 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         intensity={showLandingTV ? 15 : 5}
         color="#fff8f0"
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={perf.shadowMapSize}
+        shadow-mapSize-height={perf.shadowMapSize}
         shadow-bias={-0.0001}
       />
       <spotLight
@@ -558,9 +566,9 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         intensity={showLandingTV ? 3 : 1}
         color="#aab8cc"
       />
-      <Environment preset="night" background={false} />
+      {perf.environmentPreset && <Environment preset={perf.environmentPreset} background={false} />}
       <TiledFloor visible={showLandingTV} />
-      {showLandingTV && (
+      {showLandingTV && perf.enableContactShadows && (
         <ContactShadows position={[0, 0, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#000000" />
       )}
       <VintageTV
@@ -569,29 +577,31 @@ function ScrollSceneContent({ hoveredText, onTVClick, isVideoPlaying, isMuted, o
         isVideoPlaying={isVideoPlaying}
         isMuted={isMuted}
         visible={showLandingTV}
-        glitchIntensity={glitchIntensity}
+        glitchIntensity={perf.enableGlitch ? glitchIntensity : 0}
       />
-      <GlitchOverlay intensity={glitchIntensity} />
+      {perf.enableGlitch && <GlitchOverlay intensity={glitchIntensity} />}
       <WorkSection visible={showWorkSection} />
     </>
   );
 }
 
 export function Scene3D({ hoveredText, onTVClick, isVideoPlaying, isMuted, onStopVideo, onWorkSectionChange, onScrollProgress, onWhiteSectionProgress, onCircleProgress }: Scene3DProps) {
+  const perf = getPerformanceProfile();
   return (
     <div className="fixed inset-0 z-0" data-testid="scene-3d-container">
       <Canvas
         camera={{ position: [0, 0.55, 1.8], fov: 50 }}
         shadows
         gl={{
-          antialias: true,
+          antialias: perf.tier !== "low",
           alpha: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 0.9,
           failIfMajorPerformanceCaveat: false,
           preserveDrawingBuffer: true,
+          powerPreference: perf.tier === "low" ? "default" : "high-performance",
         }}
-        dpr={[1, 1.5]}
+        dpr={[1, perf.dprMax]}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (e) => { e.preventDefault(); });
           gl.domElement.addEventListener("webglcontextrestored", () => {});

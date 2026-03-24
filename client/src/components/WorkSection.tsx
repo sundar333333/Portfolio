@@ -3,6 +3,7 @@ import { useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 import posterImage from "@assets/Tabloid_-_2_1769105145589.png";
+import { getPerformanceProfile } from "@/hooks/Useperformance";
 
 interface WorkSectionProps {
   visible: boolean;
@@ -12,32 +13,35 @@ const FIGMA_CASE_STUDY_URL = "https://www.figma.com/design/6D1cHJn9cNle6SrkOGKiw
 
 function NeonGrid({ position, rotation, color }: { position: [number, number, number]; rotation: [number, number, number]; color: string }) {
   const gridRef = useRef<THREE.Mesh>(null);
+  const perf = getPerformanceProfile();
 
   const gridTexture = useMemo(() => {
+    const perf = getPerformanceProfile();
+    const size = perf.tier === "low" ? 256 : 512;
     const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 512;
+    canvas.width = size;
+    canvas.height = size;
     const ctx = canvas.getContext("2d")!;
     
     ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, 512, 512);
+    ctx.fillRect(0, 0, size, size);
     
     const gridSize = 32;
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
     ctx.globalAlpha = 0.6;
     
-    for (let x = 0; x <= 512; x += gridSize) {
+    for (let x = 0; x <= size; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, 512);
+      ctx.lineTo(x, size);
       ctx.stroke();
     }
     
-    for (let y = 0; y <= 512; y += gridSize) {
+    for (let y = 0; y <= size; y += gridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(512, y);
+      ctx.lineTo(size, y);
       ctx.stroke();
     }
     
@@ -49,7 +53,7 @@ function NeonGrid({ position, rotation, color }: { position: [number, number, nu
   }, [color]);
 
   useFrame((state) => {
-    if (gridRef.current) {
+    if (gridRef.current && perf.tier !== "low") {
       const material = gridRef.current.material as THREE.MeshBasicMaterial;
       material.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.1;
     }
@@ -71,6 +75,7 @@ function NeonGrid({ position, rotation, color }: { position: [number, number, nu
 function Monitor({ position, rotation, projectIndex }: { position: [number, number, number]; rotation: [number, number, number]; projectIndex: number }) {
   const monitorRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
+  const perf = getPerformanceProfile();
 
   const colors = ["#ff00ff", "#00ffff", "#ff6600", "#00ff66", "#6600ff", "#ffff00"];
   const color = colors[projectIndex % colors.length];
@@ -102,10 +107,10 @@ function Monitor({ position, rotation, projectIndex }: { position: [number, numb
   }, [color, projectIndex]);
 
   useFrame((state) => {
-    if (monitorRef.current) {
+    if (monitorRef.current && perf.tier !== "low") {
       monitorRef.current.position.y += Math.sin(state.clock.elapsedTime * 0.5 + projectIndex) * 0.001;
     }
-    if (screenRef.current) {
+    if (screenRef.current && perf.tier !== "low") {
       const material = screenRef.current.material as THREE.MeshBasicMaterial;
       material.opacity = 0.8 + Math.sin(state.clock.elapsedTime * 3 + projectIndex * 0.5) * 0.2;
     }
@@ -189,9 +194,12 @@ function MonitorWall() {
 
 function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null);
+  const perf = getPerformanceProfile();
+  // Reduce particle count on weaker devices
+  const particleCount = perf.tier === "low" ? 50 : perf.tier === "medium" ? 120 : 200;
   
   const { positions, colors } = useMemo(() => {
-    const count = 200;
+    const count = particleCount;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     
@@ -208,16 +216,19 @@ function FloatingParticles() {
     }
     
     return { positions, colors };
-  }, []);
+  }, [particleCount]);
 
   useFrame((state) => {
     if (particlesRef.current) {
       particlesRef.current.rotation.y = state.clock.elapsedTime * 0.02;
-      const posArray = particlesRef.current.geometry.attributes.position.array as Float32Array;
-      for (let i = 0; i < posArray.length / 3; i++) {
-        posArray[i * 3 + 1] += Math.sin(state.clock.elapsedTime + i) * 0.002;
+      // Skip per-particle wave animation on low/medium — only do simple rotation
+      if (perf.tier === "high") {
+        const posArray = particlesRef.current.geometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < posArray.length / 3; i++) {
+          posArray[i * 3 + 1] += Math.sin(state.clock.elapsedTime + i) * 0.002;
+        }
+        particlesRef.current.geometry.attributes.position.needsUpdate = true;
       }
-      particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
