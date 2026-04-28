@@ -39,7 +39,7 @@ const projectLogos: Record<string, string> = {
 };
 
 const projectCaseStudies: Record<string, string> = {
-  current: "https://www.figma.com/embed?embed_host=share&hide-ui=1&url=https://www.figma.com/proto/XZ8kBuNApBlz6LXvmpZvaP/Ticking-Application-Case-study?node-id=247-2&viewport=-382%2C271%2C0.29&t=IB4HmOEeY5Uvf6Vb-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=247%3A2&page-id=0%3A1",
+  current: "https://www.figma.com/embed?embed_host=share&hide-ui=1&url=https://www.figma.com/proto/XZ8kBuNApBlz6LXvmpZvaP/Ticking-Application-Case-study",
   spacejump: "https://www.figma.com/embed?embed_host=share&hide-ui=1&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FlzrqO3p3AxxkgrYxlnSuVO%2FSpace-Jump-Game-UX-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26scaling%3Dscale-down-width%26hide-ui%3D1",
   eventify: "https://www.figma.com/embed?embed_host=share&hide-ui=1&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FvLXe2NKquLXGL0rg0BcE2E%2FUntitled%3Fpage-id%3D0%253A1%26node-id%3D1-2%26scaling%3Dscale-down-width%26hide-ui%3D1",
   ticking: "https://www.figma.com/embed?embed_host=share&hide-ui=1&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FXZ8kBuNApBlz6LXvmpZvaP%2FTicking-Application-Case-study%3Fpage-id%3D0%253A1%26node-id%3D1-2%26starting-point-node-id%3D1%253A2%26scaling%3Dscale-down-width%26hide-ui%3D1",
